@@ -158,7 +158,7 @@ project-local-variables.el."
              (require 'project-local-variables)
              (plv-find-project-file default-directory "")))))
     (if project-root
-        (file-name-directory project-root)
+        project-root
       (message "No project was defined for the current file."))))
 
 (provide 'find-file-in-project)
