@@ -152,10 +152,9 @@ project-local-variables.el."
          (if (featurep 'project)
              (project-root)
            (if (functionp 'locate-dominating-file)
-               (cond ((locate-dominating-file default-directory ".dir-locals.el")
-                      (locate-dominating-file default-directory ".dir-locals.el"))
-                     ((locate-dominating-file default-directory ".dir-settings.el")
-                      (locate-dominating-file default-directory ".dir-settings.el")))
+               (or
+                (locate-dominating-file default-directory ".dir-locals.el")
+                (locate-dominating-file default-directory ".dir-settings.el"))
              (require 'project-local-variables)
              (plv-find-project-file default-directory "")))))
     (if project-root
