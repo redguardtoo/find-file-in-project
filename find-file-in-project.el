@@ -4,11 +4,11 @@
 
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/FindFileInProject
-;; Version: 2.0
+;; Git: git://github.com/wfarr/find-file-in-project.git
+;; Version: 2.1
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
 ;; EmacsWiki: FindFileInProject
-;; Package-Requires: ((project-local-variables "0.3"))
 
 ;; This file is NOT part of GNU Emacs.
 
