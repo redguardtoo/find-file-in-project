@@ -1,14 +1,14 @@
 ;;; find-file-in-project.el --- Find files in a project quickly.
 
-;; Copyright (C) 2006, 2007, 2008 Phil Hagelberg and Doug Alcorn
+;; Copyright (C) 2006, 2007, 2008, 2009 Phil Hagelberg, Doug Alcorn, and Will Farrington
 
-;; Author: Phil Hagelberg and Doug Alcorn
+;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/FindFileInProject
 ;; Version: 2.0
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
 ;; EmacsWiki: FindFileInProject
-;; Package-Requires: ((project-local-variables "0.2"))
+;; Package-Requires: ((project-local-variables "0.3"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -33,13 +33,21 @@
 
 ;; This library depends on GNU find.
 
-;; This file provides a method for quickly finding any file in a given
-;; project. Projects are defined in two ways. If the
-;; `locate-dominating-file' function is bound, it assumes you are
-;; using Emacs 23, in which case you it will look for a
-;; `.dir-settings.el' file in an ancestor directory of the current
-;; file. Otherwise it uses the `project-local-variables' library,
-;; which looks for a `.emacs-project' file.
+;; This file provides a couple methods for quickly finding any file in
+;; a given project. Projects are defined in two ways. The first uses 
+;; `locate-dominating-file'. First, if the `locate-dominating-file'
+;; function is bound, it assumes you are using Emacs 23, in which case
+;; you it will look for a `.dir-locals.el' file in an ancestor
+;; directory of the current file. Otherwise it uses the
+;;`project-local-variables' library, which looks for a `.emacs-project'
+;; file.
+
+;; The other method takes advantage of the prominence of version
+;; control systems in projects to quickly identify the tree for a
+;; project. It does so using `project.el' when available. `project.el'
+;; is shipped in this tree, but for reasons of encouraging using
+;; default Emacs behavior when and where possible, you will need to
+;; manually require it in your Emacs configuration to make use of it.
 
 ;; By default, it looks only for files whose names match
 ;; `ffip-regexp', but it's understood that that variable will be
@@ -141,10 +149,15 @@ If `locate-dominating-file' is bound, it will use Emacs' built-in
 functionality; otherwise it will fall back on the definition from
 project-local-variables.el."
   (let ((project-root
-         (if (functionp 'locate-dominating-file)
-             (locate-dominating-file default-directory ".dir-settings.el")
-           (require 'project-local-variables)
-           (plv-find-project-file default-directory ""))))
+         (if (featurep 'project)
+             (project-root)
+           (if (functionp 'locate-dominating-file)
+               (cond ((locate-dominating-file default-directory ".dir-locals.el")
+                      (locate-dominating-file default-directory ".dir-locals.el"))
+                     ((locate-dominating-file default-directory ".dir-settings.el")
+                      (locate-dominating-file default-directory ".dir-settings.el")))
+             (require 'project-local-variables)
+             (plv-find-project-file default-directory "")))))
     (if project-root
         (file-name-directory project-root)
       (message "No project was defined for the current file."))))
