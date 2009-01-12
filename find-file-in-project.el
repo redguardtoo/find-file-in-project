@@ -94,6 +94,9 @@ Use this to exclude portions of your project: \"-not -regex \\\".*vendor.*\\\"\"
 (defvar ffip-project-root nil
   "If non-nil, overrides the project root directory location.")
 
+(defvar ffip-project-file ".git"
+  "What file should ffip look for to define a project?")
+
 (defun ffip-project-files ()
   "Return an alist of all filenames in the project and their path.
 
@@ -149,17 +152,22 @@ If `locate-dominating-file' is bound, it will use Emacs' built-in
 functionality; otherwise it will fall back on the definition from
 project-local-variables.el."
   (let ((project-root
-         (if (featurep 'project)
-             (project-root)
-           (if (functionp 'locate-dominating-file)
-               (or
-                (locate-dominating-file default-directory ".dir-locals.el")
-                (locate-dominating-file default-directory ".dir-settings.el"))
-             (require 'project-local-variables)
-             (plv-find-project-file default-directory "")))))
-    (if project-root
-        project-root
+         (if (featurep 'project) (project-root)
+           ;; TODO: provide a list of files that can be fallen back upon
+           (ffip-locate-dominating-file default-directory ffip-project-file))))
+           
+    (or project-root
       (message "No project was defined for the current file."))))
+
+;; Backport functionality to Emacs 22
+(if (functionp 'locate-dominating-file)
+    (defalias 'ffip-locate-dominating-file 'locate-dominating-file)
+  (defun ffip-locate-dominating-file (file name)
+    "Look up the project file in and above `file'."
+    (let ((parent (file-truename (expand-file-name ".." file))))
+      (cond ((string= file parent) nil)
+            ((file-exists-p (concat file name)) file)
+            (t (plv-find-project-file parent name))))))
 
 (provide 'find-file-in-project)
 ;;; find-file-in-project.el ends here
