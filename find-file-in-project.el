@@ -73,6 +73,16 @@
 ;; Recommended binding:
 ;; (global-set-key (kbd "C-x C-M-f") 'find-file-in-project)
 
+;; Notes on using this package with Cygwin:
+
+;; You can override using Win32's find with cygwin's find by putting
+;; (setq ffip-find "/usr/bin/find")
+;; in your init.el
+
+;; In order to make sure that the paths returned by cygwin find 
+;; can be found by Emacs, you will need to have the cygwin-mount 
+;; package.
+
 ;;; TODO:
 
 ;; Performance testing with large projects
@@ -97,6 +107,10 @@ Use this to exclude portions of your project: \"-not -regex \\\".*vendor.*\\\"\"
 (defvar ffip-project-file ".git"
   "What file should ffip look for to define a project?")
 
+;; allow WinEmacs to override this behavior with 
+;; cygwin installed
+(defvar ffip-find "find")
+
 (defun ffip-project-files ()
   "Return an alist of all filenames in the project and their path.
 
@@ -112,7 +126,8 @@ directory they are found in so that they are unique."
                 (add-to-list 'file-alist file-cons)
                 file-cons))
             (split-string (shell-command-to-string
-                           (format "find %s -type f %s %s"
+                           (format "%s %s -type f %s %s"
+                                   ffip-find
                                    (or ffip-project-root
                                        (ffip-project-root)
                                        (error "no project root found"))
