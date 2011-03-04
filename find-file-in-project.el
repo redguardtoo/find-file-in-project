@@ -76,7 +76,7 @@
 ;; Notes on using this package with Cygwin:
 
 ;; You can override using Win32's find with cygwin's find by putting
-;; (setq ffip-find "/usr/bin/find")
+;; (setq ffip-find-command "/usr/bin/find")
 ;; in your init.el
 
 ;; In order to make sure that the paths returned by cygwin find 
