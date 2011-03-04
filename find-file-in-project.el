@@ -109,7 +109,7 @@ Use this to exclude portions of your project: \"-not -regex \\\".*vendor.*\\\"\"
 
 ;; allow WinEmacs to override this behavior with 
 ;; cygwin installed
-(defvar ffip-find "find")
+(defvar ffip-find-command "find")
 
 (defun ffip-project-files ()
   "Return an alist of all filenames in the project and their path.
@@ -127,7 +127,7 @@ directory they are found in so that they are unique."
                 file-cons))
             (split-string (shell-command-to-string
                            (format "%s %s -type f %s %s"
-                                   ffip-find
+                                   ffip-find-command
                                    (or ffip-project-root
                                        (ffip-project-root)
                                        (error "no project root found"))
