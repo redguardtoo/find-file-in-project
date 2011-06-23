@@ -34,7 +34,7 @@
 ;; This library depends on GNU find.
 
 ;; This file provides a couple methods for quickly finding any file in
-;; a given project. Projects are defined in two ways. The first uses 
+;; a given project. Projects are defined in two ways. The first uses
 ;; `locate-dominating-file'. First, if the `locate-dominating-file'
 ;; function is bound, it assumes you are using Emacs 23, in which case
 ;; you it will look for a `.dir-locals.el' file in an ancestor
@@ -112,7 +112,7 @@ directory they are found in so that they are unique."
                 (add-to-list 'file-alist file-cons)
                 file-cons))
             (split-string (shell-command-to-string
-                           (format "find %s -type f %s %s"
+                           (format "find %s -type f \\( %s \\) %s"
                                    (or ffip-project-root
                                        (ffip-project-root)
                                        (error "no project root found"))
@@ -157,7 +157,7 @@ project-local-variables.el."
          (if (featurep 'project) (project-root)
            ;; TODO: provide a list of files that can be fallen back upon
            (ffip-locate-dominating-file default-directory ffip-project-file))))
-           
+
     (or project-root
         (progn (message "No project was defined for the current file.")
                nil))))
