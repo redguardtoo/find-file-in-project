@@ -1,10 +1,11 @@
 ;;; find-file-in-project.el --- Find files in a project quickly.
 
-;; Copyright (C) 2006, 2007, 2008, 2009 Phil Hagelberg, Doug Alcorn, and Will Farrington
+;; Copyright (C) 2006, 2007, 2008, 2009
+;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/FindFileInProject
-;; Git: git://github.com/wfarr/find-file-in-project.git
+;; Git: git://github.com/technomancy/find-file-in-project.git
 ;; Version: 2.1
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
@@ -31,71 +32,82 @@
 
 ;;; Commentary:
 
-;; This library depends on GNU find.
+;; This library provides a couple methods for quickly finding any file
+;; in a given project.  It depends on GNU find.
 
-;; This file provides a couple methods for quickly finding any file in
-;; a given project. Projects are defined in two ways. The first uses
-;; `locate-dominating-file'. First, if the `locate-dominating-file'
-;; function is bound, it assumes you are using Emacs 23, in which case
-;; you it will look for a `.dir-locals.el' file in an ancestor
-;; directory of the current file. Otherwise it uses the
-;;`project-local-variables' library, which looks for a `.emacs-project'
-;; file.
+;; A project is found by searching up the directory tree until a file
+;; is found that matches `ffip-project-file'.  (".git" by default.)
+;; You can set `ffip-project-root-function' to provide an alternate
+;; function to search for the project root.  By default, it looks only
+;; for files whose names match `ffip-patterns',
 
-;; The other method takes advantage of the prominence of version
-;; control systems in projects to quickly identify the tree for a
-;; project. It does so using `project.el' when available. `project.el'
-;; is shipped in this tree, but for reasons of encouraging using
-;; default Emacs behavior when and where possible, you will need to
-;; manually require it in your Emacs configuration to make use of it.
+;; If you have so many files that it becomes unwieldy, you can set
+;; `ffip-find-options' to a string which will be passed to the `find'
+;; invocation in order to exclude irrelevant subdirectories.  For
+;; instance, in a Ruby on Rails project, you may be interested in all
+;; .rb files that don't exist in the "vendor" directory.  In that case
+;; you could set `ffip-find-options' to "-not -regex \".*vendor.*\"".
 
-;; By default, it looks only for files whose names match
-;; `ffip-regexp', but it's understood that that variable will be
-;; overridden locally. This can be done either with a mode hook:
+;; All these variables may be overridden on a per-directory basis in
+;; your .dir-locals.el.  See (info "(Emacs) Directory Variables") for
+;; details.
 
-;; (add-hook 'emacs-lisp-mode-hook
-;;           (lambda (set (make-local-variable 'ffip-regexp) ".*\\.el")))
-
-;; or by setting it in your .emacs-project/.dir-settings.el file, in
-;; which case it will get set locally.
-
-;; You can also be a bit more specific about what files you want to
-;; find. For instance, in a Ruby on Rails project, you may be
-;; interested in all .rb files that don't exist in the "vendor"
-;; directory. In that case you could locally set `ffip-find-options'
-;; to "" from within a hook or your .emacs-project file. The options
-;; accepted in that variable are passed directly to the Unix `find'
-;; command, so any valid arguments for that program are acceptable.
-
-;; If `ido-mode' is enabled, the menu will use `ido-completing-read'
-;; instead of `completing-read'.
-
-;; Recommended binding:
-;; (global-set-key (kbd "C-x C-M-f") 'find-file-in-project)
+;; Recommended binding: (global-set-key (kbd "C-x f") 'find-file-in-project)
 
 ;;; TODO:
 
-;; Performance testing with large projects
-;; Switch to using a hash table if it's too slow
 ;; Add compatibility with BSD find (PDI; I can't virtualize OS X)
 
 ;;; Code:
 
+(defvar ffip-project-file ".git"
+  "The file that should be used to define a project root.
+
+May be set using .dir-locals.el.")
+
 (defvar ffip-patterns
-  '("*.rb" "*.html" "*.el" "*.js" "*.rhtml")
-  "List of patterns to look for with find-file-in-project.")
+  '("*.html" "*.org" "*.txt" "*.md" "*.el" "*.clj" "*.py" "*.rb" "*.js" "*.pl"
+    "*.sh" "*.erl" "*.hs" "*.ml")
+  "List of patterns to look for with `find-file-in-project'.")
 
-(defvar ffip-find-options
-  ""
-  "Extra options to pass to `find' when using find-file-in-project.
+(defvar ffip-find-options ""
+  "Extra options to pass to `find' when using `find-file-in-project'.
 
-Use this to exclude portions of your project: \"-not -regex \\\".*vendor.*\\\"\"")
+Use this to exclude portions of your project: \"-not -regex \\\".*svn.*\\\"\".")
 
 (defvar ffip-project-root nil
   "If non-nil, overrides the project root directory location.")
 
-(defvar ffip-project-file ".git"
-  "What file should ffip look for to define a project?")
+(defvar ffip-project-root-function nil
+  "If non-nil, this function is called to determine the project root.
+
+This overrides variable `ffip-project-root' when set.")
+
+(defvar ffip-limit 512
+  "Limit results to this many files.")
+
+(defun ffip-project-root ()
+  "Return the root of the project."
+  (let ((project-root (or ffip-project-root
+                          (if (functionp ffip-project-root-function)
+                              (funcall ffip-project-root-function)
+                            (locate-dominating-file default-directory
+                                                    ffip-project-file)))))
+    (or project-root
+        (progn (message "No project was defined for the current file.")
+               nil))))
+
+(defun ffip-uniqueify (file-cons)
+  "Set the car of FILE-CONS to include the directory name plus the file name."
+  ;; TODO: see if we can use uniquify.el
+  (setcar file-cons
+          (concat (cadr (reverse (split-string (cdr file-cons) "/"))) "/"
+                  (car file-cons))))
+
+(defun ffip-join-patterns ()
+  "Turn `ffip-paterns' into a string that `find' can use."
+  (mapconcat (lambda (pat) (format "-name \"%s\"" pat))
+             ffip-patterns " -or "))
 
 (defun ffip-project-files ()
   "Return an alist of all filenames in the project and their path.
@@ -115,62 +127,36 @@ directory they are found in so that they are unique."
                            (format "find %s -type f \\( %s \\) %s"
                                    (or ffip-project-root
                                        (ffip-project-root)
-                                       (error "no project root found"))
+                                       (error "No project root found"))
                                    (ffip-join-patterns)
-                                   ffip-find-options))))))
-
-;; TODO: Emacs has some built-in uniqueify functions; investigate using those.
-(defun ffip-uniqueify (file-cons)
-  "Set the car of the argument to include the directory name plus the file name."
-  (setcar file-cons
-          (concat (car file-cons) ": "
-                  (cadr (reverse (split-string (cdr file-cons) "/"))))))
-
-(defun ffip-join-patterns ()
-  "Turn `ffip-paterns' into a string that `find' can use."
-  (mapconcat (lambda (pat) (format "-name \"%s\"" pat))
-             ffip-patterns " -or "))
+                                   ffip-find-options
+                                   ffip-limit))))))
 
 ;;;###autoload
 (defun find-file-in-project ()
   "Prompt with a completing list of all files in the project to find one.
 
 The project's scope is defined as the first directory containing
-an `.emacs-project' file. You can override this by locally
-setting the `ffip-project-root' variable."
+an `.emacs-project' file.  You can override this by locally
+setting the variable `ffip-project-root'."
   (interactive)
   (let* ((project-files (ffip-project-files))
+         (files (mapcar 'car project-files))
          (file (if (and (boundp 'ido-mode) ido-mode)
-                   (ido-completing-read "Find file in project: "
-                                        (mapcar 'car project-files))
-                 (completing-read "Find file in project: "
-                                  (mapcar 'car project-files)))))
+                   (ido-completing-read "Find file in project: " files)
+                 (completing-read "Find file in project: " files))))
     (find-file (cdr (assoc file project-files)))))
 
-(defun ffip-project-root ()
-  "Return the root of the project.
+;;;###autoload
+(defalias 'ffip 'find-file-in-project)
 
-If `locate-dominating-file' is bound, it will use Emacs' built-in
-functionality; otherwise it will fall back on the definition from
-project-local-variables.el."
-  (let ((project-root
-         (if (featurep 'project) (project-root)
-           ;; TODO: provide a list of files that can be fallen back upon
-           (ffip-locate-dominating-file default-directory ffip-project-file))))
-
-    (or project-root
-        (progn (message "No project was defined for the current file.")
-               nil))))
-
-;; Backport functionality to Emacs 22
-(if (functionp 'locate-dominating-file)
-    (defalias 'ffip-locate-dominating-file 'locate-dominating-file)
-  (defun ffip-locate-dominating-file (file name)
-    "Look up the project file in and above `file'."
-    (let ((parent (file-truename (expand-file-name ".." file))))
-      (cond ((string= file parent) nil)
-            ((file-exists-p (concat file name)) file)
-            (t (plv-find-project-file parent name))))))
+;; safe locals
+(put 'ffip-patterns 'safe-local-variable 'listp)
+(put 'ffip-find-options 'safe-local-variable 'stringp)
+(put 'ffip-project-file 'safe-local-variable 'stringp)
+(put 'ffip-project-root 'safe-local-variable 'stringp)
+(put 'ffip-project-root-function 'safe-local-variable 'functionp)
+(put 'ffip-limit 'safe-local-variable 'integerp)
 
 (provide 'find-file-in-project)
 ;;; find-file-in-project.el ends here
