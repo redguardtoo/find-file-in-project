@@ -124,7 +124,7 @@ directory they are found in so that they are unique."
                 (add-to-list 'file-alist file-cons)
                 file-cons))
             (split-string (shell-command-to-string
-                           (format "find %s -type f \\( %s \\) %s"
+                           (format "find %s -type f \\( %s \\) %s | head -n %s"
                                    (or ffip-project-root
                                        (ffip-project-root)
                                        (error "No project root found"))
