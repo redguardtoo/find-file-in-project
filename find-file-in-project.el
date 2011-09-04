@@ -1,6 +1,6 @@
 ;;; find-file-in-project.el --- Find files in a project quickly.
 
-;; Copyright (C) 2006, 2007, 2008, 2009
+;; Copyright (C) 2006-2009, 2011
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
@@ -151,12 +151,14 @@ setting the variable `ffip-project-root'."
 (defalias 'ffip 'find-file-in-project)
 
 ;; safe locals
-(put 'ffip-patterns 'safe-local-variable 'listp)
-(put 'ffip-find-options 'safe-local-variable 'stringp)
-(put 'ffip-project-file 'safe-local-variable 'stringp)
-(put 'ffip-project-root 'safe-local-variable 'stringp)
-(put 'ffip-project-root-function 'safe-local-variable 'functionp)
-(put 'ffip-limit 'safe-local-variable 'integerp)
+;;;###autoload
+(progn
+  (put 'ffip-patterns 'safe-local-variable 'listp)
+  (put 'ffip-find-options 'safe-local-variable 'stringp)
+  (put 'ffip-project-file 'safe-local-variable 'stringp)
+  (put 'ffip-project-root 'safe-local-variable 'stringp)
+  (put 'ffip-project-root-function 'safe-local-variable 'functionp)
+  (put 'ffip-limit 'safe-local-variable 'integerp))
 
 (provide 'find-file-in-project)
 ;;; find-file-in-project.el ends here
