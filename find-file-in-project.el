@@ -86,6 +86,9 @@ This overrides variable `ffip-project-root' when set.")
 (defvar ffip-limit 512
   "Limit results to this many files.")
 
+;; cache the files per project root
+(defvar ffip-project-file-cache (make-hash-table :test 'equal))
+
 (defun ffip-project-root ()
   "Return the root of the project."
   (let ((project-root (or ffip-project-root
@@ -109,38 +112,43 @@ This overrides variable `ffip-project-root' when set.")
   (mapconcat (lambda (pat) (format "-name \"%s\"" pat))
              ffip-patterns " -or "))
 
-(defun ffip-project-files ()
+(defun ffip-project-files (&optional arg)
   "Return an alist of all filenames in the project and their path.
 
 Files with duplicate filenames are suffixed with the name of the
 directory they are found in so that they are unique."
-  (let ((file-alist nil))
-    (mapcar (lambda (file)
-              (let ((file-cons (cons (file-name-nondirectory file)
-                                     (expand-file-name file))))
-                (when (assoc (car file-cons) file-alist)
-                  (ffip-uniqueify (assoc (car file-cons) file-alist))
-                  (ffip-uniqueify file-cons))
-                (add-to-list 'file-alist file-cons)
-                file-cons))
-            (split-string (shell-command-to-string
-                           (format "find %s -type f \\( %s \\) %s | head -n %s"
-                                   (or ffip-project-root
-                                       (ffip-project-root)
-                                       (error "No project root found"))
-                                   (ffip-join-patterns)
-                                   ffip-find-options
-                                   ffip-limit))))))
+  (let* ((current-project-root (or ffip-project-root
+                                   (ffip-project-root)
+                                   (error "No project root found")))
+         (file-alist (if arg
+                         nil
+                       (gethash current-project-root ffip-project-file-cache))))
+    (or file-alist
+        (puthash current-project-root
+                 (mapcar (lambda (file)
+                           (let ((file-cons (cons (file-name-nondirectory file)
+                                                  (expand-file-name file))))
+                             (when (assoc (car file-cons) file-alist)
+                               (ffip-uniqueify (assoc (car file-cons) file-alist))
+                               (ffip-uniqueify file-cons))
+                             (add-to-list 'file-alist file-cons)
+                             file-cons))
+                         (split-string (shell-command-to-string
+                                        (format "find %s -type f \\( %s \\) %s | head -n %s"
+                                                current-project-root
+                                                (ffip-join-patterns)
+                                                ffip-find-options
+                                                ffip-limit)))) ffip-project-file-cache))))
 
 ;;;###autoload
-(defun find-file-in-project ()
+(defun find-file-in-project (&optional arg)
   "Prompt with a completing list of all files in the project to find one.
 
 The project's scope is defined as the first directory containing
 an `.emacs-project' file.  You can override this by locally
 setting the variable `ffip-project-root'."
-  (interactive)
-  (let* ((project-files (ffip-project-files))
+  (interactive "P")
+  (let* ((project-files (ffip-project-files arg))
          (files (mapcar 'car project-files))
          (file (if (and (boundp 'ido-mode) ido-mode)
                    (ido-completing-read "Find file in project: " files)
