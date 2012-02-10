@@ -67,7 +67,7 @@ May be set using .dir-locals.el.")
 
 (defvar ffip-patterns
   '("*.html" "*.org" "*.txt" "*.md" "*.el" "*.clj" "*.py" "*.rb" "*.js" "*.pl"
-    "*.sh" "*.erl" "*.hs" "*.ml" "*.erb" "*.haml")
+    "*.sh" "*.erl" "*.hs" "*.ml" "*.erb" "*.haml" "*.coffee")
   "List of patterns to look for with `find-file-in-project'.")
 
 (defvar ffip-find-options ""
