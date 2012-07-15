@@ -63,7 +63,7 @@
 (defvar ffip-project-file ".git"
   "The file that should be used to define a project root.
 
-May be set using .dir-locals.el.")
+May be set using .dir-locals.el. Checks each entry if set to a list.")
 
 (defvar ffip-patterns
   '("*.html" "*.org" "*.txt" "*.md" "*.el" "*.clj" "*.py" "*.rb" "*.js" "*.pl"
@@ -94,8 +94,12 @@ This overrides variable `ffip-project-root' when set.")
   (let ((project-root (or ffip-project-root
                           (if (functionp ffip-project-root-function)
                               (funcall ffip-project-root-function)
-                            (locate-dominating-file default-directory
-                                                    ffip-project-file)))))
+                            (if (listp ffip-project-file)
+                                (some (apply-partially 'locate-dominating-file
+                                                       default-directory)
+                                      ffip-project-file)
+                              (locate-dominating-file default-directory
+                                                      ffip-project-file))))))
     (or project-root
         (progn (message "No project was defined for the current file.")
                nil))))
