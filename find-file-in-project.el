@@ -6,7 +6,7 @@
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/FindFileInProject
 ;; Git: git://github.com/technomancy/find-file-in-project.git
-;; Version: 2.1
+;; Version: 3.0
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
 ;; EmacsWiki: FindFileInProject
@@ -67,7 +67,7 @@ May be set using .dir-locals.el.")
 
 (defvar ffip-patterns
   '("*.html" "*.org" "*.txt" "*.md" "*.el" "*.clj" "*.py" "*.rb" "*.js" "*.pl"
-    "*.sh" "*.erl" "*.hs" "*.ml" "*.erb" "*.haml")
+    "*.sh" "*.erl" "*.hs" "*.ml")
   "List of patterns to look for with `find-file-in-project'.")
 
 (defvar ffip-find-options ""
