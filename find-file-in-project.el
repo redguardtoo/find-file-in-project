@@ -60,6 +60,8 @@
 
 ;;; Code:
 
+(require 'cl)
+
 (defvar ffip-project-file ".git"
   "The file that should be used to define a project root.
 
