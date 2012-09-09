@@ -142,9 +142,16 @@ directory they are found in so that they are unique."
                                    ffip-find-options ffip-limit))))))
 
 
+(defun ffip-mtime (filename)
+  "According to this number we soert the files"
+  (float-time (nth 4 (file-attributes filename))))
+
 (defun ffip-sort-file-alist (file-alist)
   "Show them in buffer order"
-  (let ((top nil))
+  (let ((top nil)
+	(file-alist (sort file-alist (lambda (f1 f2)
+				       (> (ffip-mtime (cdr f1)) (ffip-mtime (cdr f2)))))))
+
     (loop for tuple in (reverse (delq nil  ;; The tuples we need to push up in reverse order
 				      (mapcar (lambda (buf)
 						(let ((fname (buffer-file-name buf)))
