@@ -141,6 +141,26 @@ directory they are found in so that they are unique."
                                    root (ffip-join-patterns)
                                    ffip-find-options ffip-limit))))))
 
+
+(defun ffip-sort-file-alist (file-alist)
+  "Show them in buffer order"
+  (let ((top nil))
+    (loop for tuple in (reverse (delq nil  ;; The tuples we need to push up in reverse order
+				      (mapcar (lambda (buf)
+						(let ((fname (buffer-file-name buf)))
+						  (cond (fname
+							 (rassoc (expand-file-name fname) file-alist)))))
+					      (buffer-list))))
+	  do
+	  ;; (delete* tuple file-alist :test 'eq) ;; fails to delete the first element
+	  (setq file-alist (delete tuple file-alist))
+	  (push tuple top))
+
+    (if (string= (cdar top) (buffer-file-name (current-buffer)))
+	(append (cdr top) file-alist (list (car top)))
+      (append top file-alist))))
+
+
 ;;;###autoload
 (defun find-file-in-project ()
   "Prompt with a completing list of all files in the project to find one.
@@ -149,11 +169,11 @@ The project's scope is defined as the first directory containing
 an `.emacs-project' file.  You can override this by locally
 setting the variable `ffip-project-root'."
   (interactive)
-  (let* ((project-files (ffip-project-files))
-         (files (mapcar 'car project-files))
-         (file (if (and (boundp 'ido-mode) ido-mode)
-                   (ido-completing-read "Find file in project: " files)
-                 (completing-read "Find file in project: " files))))
+  (let* ((project-files (ffip-sort-file-alist (ffip-project-files)))
+	 (files (mapcar 'car project-files))
+	 (file (if (and (boundp 'ido-mode) ido-mode)
+		   (ido-completing-read "Find file in project: " files)
+		 (completing-read "Find file in project: " files))))
     (find-file (cdr (assoc file project-files)))))
 
 ;;;###autoload
