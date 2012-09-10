@@ -148,10 +148,7 @@ directory they are found in so that they are unique."
 
 (defun ffip-sort-file-alist (file-alist)
   "Show them in buffer order"
-  (let ((top nil)
-	(file-alist (sort file-alist (lambda (f1 f2)
-				       (> (ffip-mtime (cdr f1)) (ffip-mtime (cdr f2)))))))
-
+  (let ((top nil))
     (loop for tuple in (reverse (delq nil  ;; The tuples we need to push up in reverse order
 				      (mapcar (lambda (buf)
 						(let ((fname (buffer-file-name buf)))
@@ -163,9 +160,11 @@ directory they are found in so that they are unique."
 	  (setq file-alist (delete tuple file-alist))
 	  (push tuple top))
 
-    (if (string= (cdar top) (buffer-file-name (current-buffer)))
-	(append (cdr top) file-alist (list (car top)))
-      (append top file-alist))))
+    (let ((file-alist (sort file-alist (lambda (f1 f2)
+					 (> (ffip-mtime (cdr f1)) (ffip-mtime (cdr f2)))))))
+      (if (string= (cdar top) (buffer-file-name (current-buffer)))
+	  (append (cdr top) file-alist (list (car top)))
+	(append top file-alist)))))
 
 
 ;;;###autoload
