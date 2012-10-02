@@ -171,6 +171,18 @@ directory they are found in so that they are unique."
 	  (append (cdr top) sorted-file-alist (list (car top)))
 	(append top sorted-file-alist)))))
 
+(defun ffip-open-projects ()
+  "Prompt to switch to the last edited file of an open project"
+  (interactive)
+  (let (projects)
+    (dolist (buf (buffer-list))
+      (with-current-buffer buf
+	(when (and (buffer-file-name buf) (ffip-project-root))
+	  (if projects
+	      (pushnew (cons (ffip-project-root) buf) projects :test (lambda (x y) (string= (car x) (car y))))
+	    (setq projects (adjoin (cons (ffip-project-root) buf) projects))))))
+    (switch-to-buffer
+     (assoc (completing-read "Jump to open project: " projects) 'projects))))
 
 ;;;###autoload
 (defun find-file-in-project ()
