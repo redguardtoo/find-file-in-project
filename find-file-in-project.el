@@ -69,7 +69,7 @@ May be set using .dir-locals.el. Checks each entry if set to a list.")
 
 (defvar ffip-patterns
   '("*.html" "*.org" "*.txt" "*.md" "*.el" "*.clj" "*.py" "*.rb" "*.js" "*.pl"
-    "*.sh" "*.erl" "*.hs" "*.ml")
+    "*.sh" "*.erl" "*.hs" "*.ml" "*.c" "*.h" ".cpp" "*.hpp" "*.cc")
   "List of patterns to look for with `find-file-in-project'.")
 
 (defvar ffip-find-options ""
@@ -137,7 +137,7 @@ directory they are found in so that they are unique."
                   (add-to-list 'file-alist file-cons)
                   file-cons)))
             (split-string (shell-command-to-string
-                           (format "find %s -type f \\( %s \\) %s | head -n %s"
+                           (format "find %s -type f \\( %s \\) %s  | awk '{if (NR <= %s) print $0}'"
                                    root (ffip-join-patterns)
                                    ffip-find-options ffip-limit))))))
 
@@ -146,25 +146,30 @@ directory they are found in so that they are unique."
   "According to this number we soert the files"
   (float-time (nth 4 (file-attributes filename))))
 
+(defun ffap-buffer-in-alist (buf file-alist)
+  (let ((fname (buffer-file-name buf))
+	(project-root (expand-file-name (ffip-project-root))))
+    (if fname
+	(string-prefix-p project-root fname) ; an open file may be excluded due to file limit restrictions
+	;; (rassoc (expand-file-name fname) file-alist)
+      nil)))
+
 (defun ffip-sort-file-alist (file-alist)
   "Show them in buffer order"
   (let ((top nil))
-    (loop for tuple in (reverse (delq nil  ;; The tuples we need to push up in reverse order
-				      (mapcar (lambda (buf)
-						(let ((fname (buffer-file-name buf)))
-						  (cond (fname
-							 (rassoc (expand-file-name fname) file-alist)))))
-					      (buffer-list))))
-	  do
-	  ;; (delete* tuple file-alist :test 'eq) ;; fails to delete the first element
-	  (setq file-alist (delete tuple file-alist))
-	  (push tuple top))
+    ;; Move open files from `fil to TOP in the order they are found
+    (dolist (buf-in-project (reverse (delete-if-not '(lambda (buf) (ffap-buffer-in-alist buf file-alist)) (buffer-list))))
+      (setq file-alist (delete-if
+			(lambda (entry) (string= (cdr entry) (buffer-file-name buf-in-project)))
+			file-alist))
+      (push (cons (buffer-name  buf-in-project) (buffer-file-name buf-in-project)) top)) ; If a file is open in a buffer we prefer the buffer name anyway
 
-    (let ((file-alist (sort file-alist (lambda (f1 f2)
+    ;; Sort the remaining files by modification date
+    (let ((sorted-file-alist (sort file-alist (lambda (f1 f2)
 					 (> (ffip-mtime (cdr f1)) (ffip-mtime (cdr f2)))))))
       (if (string= (cdar top) (buffer-file-name (current-buffer)))
-	  (append (cdr top) file-alist (list (car top)))
-	(append top file-alist)))))
+	  (append (cdr top) sorted-file-alist (list (car top)))
+	(append top sorted-file-alist)))))
 
 
 ;;;###autoload
