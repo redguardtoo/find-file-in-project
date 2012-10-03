@@ -182,7 +182,7 @@ directory they are found in so that they are unique."
 	      (pushnew (cons (ffip-project-root) buf) projects :test (lambda (x y) (string= (car x) (car y))))
 	    (setq projects (adjoin (cons (ffip-project-root) buf) projects))))))
     (switch-to-buffer
-     (assoc (completing-read "Jump to open project: " projects) 'projects))))
+     (assoc (completing-read "Jump to open project: " projects) projects))))
 
 ;;;###autoload
 (defun find-file-in-project ()
