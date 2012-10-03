@@ -191,7 +191,6 @@ directory they are found in so that they are unique."
 	   (chosen (if (and (boundp 'ido-mode) ido-mode)
 		       (ido-completing-read "Jump to open project: " barel-roots)
 		     (completing-read "jump to open project: " barel-roots))))
-      (message (format "Project roots found: %s" (princ barel-roots)))
       (switch-to-buffer
        (cdr (assoc chosen projects))))))
 
