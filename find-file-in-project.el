@@ -85,7 +85,7 @@ Use this to exclude portions of your project: \"-not -regex \\\".*svn.*\\\"\".")
 
 This overrides variable `ffip-project-root' when set.")
 
-(defvar ffip-limit 512
+(defvar ffip-limit 50
   "Limit results to this many files.")
 
 (defvar ffip-full-paths nil
