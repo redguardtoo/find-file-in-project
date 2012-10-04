@@ -146,18 +146,19 @@ directory they are found in so that they are unique."
   "According to this number we soert the files"
   (float-time (nth 4 (file-attributes filename))))
 
-(defun ffap-buffer-in-current-project (buf)
+(defun ffip-buffer-in-project-p (buf &optional project-root)
+  "Check if buffer is in project. If project root is nil try `ffip-project-root'"
   (let ((fname (buffer-file-name buf))
-	(project-root (expand-file-name (ffip-project-root))))
+	(proot (if project-root (expand-file-name project-root) (expand-file-name (ffip-project-root)))))
     (if fname
-	(string-prefix-p project-root fname) ; an open file may be excluded due to file limit restrictions
+	(string-prefix-p proot fname) ; an open file may be excluded due to file limit restrictions
       nil)))
 
 (defun ffip-sort-file-alist (file-alist)
   "Show them in buffer order"
   (let ((top nil))
     ;; Move open files from `fil to TOP in the order they are found
-    (dolist (buf-in-project (reverse (delete-if-not '(lambda (buf) (ffap-buffer-in-current-project buf)) (buffer-list))))
+    (dolist (buf-in-project (reverse (delete-if-not '(lambda (buf) (ffip-buffer-in-project-p buf)) (buffer-list))))
       (setq file-alist (delete-if
 			(lambda (entry) (string= (cdr entry) (buffer-file-name buf-in-project)))
 			file-alist))
@@ -175,22 +176,24 @@ directory they are found in so that they are unique."
   (append (cdr l) (list (car l))))
 
 (defun ffip-open-projects ()
-  "Prompt to switch to the last edited file of an open project"
+  "Prompt to switch to the last edited file of an open
+project. Projects are shown in the order they were last
+accessed."
   (interactive)
   (let (projects)
     (dolist (buf (buffer-list))
       (with-current-buffer buf
 	(when (and (buffer-file-name buf) (ffip-project-root))
 	  (if projects
-	      (pushnew (cons (ffip-project-root) buf) projects :test (lambda (x y) (string= (car x) (car y))))
-	    (setq projects (adjoin (cons (ffip-project-root) buf) projects))))))
+	      (pushnew (cons (expand-file-name (ffip-project-root)) buf) projects :test (lambda (x y) (string= (car x) (car y))))
+	    (setq projects (adjoin (cons (expand-file-name (ffip-project-root)) buf) projects))))))
 
     (let* ((project-roots (mapcar 'car (reverse projects)))
-	   (barel-roots (if (string-prefix-p (expand-file-name (car project-roots)) (buffer-file-name (current-buffer)))
+	   (barel-roots (if (ffip-buffer-in-project-p (current-buffer) (car project-roots))
 			    (ffip-barel-shift project-roots) project-roots))
-	   (chosen (if (and (boundp 'ido-mode) ido-mode)
-		       (ido-completing-read "Jump to open project: " barel-roots)
-		     (completing-read "jump to open project: " barel-roots))))
+	   (chosen (expand-file-name (if (and (boundp 'ido-mode) ido-mode)
+					 (ido-completing-read "Jump to open project: " barel-roots)
+				       (completing-read "jump to open project: " barel-roots)))))
       (switch-to-buffer
        (cdr (assoc chosen projects))))))
 
