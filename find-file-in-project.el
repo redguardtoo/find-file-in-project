@@ -62,6 +62,9 @@
 
 (require 'cl)
 
+(defvar ffip-filesystem-remote-server nil
+  "On mounted filesystems you can run `find' via ssh.")
+
 (defvar ffip-project-file ".git"
   "The file that should be used to define a project root.
 
@@ -85,7 +88,7 @@ Use this to exclude portions of your project: \"-not -regex \\\".*svn.*\\\"\".")
 
 This overrides variable `ffip-project-root' when set.")
 
-(defvar ffip-limit 50
+(defvar ffip-limit 512
   "Limit results to this many files.")
 
 (defvar ffip-full-paths nil
@@ -136,10 +139,14 @@ directory they are found in so that they are unique."
                     (ffip-uniqueify file-cons))
                   (add-to-list 'file-alist file-cons)
                   file-cons)))
-            (split-string (shell-command-to-string
-                           (format "find %s -type f \\( %s \\) %s  | awk '{if (NR <= %s) print $0}'"
-                                   root (ffip-join-patterns)
-                                   ffip-find-options ffip-limit))))))
+	    (let ((default-directory
+		    (if ffip-filesystem-remote-server
+			(format "/ssh:%s:/%s" ffip-filesystem-remote-server default-directory)
+		      default-directory)))
+	      (split-string (shell-command-to-string
+			     (format "find %s -type f \\( %s \\) %s  | awk '{if (NR <= %s) print $0}'"
+				     root (ffip-join-patterns)
+				     ffip-find-options ffip-limit)))))))
 
 
 (defun ffip-mtime (filename)
