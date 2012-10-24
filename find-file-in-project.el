@@ -62,6 +62,9 @@
 
 (require 'cl)
 
+(defvar ffip-filesystem-remote-server nil
+  "On mounted filesystems you can run `find' via ssh.")
+
 (defvar ffip-project-file ".git"
   "The file that should be used to define a project root.
 
@@ -69,7 +72,7 @@ May be set using .dir-locals.el. Checks each entry if set to a list.")
 
 (defvar ffip-patterns
   '("*.html" "*.org" "*.txt" "*.md" "*.el" "*.clj" "*.py" "*.rb" "*.js" "*.pl"
-    "*.sh" "*.erl" "*.hs" "*.ml")
+    "*.sh" "*.erl" "*.hs" "*.ml" "*.c" "*.h" ".cpp" "*.hpp" "*.cc")
   "List of patterns to look for with `find-file-in-project'.")
 
 (defvar ffip-find-options ""
@@ -136,10 +139,70 @@ directory they are found in so that they are unique."
                     (ffip-uniqueify file-cons))
                   (add-to-list 'file-alist file-cons)
                   file-cons)))
-            (split-string (shell-command-to-string
-                           (format "find %s -type f \\( %s \\) %s | head -n %s"
-                                   root (ffip-join-patterns)
-                                   ffip-find-options ffip-limit))))))
+	    (let ((default-directory
+		    (if ffip-filesystem-remote-server
+			(format "/ssh:%s:/%s" ffip-filesystem-remote-server default-directory)
+		      default-directory)))
+	      (split-string (shell-command-to-string
+			     (format "find %s -type f \\( %s \\) %s  | awk '{if (NR <= %s) print $0}'"
+				     root (ffip-join-patterns)
+				     ffip-find-options ffip-limit)))))))
+
+
+(defun ffip-mtime (filename)
+  "According to this number we soert the files"
+  (float-time (nth 4 (file-attributes filename))))
+
+(defun ffip-buffer-in-project-p (buf &optional project-root)
+  "Check if buffer is in project. If project root is nil try `ffip-project-root'"
+  (let ((fname (buffer-file-name buf))
+	(proot (if project-root (expand-file-name project-root) (expand-file-name (ffip-project-root)))))
+    (if fname
+	(string-prefix-p proot fname) ; an open file may be excluded due to file limit restrictions
+      nil)))
+
+(defun ffip-sort-file-alist (file-alist)
+  "Show them in buffer order"
+  (let ((top nil))
+    ;; Move open files from `fil to TOP in the order they are found
+    (dolist (buf-in-project (reverse (delete-if-not '(lambda (buf) (ffip-buffer-in-project-p buf)) (buffer-list))))
+      (setq file-alist (delete-if
+			(lambda (entry) (string= (cdr entry) (buffer-file-name buf-in-project)))
+			file-alist))
+      (push (cons (buffer-name  buf-in-project) (buffer-file-name buf-in-project)) top)) ; If a file is open in a buffer we prefer the buffer name anyway
+
+    ;; Sort the remaining files by modification date
+    (let ((sorted-file-alist (sort file-alist (lambda (f1 f2)
+						(> (ffip-mtime (cdr f1)) (ffip-mtime (cdr f2)))))))
+      (if (string= (cdar top) (buffer-file-name (current-buffer)))
+	  (append (cdr top) sorted-file-alist (list (car top)))
+	(append top sorted-file-alist)))))
+
+(defun ffip-barel-shift (l)
+  "The current buffer at the end."
+  (append (cdr l) (list (car l))))
+
+(defun ffip-open-projects ()
+  "Prompt to switch to the last edited file of an open
+project. Projects are shown in the order they were last
+accessed."
+  (interactive)
+  (let (projects)
+    (dolist (buf (buffer-list))
+      (with-current-buffer buf
+	(when (and (buffer-file-name buf) (ffip-project-root))
+	  (if projects
+	      (pushnew (cons (expand-file-name (ffip-project-root)) buf) projects :test (lambda (x y) (string= (car x) (car y))))
+	    (setq projects (adjoin (cons (expand-file-name (ffip-project-root)) buf) projects))))))
+
+    (let* ((project-roots (mapcar 'car (reverse projects)))
+	   (barel-roots (if (ffip-buffer-in-project-p (current-buffer) (car project-roots))
+			    (ffip-barel-shift project-roots) project-roots))
+	   (chosen (expand-file-name (if (and (boundp 'ido-mode) ido-mode)
+					 (ido-completing-read "Jump to open project: " barel-roots)
+				       (completing-read "jump to open project: " barel-roots)))))
+      (switch-to-buffer
+       (cdr (assoc chosen projects))))))
 
 ;;;###autoload
 (defun find-file-in-project ()
@@ -149,11 +212,11 @@ The project's scope is defined as the first directory containing
 an `.emacs-project' file.  You can override this by locally
 setting the variable `ffip-project-root'."
   (interactive)
-  (let* ((project-files (ffip-project-files))
-         (files (mapcar 'car project-files))
-         (file (if (and (boundp 'ido-mode) ido-mode)
-                   (ido-completing-read "Find file in project: " files)
-                 (completing-read "Find file in project: " files))))
+  (let* ((project-files (ffip-sort-file-alist (ffip-project-files)))
+	 (files (mapcar 'car project-files))
+	 (file (if (and (boundp 'ido-mode) ido-mode)
+		   (ido-completing-read "Find file in project: " files)
+		 (completing-read "Find file in project: " files))))
     (find-file (cdr (assoc file project-files)))))
 
 ;;;###autoload
