@@ -122,24 +122,24 @@ This overrides variable `ffip-project-root' when set.")
 
 Files with duplicate filenames are suffixed with the name of the
 directory they are found in so that they are unique."
-  (let ((file-alist nil)
-        (root (expand-file-name (or ffip-project-root (ffip-project-root)
-                                    (error "No project root found")))))
-    (mapcar (lambda (file)
-              (if ffip-full-paths
-                  (cons (substring (expand-file-name file) (length root))
-                        (expand-file-name file))
-                (let ((file-cons (cons (file-name-nondirectory file)
-                                       (expand-file-name file))))
-                  (when (assoc (car file-cons) file-alist)
-                    (ffip-uniqueify (assoc (car file-cons) file-alist))
-                    (ffip-uniqueify file-cons))
-                  (add-to-list 'file-alist file-cons)
-                  file-cons)))
-            (split-string (shell-command-to-string
+  (let* ((root (expand-file-name (or ffip-project-root (ffip-project-root)
+                                     (error "No project root found"))))
+         (file-list (split-string (shell-command-to-string
                            (format "find %s -type f \\( %s \\) %s | head -n %s"
                                    root (ffip-join-patterns)
-                                   ffip-find-options ffip-limit))))))
+                                   ffip-find-options ffip-limit))))
+         (file-hash (make-hash-table :test 'equal :size (length file-list))))
+    (mapcar (lambda (file)
+              (if ffip-full-paths
+                  (cons (substring (expand-file-name file root) (length root))
+                        (expand-file-name file))
+                (let ((file-cons (cons (file-name-nondirectory file)
+                                        (expand-file-name file root))))
+                  (if (gethash (car file-cons) file-hash nil)
+                      (ffip-uniqueify file-cons)
+                    (puthash (car file-cons) (cdr file-cons) file-hash))
+                  file-cons)))
+            file-list)))
 
 ;;;###autoload
 (defun find-file-in-project ()
