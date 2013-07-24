@@ -1,9 +1,9 @@
 ;;; find-file-in-project.el --- Find files in a project quickly.
 
 ;; Copyright (C) 2006-2009, 2011-2012
-;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
+;;   Phil Hagelberg, Doug Alcorn, Will Farrington and Brian Coleman
 
-;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
+;; Author: Phil Hagelberg, Doug Alcorn, Will Farrington and Brian Coleman
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/FindFileInProject
 ;; Git: git://github.com/technomancy/find-file-in-project.git
 ;; Version: 3.2
