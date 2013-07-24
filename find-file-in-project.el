@@ -91,6 +91,13 @@ This overrides variable `ffip-project-root' when set.")
 (defvar ffip-full-paths nil
   "If non-nil, show fully project-relative paths.")
 
+(defvar ffip-project-file-cache (make-hash-table :test 'equal)
+  "A cache of project files keyed by project head")
+
+(defvar ffip-project-head-cache (make-hash-table :test 'equal)
+  "A cache of the project heads by project root. Used to
+  invalidate stale entries in ffip-project-file-cache")
+
 (defun ffip-trim-string (string)
   "Trims leading and trailing whitespace from a string"
   (replace-regexp-in-string "[\t\n ]" "" string))
@@ -116,37 +123,8 @@ This overrides variable `ffip-project-root' when set.")
          (ref-mapping (ffip-file-contents head-file-path))
          (ref (ffip-trim-string (nth 1 (split-string ref-mapping ": " t))))
          (ref-file-path (format "%s/.git/%s" root ref))
-         (hash (ffip-trim-string ffip-file-contents ref-file-path)))
+         (hash (ffip-trim-string (ffip-file-contents ref-file-path))))
     hash))
-
-(defun ffip-project-head (root)
-  "If the profect root is a git repository returns the sha of HEAD"
-  (let* ((buffer-name "ffip")
-         (buffer (get-buffer-create buffer-name))
-         (head-file-name (format "%s/.git/HEAD" root))
-         (hash (if (file-exists-p head-file-name)
-                   (save-excursion
-                     (set-buffer buffer)
-                     (insert-file-contents head-file-name)
-                     (let* ((ref-mapping (buffer-substring
-                                          (point-min) (point-max)))
-                            (ref (ffip-trim-string
-                                  (nth 1 (split-string ref-mapping ": " t))))
-                            (ref-file-name (format "%s/.git/%s" root ref)))
-                       (erase-buffer)
-                       (insert-file-contents ref-file-name)
-                       (ffip-trim-string (buffer-substring
-                                          (point-min) (point-max)))))
-                 nil)))
-    (kill-buffer buffer)
-    hash))
-
-(defvar ffip-project-file-cache (make-hash-table :test 'equal)
-  "A cache of project files keyed by project head")
-
-(defvar ffip-project-head-cache (make-hash-table :test 'equal)
-  "A cache of the project heads by project root. Used to
-  invalidate stale entries in ffip-project-file-cache")
 
 (defun ffip-lookup-project-head (root)
   "Lookup the head for a given project root"
