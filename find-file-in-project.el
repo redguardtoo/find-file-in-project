@@ -95,7 +95,30 @@ This overrides variable `ffip-project-root' when set.")
   "Trims leading and trailing whitespace from a string"
   (replace-regexp-in-string "[\t\n ]" "" string))
 
-;; TODO add a function that returns the contents of a file as a string
+(defun ffip-file-contents (file-path)
+  "Returns the contents of a file as a string or nil"
+  (let* ((buffer-name "ffip")
+         (buffer (get-buffer-create buffer-name))
+         (content (if (file-exists-p file-path)
+                      (save-excursion
+                        (set-buffer buffer)
+                        (insert-file-contents file-path)
+                        (message "content: %s" (buffer-substring (point-min) (point-max)))
+                        (buffer-substring (point-min) (point-max)))
+                    nil)))
+    (message "%s %s" file-path (file-exists-p file-path))
+    (kill-buffer buffer)
+    content))
+
+(defun ffip-project-head (root)
+  "If the profect root is a git repository returns the sha of HEAD"
+  (let* ((head-file-path (format "%s/.git/HEAD" root))
+         (ref-mapping (ffip-file-contents head-file-path))
+         (ref (ffip-trim-string (nth 1 (split-string ref-mapping ": " t))))
+         (ref-file-path (format "%s/.git/%s" root ref))
+         (hash (ffip-trim-string ffip-file-contents ref-file-path)))
+    hash))
+
 (defun ffip-project-head (root)
   "If the profect root is a git repository returns the sha of HEAD"
   (let* ((buffer-name "ffip")
