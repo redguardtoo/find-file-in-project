@@ -91,6 +91,64 @@ This overrides variable `ffip-project-root' when set.")
 (defvar ffip-full-paths nil
   "If non-nil, show fully project-relative paths.")
 
+(defun ffip-trim-string (string)
+  "Trims leading and trailing whitespace from a string"
+  (replace-regexp-in-string "[\t\n ]" "" string))
+
+;; TODO add a function that returns the contents of a file as a string
+(defun ffip-project-head (root)
+  "If the profect root is a git repository returns the sha of HEAD"
+  (let* ((buffer-name "ffip")
+         (buffer (get-buffer-create buffer-name))
+         (head-file-name (format "%s/.git/HEAD" root))
+         (hash (if (file-exists-p head-file-name)
+                   (save-excursion
+                     (set-buffer buffer)
+                     (insert-file-contents head-file-name)
+                     (let* ((ref-mapping (buffer-substring
+                                          (point-min) (point-max)))
+                            (ref (ffip-trim-string
+                                  (nth 1 (split-string ref-mapping ": " t))))
+                            (ref-file-name (format "%s/.git/%s" root ref)))
+                       (erase-buffer)
+                       (insert-file-contents ref-file-name)
+                       (ffip-trim-string (buffer-substring
+                                          (point-min) (point-max)))))
+                 nil)))
+    (kill-buffer buffer)
+    hash))
+
+(defvar ffip-project-file-cache (make-hash-table :test 'equal)
+  "A cache of project files keyed by project head")
+
+(defvar ffip-project-head-cache (make-hash-table :test 'equal)
+  "A cache of the project heads by project root. Used to
+  invalidate stale entries in ffip-project-file-cache")
+
+(defun ffip-lookup-project-head (root)
+  "Lookup the head for a given project root"
+  (gethash root ffip-project-head-cache nil))
+
+(defun ffip-lookup-project-files (root)
+  "Lookup the project files for a given project root"
+  (let* ((head (ffip-lookup-project-head root))
+         (current-head (ffip-project-head root))
+         (files (if (and head (string= head current-head))
+                    (gethash head ffip-project-file-cache nil)
+                  (progn (remhash root ffip-project-head-cache)
+                         (remhash head ffip-project-file-cache)
+                         nil))))
+    files))
+
+(defun ffip-update-project-files (root files)
+  "Update the list of project files for a given project root"
+  (let ((head (or (ffip-lookup-project-head root)
+                  (ffip-project-head root))))
+    (if head
+        (progn (puthash root head ffip-project-head-cache)
+               (puthash head files ffip-project-file-cache)
+               (message "Updated project file cache for %s %s" root head)))))
+
 (defun ffip-project-root ()
   "Return the root of the project."
   (let ((project-root (or ffip-project-root
@@ -122,24 +180,32 @@ This overrides variable `ffip-project-root' when set.")
 
 Files with duplicate filenames are suffixed with the name of the
 directory they are found in so that they are unique."
-  (let ((file-alist nil)
-        (root (expand-file-name (or ffip-project-root (ffip-project-root)
-                                    (error "No project root found")))))
-    (mapcar (lambda (file)
-              (if ffip-full-paths
-                  (cons (substring (expand-file-name file) (length root))
-                        (expand-file-name file))
-                (let ((file-cons (cons (file-name-nondirectory file)
-                                       (expand-file-name file))))
-                  (when (assoc (car file-cons) file-alist)
-                    (ffip-uniqueify (assoc (car file-cons) file-alist))
-                    (ffip-uniqueify file-cons))
-                  (add-to-list 'file-alist file-cons)
-                  file-cons)))
-            (split-string (shell-command-to-string
-                           (format "find %s -type f \\( %s \\) %s | head -n %s"
-                                   root (ffip-join-patterns)
-                                   ffip-find-options ffip-limit))))))
+  (let* ((file-alist nil)
+         (root (expand-file-name (or ffip-project-root (ffip-project-root)
+                                     (error "No project root found"))))
+         (files (or (ffip-lookup-project-files root)
+                    (mapcar (lambda (file)
+                              (if ffip-full-paths
+                                  (cons (substring (expand-file-name file)
+                                                   (length root))
+                                        (expand-file-name file))
+                                (let ((file-cons (cons (file-name-nondirectory
+                                                        file)
+                                                       (expand-file-name
+                                                        file))))
+                                  (when (assoc (car file-cons) file-alist)
+                                    (ffip-uniqueify (assoc (car file-cons)
+                                                           file-alist))
+                                    (ffip-uniqueify file-cons))
+                                  (add-to-list 'file-alist file-cons)
+                                  file-cons)))
+                            (split-string (shell-command-to-string
+                                           (format
+                                            "find %s -type f \\( %s \\) %s | head -n %s"
+                                            root (ffip-join-patterns)
+                                            ffip-find-options ffip-limit)))))))
+    (ffip-update-project-files root files)
+    files))
 
 ;;;###autoload
 (defun find-file-in-project ()
