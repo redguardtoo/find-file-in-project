@@ -95,7 +95,7 @@ This overrides variable `ffip-project-root' when set.")
   "A cache of project files keyed by project head")
 
 (defvar ffip-project-head-cache (make-hash-table :test 'equal)
-  "A cache of the project heads by project root. Used to
+  "A cache of the project heads keyed by project root. Used to
   invalidate stale entries in ffip-project-file-cache")
 
 (defun ffip-trim-string (string)
@@ -110,10 +110,8 @@ This overrides variable `ffip-project-root' when set.")
                       (save-excursion
                         (set-buffer buffer)
                         (insert-file-contents file-path)
-                        (message "content: %s" (buffer-substring (point-min) (point-max)))
                         (buffer-substring (point-min) (point-max)))
                     nil)))
-    (message "%s %s" file-path (file-exists-p file-path))
     (kill-buffer buffer)
     content))
 
