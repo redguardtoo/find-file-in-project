@@ -139,7 +139,7 @@ directory they are found in so that they are unique."
             (split-string (shell-command-to-string
                            (format "find %s -type f \\( %s \\) %s | head -n %s"
                                    root (ffip-join-patterns)
-                                   ffip-find-options ffip-limit))))))
+                                   ffip-find-options ffip-limit)) "[\r\n]+"))))
 
 ;;;###autoload
 (defun find-file-in-project ()
