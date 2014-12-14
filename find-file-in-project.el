@@ -173,6 +173,7 @@ setting the variable `ffip-project-root'."
 ;;;###autoload
 (progn
   (put 'ffip-patterns 'safe-local-variable 'listp)
+  (put 'ffip-prune-patterns 'safe-local-variable 'listp)
   (put 'ffip-find-options 'safe-local-variable 'stringp)
   (put 'ffip-project-file 'safe-local-variable 'stringp)
   (put 'ffip-project-root 'safe-local-variable 'stringp)
