@@ -126,7 +126,7 @@ This overrides variable `ffip-project-root' when set.")
 (defvar ffip-limit 0
   "Limit results to this many files. 0 means no limit")
 
-(defvar ffip-full-paths nil
+(defvar ffip-full-paths t
   "If non-nil, show fully project-relative paths.")
 
 (defun ffip-project-root ()
@@ -161,12 +161,6 @@ This overrides variable `ffip-project-root' when set.")
          ((executable-find "e:\\\\cygwin\\\\bin\\\\find")
           (setq rlt "e:\\\\cygwin\\\\bin\\\\find"))))
     rlt))
-
-(defun ffip-uniqueify (file-cons)
-  "Set the car of FILE-CONS to include the directory name plus the file name."
-  (setcar file-cons
-          (concat (cadr (reverse (split-string (cdr file-cons) "/"))) "/"
-                  (car file-cons))))
 
 (defun ffip-join-patterns ()
   "Turn `ffip-patterns' into a string that `find' can use."
@@ -212,6 +206,7 @@ directory they are found in so that they are unique."
                       (if ffip-find-executable ffip-find-executable (ffip--guess-gnu-find))
                       (ffip-prune-patterns) (ffip-join-patterns)
                       ffip-find-options (ffip-limit-find-results)))
+
     ;; (message "run cmd at %s: %s" default-directory cmd)
     (setq rlt
           (mapcar (lambda (file)
@@ -220,9 +215,6 @@ directory they are found in so that they are unique."
                               (expand-file-name file))
                       (let ((file-cons (cons (file-name-nondirectory file)
                                              (expand-file-name file))))
-                        (when (assoc (car file-cons) file-alist)
-                          (ffip-uniqueify (assoc (car file-cons) file-alist))
-                          (ffip-uniqueify file-cons))
                         (add-to-list 'file-alist file-cons)
                         file-cons)))
                   (split-string (shell-command-to-string cmd))))
