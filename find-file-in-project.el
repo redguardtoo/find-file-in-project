@@ -70,13 +70,34 @@
 May be set using .dir-locals.el. Checks each entry if set to a list.")
 
 (defvar ffip-patterns
-  '("*.html" "*.org" "*.txt" "*.md" "*.el" "*.clj" "*.py" "*.rb" "*.js" "*.pl"
-    "*.sh" "*.erl" "*.hs" "*.ml")
+  '("*.*")
   "List of patterns to look for with `find-file-in-project'.")
 
 (defvar ffip-prune-patterns
-  '(".git")
-  "List of directory patterns to not decend into when listing files in `find-file-in-project'.")
+  '(".git"
+    ".svn"
+    ".cvs"
+    ".bzr"
+    ".hg"
+    "node_modules"
+    "bower_components"
+    ".DS_Store"
+    "TAGS"
+    "GTAGS"
+    "GPATH"
+    "GRTAGS"
+    "*flymake"
+    "*.class"
+    "*.war"
+    "*.jar"
+    "#*#"
+    "*.swp"
+    "*~"
+    "*.pyc"
+    "*.elc"
+    "*min.js"
+    "*min.css")
+  "List of directory/file patterns to not decend into when listing files in `find-file-in-project'.")
 
 (defvar ffip-find-options ""
   "Extra options to pass to `find' when using `find-file-in-project'.
@@ -169,11 +190,18 @@ This overrides variable `ffip-project-root' when set.")
 Files with duplicate filenames are suffixed with the name of the
 directory they are found in so that they are unique."
   (let (rlt
+        cmd
         (old-default-directory default-directory)
         (file-alist nil)
         (root (expand-file-name (or ffip-project-root (ffip-project-root)
                                     (error "No project root found")))))
     (cd (file-name-as-directory root))
+    ;; make the prune pattern more general
+    (setq cmd (format "%s . \\( %s \\) -prune -o -type f \\( %s \\) -print %s %s"
+                      (if ffip-find-executable ffip-find-executable (ffip--guess-gnu-find))
+                      (ffip-prune-patterns) (ffip-join-patterns)
+                      ffip-find-options (ffip-limit-find-results)))
+    ;; (message "run cmd at %s: %s" default-directory cmd)
     (setq rlt
           (mapcar (lambda (file)
                     (if ffip-full-paths
@@ -186,11 +214,7 @@ directory they are found in so that they are unique."
                           (ffip-uniqueify file-cons))
                         (add-to-list 'file-alist file-cons)
                         file-cons)))
-                  (split-string (shell-command-to-string
-                                 (format "%s . -type d -a \\( %s \\) -prune -o -type f \\( %s \\) -print %s %s"
-                                         (if ffip-find-executable ffip-find-executable (ffip--guess-gnu-find))
-                                         (ffip-prune-patterns) (ffip-join-patterns)
-                                         ffip-find-options (ffip-limit-find-results))))))
+                  (split-string (shell-command-to-string cmd))))
     ;; restore the original default-directory
     (cd old-default-directory)
     rlt))
