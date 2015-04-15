@@ -1,12 +1,12 @@
 ;;; find-file-in-project.el --- Find files in a project quickly.
 
-;; Copyright (C) 2006-2009, 2011-2012
+;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
-
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
+;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/FindFileInProject
 ;; Git: git://github.com/technomancy/find-file-in-project.git
-;; Version: 3.3
+;; Version: 3.4
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
 ;; EmacsWiki: FindFileInProject
@@ -43,14 +43,25 @@
 
 ;; If you have so many files that it becomes unwieldy, you can set
 ;; `ffip-find-options' to a string which will be passed to the `find'
-;; invocation in order to exclude irrelevant subdirectories.  For
-;; instance, in a Ruby on Rails project, you may be interested in all
+;; invocation in order to exclude irrelevant subdirectories/files.
+;; For instance, in a Ruby on Rails project, you are interested in all
 ;; .rb files that don't exist in the "vendor" directory.  In that case
 ;; you could set `ffip-find-options' to "-not -regex \".*vendor.*\"".
 
 ;; All these variables may be overridden on a per-directory basis in
 ;; your .dir-locals.el.  See (info "(Emacs) Directory Variables") for
 ;; details.
+
+;; Ivy.el from https://github.com/abo-abo/swiper could be automatically
+;; used if you insert below line into ~/.emacs,
+;;   (autoload 'ivy-read "ivy")
+;; If Ivy.el is not avaliable, ido will be used.
+
+;; GNU Find is required. It can be installed,
+;;   - though `brew' on OS X
+;;   - through `cygwin' on Windows.
+
+;; This program works on Windows/Cygwin/Linux/Mac Emacs.
 
 ;; Recommended binding: (global-set-key (kbd "C-x f") 'find-file-in-project)
 
