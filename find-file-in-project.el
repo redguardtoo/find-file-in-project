@@ -55,6 +55,10 @@
 ;; Ivy.el from https://github.com/abo-abo/swiper could be automatically
 ;; used if you insert below line into ~/.emacs,
 ;;   (autoload 'ivy-read "ivy")
+;; In Ivy.el, SPACE is translated to regex ".*".
+;; For exmaple, the search string "dec fun pro" is transformed into
+;; a regex "\\(dec\\).*\\(fun\\).*\\(pro\\)"
+;;
 ;; If Ivy.el is not avaliable, ido will be used.
 
 ;; GNU Find is required. It can be installed,
@@ -102,6 +106,7 @@ May be set using .dir-locals.el. Checks each entry if set to a list.")
     "*.war"
     "*.jar"
     "#*#"
+    ".#*"
     "*.swp"
     "*~"
     "*.pyc"
@@ -211,13 +216,15 @@ directory they are found in so that they are unique."
     (setq rlt
           (mapcar (lambda (file)
                     (if ffip-full-paths
-                        (cons (substring (expand-file-name file) (length root))
+                        (cons (replace-regexp-in-string "^\./" "" file)
                               (expand-file-name file))
                       (let ((file-cons (cons (file-name-nondirectory file)
                                              (expand-file-name file))))
                         (add-to-list 'file-alist file-cons)
                         file-cons)))
-                  (split-string (shell-command-to-string cmd))))
+                  ;; #15 improving handling of directories containing space
+                  (split-string (shell-command-to-string cmd) "[\r\n]+")))
+
     ;; restore the original default-directory
     (cd old-default-directory)
     rlt))
@@ -232,7 +239,10 @@ setting the variable `ffip-project-root'."
   (interactive)
   (let* ((project-files (ffip-project-files))
          (files (mapcar 'car project-files))
-         (file (ffip-completing-read "Find file in project: " files)))
+         file root)
+    (setq root (file-name-nondirectory (directory-file-name (or ffip-project-root (ffip-project-root)))))
+
+    (setq file (ffip-completing-read (format "Find file in %s/: " root)  files))
     (find-file (cdr (assoc file project-files)))))
 
 ;;;###autoload
