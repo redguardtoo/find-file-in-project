@@ -114,7 +114,8 @@ May be set using .dir-locals.el. Checks each entry if set to a list.")
     "*.pyc"
     "*.elc"
     "*min.js"
-    "*min.css")
+    "*min.css"
+    ".cask")
   "List of directory/file patterns to not descend into when listing files in `find-file-in-project'.")
 
 (defvar ffip-find-options ""
