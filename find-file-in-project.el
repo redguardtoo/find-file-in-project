@@ -229,7 +229,7 @@ directory they are found in so that they are unique."
                         (add-to-list 'file-alist file-cons)
                         file-cons)))
                   ;; #15 improving handling of directories containing space
-                  (split-string (shell-command-to-string cmd) "[\r\n]+")))
+                  (split-string (shell-command-to-string cmd) "[\r\n]+" t)))
 
     ;; restore the original default-directory
     (cd old-default-directory)
