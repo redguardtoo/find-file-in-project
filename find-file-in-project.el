@@ -189,11 +189,11 @@ This overrides variable `ffip-project-root' when set.")
   (let (rlt)
     (cond
      ((fboundp 'ivy-read)
-      (setq rlt (ivy-read prompt files)))
+      (setq rlt (ivy-read prompt collection)))
      ((and (boundp 'ido-mode) ido-mode)
-      (setq rlt (ido-completing-read prompt files)))
+      (setq rlt (ido-completing-read prompt collection)))
      (t
-      (setq rlt (completing-read prompt files))))
+      (setq rlt (completing-read prompt collection))))
     rlt))
 
 (defun ffip-project-files ()
