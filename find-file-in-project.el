@@ -6,7 +6,7 @@
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/FindFileInProject
 ;; Git: git://github.com/technomancy/find-file-in-project.git
-;; Version: 3.4
+;; Version: 3.5
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
 ;; EmacsWiki: FindFileInProject
@@ -230,6 +230,12 @@ directory they are found in so that they are unique."
     ;; restore the original default-directory
     (cd old-default-directory)
     rlt))
+
+;;;###autoload
+(defun ffip-current-full-filename-match-pattern-p (REGEX)
+  "Is current full file name (including directory) match the REGEX?"
+  (let ((dir (if (buffer-file-name) (buffer-file-name) "")))
+    (string-match-p REGEX dir)))
 
 ;;;###autoload
 (defun find-file-in-project ()
