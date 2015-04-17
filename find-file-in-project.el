@@ -80,8 +80,7 @@
 
 May be set using .dir-locals.el. Checks each entry if set to a list.")
 
-(defvar ffip-patterns
-  '("*.*")
+(defvar ffip-patterns nil
   "List of patterns to look for with `find-file-in-project'.")
 
 (defvar ffip-prune-patterns
@@ -114,7 +113,8 @@ May be set using .dir-locals.el. Checks each entry if set to a list.")
     "*.pyc"
     "*.elc"
     "*min.js"
-    "*min.css")
+    "*min.css"
+    ".cask")
   "List of directory/file patterns to not descend into when listing files in `find-file-in-project'.")
 
 (defvar ffip-find-options ""
@@ -171,8 +171,12 @@ This overrides variable `ffip-project-root' when set.")
 
 (defun ffip-join-patterns ()
   "Turn `ffip-patterns' into a string that `find' can use."
-  (mapconcat (lambda (pat) (format "-name \"%s\"" pat))
-             ffip-patterns " -or "))
+  (if ffip-patterns
+      (format "\\( %s \\)"
+              (mapconcat (lambda (pat) (format "-name \"%s\"" pat))
+                         ffip-patterns " -or "))
+
+    ""))
 
 (defun ffip-prune-patterns ()
   "Turn `ffip-prune-patterns' into a string that `find' can use."
@@ -209,7 +213,7 @@ directory they are found in so that they are unique."
                                     (error "No project root found")))))
     (cd (file-name-as-directory root))
     ;; make the prune pattern more general
-    (setq cmd (format "%s . \\( %s \\) -prune -o -type f \\( %s \\) %s -print %s"
+    (setq cmd (format "%s . \\( %s \\) -prune -o -type f %s %s -print %s"
                       (if ffip-find-executable ffip-find-executable (ffip--guess-gnu-find))
                       (ffip-prune-patterns) (ffip-join-patterns)
                       ffip-find-options (ffip-limit-find-results)))
