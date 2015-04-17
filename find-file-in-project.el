@@ -59,7 +59,7 @@
 ;; For exmaple, the search string "dec fun pro" is transformed into
 ;; a regex "\\(dec\\).*\\(fun\\).*\\(pro\\)"
 ;;
-;; If Ivy.el is not avaliable, ido will be used.
+;; If Ivy.el is not available, ido will be used.
 
 ;; GNU Find is required. It can be installed,
 ;;   - though `brew' on OS X
@@ -68,10 +68,6 @@
 ;; This program works on Windows/Cygwin/Linux/Mac Emacs.
 
 ;; Recommended binding: (global-set-key (kbd "C-x f") 'find-file-in-project)
-
-;;; TODO:
-
-;; Add compatibility with BSD find (PDI; I can't virtualize OS X)
 
 ;;; Code:
 
@@ -113,7 +109,7 @@ May be set using .dir-locals.el. Checks each entry if set to a list.")
     "*.elc"
     "*min.js"
     "*min.css")
-  "List of directory/file patterns to not decend into when listing files in `find-file-in-project'.")
+  "List of directory/file patterns to not descend into when listing files in `find-file-in-project'.")
 
 (defvar ffip-find-options ""
   "Extra options to pass to `find' when using `find-file-in-project'.
