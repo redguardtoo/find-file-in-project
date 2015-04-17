@@ -32,7 +32,7 @@
 
 ;;; Commentary:
 
-;; This library provides a couple methods for quickly finding any file
+;; This program provides a couple methods for quickly finding any file
 ;; in a given project.  It depends on GNU find.
 
 ;; A project is found by searching up the directory tree until a file
@@ -61,8 +61,8 @@
 ;;
 ;; If Ivy.el is not available, ido will be used.
 
-;; GNU Find is required. It can be installed,
-;;   - though `brew' on OS X
+;; GNU Find can be installed,
+;;   - through `brew' on OS X
 ;;   - through `cygwin' on Windows.
 
 ;; This program works on Windows/Cygwin/Linux/Mac Emacs.
