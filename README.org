@@ -7,14 +7,14 @@ By default, it will *automatically* search file in project managed by [[http://g
 
 Features:
 - The only dependency is GNU find
-- Works on *Windows*/Cygwin/Linux/Mac
+- Works on Windows/Cygwin/Linux/Mac
 - Furthing tweaking of GNU find through flag `ffip-find-options` is possible
 * Install
 Please install through [[http://melpa.org/#/find-file-in-project][melpa]]
 * Setup
 It works out of the box for project using Git.
 
-If your project uses other VCS (subversion, for example), add below line into ~/.emacs:
+If you use other VCS (subversion, for example), insert below line into ~/.emacs:
 #+begin_src elisp
 (setq ffip-project-file ".svn")
 #+end_src
@@ -33,7 +33,7 @@ If your project uses other VCS (subversion, for example), add below line into ~/
   ;; for this project, I'm only interested certain types of files
   (setq-local ffip-patterns '("*.html" "*.js" "*.css" "*.java" "*.xml" "*.js")))
 #+end_src
-** Specify root directory explicitly on BOTH Cygwin and Windows
+** Specify root directory on Cygwin&Windows
 #+begin_src elisp
 (if (eq system-type 'windows-nt)
     (setq ffip-project-root "C:/Users/myname/projs/myproj1")
