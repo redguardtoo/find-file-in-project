@@ -19,7 +19,9 @@ If you use other VCS (subversion, for example), insert below line into ~/.emacs:
 (setq ffip-project-file ".svn")
 #+end_src
 * Usage
-`M-x find-file-in-project`
+- `M-x find-file-in-project` will start search immediately
+
+- `M-x find-file-in-project-by-selected` use the your selected region as keyword to search. Or you need provide the keyword if no region selected.
 * Tips
 ** Per project setup
 #+begin_src elisp
