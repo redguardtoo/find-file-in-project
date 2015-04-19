@@ -64,8 +64,9 @@
 ;; GNU Find can be installed,
 ;;   - through `brew' on OS X
 ;;   - through `cygwin' on Windows.
-
+;;
 ;; This program works on Windows/Cygwin/Linux/Mac Emacs.
+;; See https://github.com/technomancy/find-file-in-project for advanced tips
 
 ;; Recommended binding: (global-set-key (kbd "C-x f") 'find-file-in-project)
 
