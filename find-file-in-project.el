@@ -247,8 +247,9 @@ directory they are found in so that they are unique."
   "Prompt with a completing list of all files in the project to find one.
 
 The project's scope is defined as the first directory containing
-an `.emacs-project' file.  You can override this by locally
-setting the variable `ffip-project-root'."
+a `ffip-project-file' (It's value is \".git\" by default.
+
+You can override this by setting the variable `ffip-project-root'."
   (interactive)
   (let* ((project-files (ffip-project-files))
          (files (mapcar 'car project-files))
