@@ -19,9 +19,8 @@ If you use other VCS (subversion, for example), insert below line into ~/.emacs:
 (setq ffip-project-file ".svn")
 #+end_src
 * Usage
-- `M-x find-file-in-project` will start search immediately
-
-- `M-x find-file-in-project-by-selected` use the your selected region as keyword to search. Or you need provide the keyword if no region selected.
+- *`M-x find-file-in-project`* starts search immediately
+- *`M-x find-file-in-project-by-selected`* use the *selected region as keyword* to search. Or you need provide the keyword if no region selected.
 * Tips
 ** Per project setup
 #+begin_src elisp
@@ -44,13 +43,12 @@ If you use other VCS (subversion, for example), insert below line into ~/.emacs:
 ** Performance
 This program has no performance issues with 50,000+ files if you follow EITHER of following suggetions:
 
-Suggestion 1, Install [[https://github.com/abo-abo/swiper][Swiper]] and insert below code into your ~/.emacs:
+*Suggestion 1*, Install [[https://github.com/abo-abo/swiper][Swiper]] and insert below code into your ~/.emacs:
 #+begin_src elisp
 (autoload 'ivy-read "ivy")
 #+end_src
 Then Swiper's UI ivy will be used. That's all you need to do.
 
-Suggestion 2, If you don't like Swiper, the default [[http://emacswiki.org/emacs/InteractivelyDoThings][Ido]] will be used. It might be slow for 50K files. The issue could be *easily resolved* by installing [[https://github.com/lewang/flx][flx-ido]]. Flx-ido also replaces Ido's default matching algorithm with a *much better* one. So it's *highly recommened* to use it.
-
+*Suggestion 2*, If you don't like Swiper, the default [[http://emacswiki.org/emacs/InteractivelyDoThings][Ido]] will be used. It might be slow for 50K files. The issue could be easily resolved by installing [[https://github.com/lewang/flx][flx-ido]]. Flx-ido also replaces Ido's default matching algorithm with a *much better* one. So it's *highly recommened* to use it.
 * Bug Report
 Check [[https://github.com/technomancy/find-file-in-project]]
