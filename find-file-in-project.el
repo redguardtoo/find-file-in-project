@@ -91,38 +91,68 @@ May be set using .dir-locals.el. Checks each entry if set to a list.")
   "List of patterns to look for with `find-file-in-project'.")
 
 (defvar ffip-prune-patterns
-  '(".git"
+  '(;; VCS
+    ".git"
     ".svn"
     ".cvs"
-    ".metadata"
     ".bzr"
-    "bin"
     ".hg"
-    "cscope.files"
+    ;; project misc
     "*.log"
-	"dist"
+    "bin"
+    "dist"
     "target"
-    "node_modules"
-    "bower_components"
+    ;; Mac
     ".DS_Store"
+    ;; Ctags
     "tags"
     "TAGS"
+    ;; Global/Cscope
     "GTAGS"
     "GPATH"
     "GRTAGS"
-    "*flymake"
+    "cscope.files"
+    ;; html/javascript/css
+    "*min.js"
+    "*min.css"
+    "node_modules"
+    "bower_components"
+    ;; Images
+    "*.png"
+    "*.jpg"
+    "*.jpeg"
+    "*.gif"
+    "*.bmp"
+    "*.tiff"
+    ;; documents
+    "*.doc"
+    "*.docx"
+    "*.pdf"
+    ;; C/C++
+    "*.obj"
+    "*.o"
+    "*.a"
+    "*.dylib"
+    "*.lib"
+    "*.d"
+    "*.dll"
+    "*.exe"
+    ;; Java
+    ".metadata"
+    ".gradle"
     "*.class"
     "*.war"
     "*.jar"
+    ;; Emacs/Vim
+    "*flymake"
     "#*#"
     ".#*"
     "*.swp"
     "*~"
-    "*.pyc"
     "*.elc"
-    "*min.js"
-    "*min.css"
-    ".cask")
+    ".cask"
+    ;; Python
+    "*.pyc")
   "List of directory/file patterns to not descend into when listing files in `find-file-in-project'.")
 
 (defvar ffip-find-options ""
