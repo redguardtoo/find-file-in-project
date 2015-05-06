@@ -305,6 +305,12 @@ You can override this by setting the variable `ffip-project-root'."
   (ffip-find-files))
 
 ;;;###autoload
+(defun ffip-get-project-root-directory ()
+  "Get the the full path of project root directory"
+  (expand-file-name (or ffip-project-root
+                        (ffip-project-root))))
+
+;;;###autoload
 (defun find-file-in-project-by-selected ()
   "Similar to find-file-in-project.
 But use string from selected region to search files in the project.

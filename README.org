@@ -22,6 +22,8 @@ If you use other VCS (subversion, for example), insert below line into ~/.emacs:
 - *`M-x find-file-in-project`* starts search immediately
 - *`M-x find-file-in-project-by-selected`* use the *selected region as keyword* to search. Or you need provide the keyword if no region selected.
 * Tips
+** APIs
+- "ffip-get-project-root-directory" return the full path of current project
 ** Per project setup
 #+begin_src elisp
 ;; if the full path of current file is under SUBPROJECT1 or SUBPROJECT2
@@ -41,7 +43,9 @@ If you use other VCS (subversion, for example), insert below line into ~/.emacs:
   (setq ffip-project-root "~/projs/myprojs1"))
 #+end_src
 ** Performance
-This program has no performance issues with 50,000+ files if you follow EITHER of following suggetions:
+This program is tested with 50,000+ files (Linux Kernel, for example) without any performance issue.
+
+But it could be more responsive if you follow EITHER of following suggetions:
 
 *Suggestion 1*, Install [[https://github.com/abo-abo/swiper][Swiper]] and insert below code into your ~/.emacs:
 #+begin_src elisp
