@@ -20,7 +20,7 @@ If you use other VCS (subversion, for example), insert below line into ~/.emacs:
 #+end_src
 * Usage
 - *`M-x find-file-in-project`* starts search immediately
-- *`M-x find-file-in-project-by-selected`* use the *selected region as keyword* to search. Or you need provide the keyword if no region selected.
+- *`M-x find-file-in-project-by-selected`* use the *selected region as keyword* to search. If no region selected, you need input the keyword
 * Tips
 ** APIs
 - "ffip-get-project-root-directory" return the full path of current project
@@ -31,8 +31,8 @@ If you use other VCS (subversion, for example), insert below line into ~/.emacs:
 (when (ffip-current-full-filename-match-pattern-p "\\(/SUBPROJECT1\\|/SUBPROJECT2\\|issue-track.org\\)")
   ;; set the root directory into "~/projs/PROJECT_DIR"
   (setq-local ffip-project-root ("~/projs/PROJECT_DIR"))
-  ;; well, I'm not interested in concatenated BIG js file
-  (setq-local ffip-find-options "-not -size +64k")
+  ;; well, I'm not interested in concatenated BIG js file or file in dist/
+  (setq-local ffip-find-options "-not -size +64k -not -iwholename '*/dist/*'")
   ;; for this project, I'm only interested certain types of files
   (setq-local ffip-patterns '("*.html" "*.js" "*.css" "*.java" "*.xml" "*.js")))
 #+end_src
