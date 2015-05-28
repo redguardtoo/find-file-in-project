@@ -21,7 +21,11 @@ If you use other VCS (subversion, for example), insert below line into ~/.emacs:
 * Usage
 - *`M-x find-file-in-project`* starts search immediately
 - *`M-x find-file-in-project-by-selected`* use the *selected region as keyword* to search. If no region selected, you need input the keyword
+
 * Tips
+** Search files modified in recent 5 days
+`C-u 5 M-x find-file-in-project`
+`C-u 5 M-x find-file-in-project-by-selected`
 ** APIs
 - "ffip-get-project-root-directory" return the full path of current project
 ** Per project setup
