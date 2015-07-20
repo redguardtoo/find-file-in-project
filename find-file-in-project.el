@@ -100,8 +100,6 @@ May be set using .dir-locals.el. Checks each entry if set to a list.")
     ;; project misc
     "*.log"
     "bin"
-    "dist"
-    "target"
     ;; Mac
     ".DS_Store"
     ;; Ctags
