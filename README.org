@@ -37,6 +37,8 @@ If you use other VCS (subversion, for example), insert below line into ~/.emacs:
   (setq-local ffip-project-root ("~/projs/PROJECT_DIR"))
   ;; well, I'm not interested in concatenated BIG js file or file in dist/
   (setq-local ffip-find-options "-not -size +64k -not -iwholename '*/dist/*'")
+  ;; do NOT search files in below directories
+  (setq-local ffip-prune-patterns '(".git" ".hg" "*.svn" "node_modules" "bower_components")))
   ;; for this project, I'm only interested certain types of files
   (setq-local ffip-patterns '("*.html" "*.js" "*.css" "*.java" "*.xml" "*.js")))
 #+end_src

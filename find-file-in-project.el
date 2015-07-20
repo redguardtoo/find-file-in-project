@@ -4,8 +4,7 @@
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
-;; URL: http://www.emacswiki.org/cgi-bin/wiki/FindFileInProject
-;; Git: git://github.com/technomancy/find-file-in-project.git
+;; URL: https://github.com/technomancy/find-file-in-project
 ;; Version: 3.5
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
