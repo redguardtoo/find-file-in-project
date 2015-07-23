@@ -77,7 +77,9 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
+(eval-when-compile
+  (require 'cl))
 
 (defvar ffip-find-executable nil "Path of GNU find. If nil, we will find `find' path automatically")
 
@@ -179,7 +181,7 @@ This overrides variable `ffip-project-root' when set.")
                           (if (functionp ffip-project-root-function)
                               (funcall ffip-project-root-function)
                             (if (listp ffip-project-file)
-                                (some (apply-partially 'locate-dominating-file
+                                (cl-some (apply-partially 'locate-dominating-file
                                                        default-directory)
                                       ffip-project-file)
                               (locate-dominating-file default-directory
