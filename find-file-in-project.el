@@ -81,21 +81,26 @@
 (eval-when-compile
   (require 'cl))
 
+;;;###autoload
 (defvar ffip-filename-rules
   '(ffip-filename-identity
     ffip-filename-dashes-to-camelcase
     ffip-filename-camelcase-to-dashes))
 
+;;;###autoload
 (defvar ffip-find-executable nil "Path of GNU find. If nil, we will find `find' path automatically")
 
+;;;###autoload
 (defvar ffip-project-file ".git"
   "The file that should be used to define a project root.
 
 May be set using .dir-locals.el. Checks each entry if set to a list.")
 
+;;;###autoload
 (defvar ffip-patterns nil
   "List of patterns to look for with `find-file-in-project'.")
 
+;;;###autoload
 (defvar ffip-prune-patterns
   '(;; VCS
     ".git"
@@ -159,14 +164,17 @@ May be set using .dir-locals.el. Checks each entry if set to a list.")
     "*.pyc")
   "List of directory/file patterns to not descend into when listing files in `find-file-in-project'.")
 
+;;;###autoload
 (defvar ffip-find-options ""
   "Extra options to pass to `find' when using `find-file-in-project'.
 
 Use this to exclude portions of your project: \"-not -regex \\\".*svn.*\\\"\".")
 
+;;;###autoload
 (defvar ffip-project-root nil
   "If non-nil, overrides the project root directory location.")
 
+;;;###autoload
 (defvar ffip-project-root-function nil
   "If non-nil, this function is called to determine the project root.
 
