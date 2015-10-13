@@ -238,7 +238,7 @@ This overrides variable `ffip-project-root' when set.")
 (defun ffip-filename-dashes-to-camelcase (keyword)
   " hello-world => [Hh]elloWorld "
   (let (rlt)
-    (setq rlt (mapconcat '(lambda (s) (capitalize s)) (split-string keyword "-") ""))
+    (setq rlt (mapconcat (lambda (s) (capitalize s)) (split-string keyword "-") ""))
 
     (if (string= rlt (capitalize keyword)) (setq rlt nil)
       (setq rlt (ffip-filename-identity rlt)))
