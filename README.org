@@ -1,4 +1,4 @@
-* find-file-in-project (v3.6)
+* find-file-in-project (v3.7)
 Find files in a project quickly.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU find]].
@@ -10,19 +10,17 @@ Features:
 - Works on Windows/Cygwin/Linux/Mac
 - Furthing tweaking of GNU find through flag `ffip-find-options` is possible
 - Tested with 50,000+ files (Linux Kernel) with NO performance issue
+- Versatile. You provide "helloWorld.html", we search "HelloWorld.html" "hello-world.css", "HelloWorld.js"
 * Install
 Please install through [[http://melpa.org/#/find-file-in-project][melpa]].
 
 [[https://github.com/abo-abo/swiper][Ivy-mode]] is the dependency which will be installed automatically if you use melpa.
+
+Since v3.7, Emacs 24.3+ is required.
 * Setup
 It works out of the box for project using Git.
 
-If you use other VCS (subversion, for example), insert below line into ~/.emacs:
-#+begin_src elisp
-(setq ffip-project-file ".svn")
-#+end_src
-
-All variables like `ffip-project-file` may be overridden on a per-directory basis in your .dir-locals.el. See (info "(Emacs) Directory Variables") for details.
+All variables may be overridden on a per-directory basis in your .dir-locals.el. See (info "(Emacs) Directory Variables") for details.
 
 Or you can check the `Per project setup` section in this README which only requires you modify ~/.emacs.
 * Usage
@@ -55,5 +53,21 @@ Or you can check the `Per project setup` section in this README which only requi
     (setq ffip-project-root "C:/Users/myname/projs/myproj1")
   (setq ffip-project-root "~/projs/myprojs1"))
 #+end_src
+** Search multiple file name patterns
+The variable `ffip-filename-rules' create some extra file names for
+search when calling `find-file-in-project-by-selected'. For example,
+When file basename `hellWorld' provided, `HelloWorld', `hello-world'
+are added as the file name search patterns.
+
+`C-h v ffip-filename-rules' to see its default value.
+
+As other varialbes, it could be customized per project,
+#+begin_src elisp
+(setq-local ffip-filename-rules
+            '(ffip-filename-identity
+              ffip-filename-dashes-to-camelcase
+              ffip-filename-camelcase-to-dashes))
+#+end_src
+
 * Bug Report
 Check [[https://github.com/technomancy/find-file-in-project]]

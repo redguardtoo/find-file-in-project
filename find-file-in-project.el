@@ -3,11 +3,11 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;;
-;; Version: 3.6
+;; Version: 3.7
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
-;; Package-Requires: ((swiper "0.6.0"))
+;; Package-Requires: ((swiper "0.6.0") (emacs "24.3"))
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
 ;; EmacsWiki: FindFileInProject
@@ -37,13 +37,13 @@
 ;; in a given project.  It depends on GNU find.
 ;;
 ;; Usage,
-;;   - `M-x find-file-in-project` will start search immediately
-;;   - `M-x find-file-in-project-by-selected` use the your selected
-;;      region as keyword to search. Or you need provide the keyword
+;;   - `M-x find-file-in-project-by-selected' use the selected region
+;;      as the keyword to search. Or you need provide the keyword
 ;;      if no region selected.
+;;   - `M-x find-file-in-project' will start search immediately
 ;;
 ;; A project is found by searching up the directory tree until a file
-;; is found that matches `ffip-project-file'.  (".git" by default.)
+;; is found that matches `ffip-project-file'.
 ;; You can set `ffip-project-root-function' to provide an alternate
 ;; function to search for the project root.  By default, it looks only
 ;; for files whose names match `ffip-patterns',
@@ -54,6 +54,12 @@
 ;; For instance, in a Ruby on Rails project, you are interested in all
 ;; .rb files that don't exist in the "vendor" directory.  In that case
 ;; you could set `ffip-find-options' to "-not -regex \".*vendor.*\"".
+
+;; The variable `ffip-filename-rules' create some extra file names for
+;; search when calling `find-file-in-project-by-selected'. For example,
+;; When file basename `hellWorld' provided, `HelloWorld', `hello-world'
+;; are added as the file name search patterns.
+;; `C-h v ffip-filename-rules' to see its default value.
 
 ;; All these variables may be overridden on a per-directory basis in
 ;; your .dir-locals.el.  See (info "(Emacs) Directory Variables") for
@@ -76,9 +82,7 @@
 
 ;;; Code:
 
-(require 'cl-lib)
-(eval-when-compile
-  (require 'cl))
+(require 'ivy)
 
 ;;;###autoload
 (defvar ffip-filename-rules
@@ -90,7 +94,7 @@
 (defvar ffip-find-executable nil "Path of GNU find. If nil, we will find `find' path automatically")
 
 ;;;###autoload
-(defvar ffip-project-file ".git"
+(defvar ffip-project-file '(".svn" ".git" ".hg")
   "The file that should be used to define a project root.
 
 May be set using .dir-locals.el. Checks each entry if set to a list.")
@@ -179,14 +183,12 @@ Use this to exclude portions of your project: \"-not -regex \\\".*svn.*\\\"\".")
 
 This overrides variable `ffip-project-root' when set.")
 
-(defvar ffip-limit 0
-  "Limit results to this many files. 0 means no limit")
-
 (defvar ffip-full-paths t
   "If non-nil, show fully project-relative paths.")
 
 (defvar ffip-debug nil "Print debug information")
 
+;;;###autoload
 (defun ffip-project-root ()
   "Return the root of the project."
   (let ((project-root (or ffip-project-root
@@ -202,6 +204,7 @@ This overrides variable `ffip-project-root' when set.")
         (progn (message "No project was defined for the current file.")
                nil))))
 
+;;;###autoload
 (defun ffip-filename-identity (keyword)
   " HelloWorld => [Hh]elloWorld "
   (let (rlt
@@ -215,6 +218,7 @@ This overrides variable `ffip-project-root' when set.")
     (if (and rlt ffip-debug) (message "ffip-filename-identity called. rlt=%s" rlt))
     rlt))
 
+;;;###autoload
 (defun ffip-filename-camelcase-to-dashes (keyword)
   " HelloWorld => hello-world"
   (let (rlt
@@ -230,6 +234,7 @@ This overrides variable `ffip-project-root' when set.")
         (message "ffip-filename-camelcase-to-dashes called. rlt=%s" rlt))
     rlt))
 
+;;;###autoload
 (defun ffip-filename-dashes-to-camelcase (keyword)
   " hello-world => [Hh]elloWorld "
   (let (rlt)
@@ -292,24 +297,14 @@ This overrides variable `ffip-project-root' when set.")
   (mapconcat (lambda (pat) (format "-name \"%s\"" pat))
              ffip-prune-patterns " -or "))
 
-(defun ffip-limit-find-results ()
-  (let ((rlt ""))
-    (if (and (executable-find "head") (> ffip-limit 0))
-        (setq rlt (format " | head -n %d" ffip-limit)))
-    rlt))
-
 (defun ffip-completing-read (prompt collection)
   (let (rlt)
     (cond
      ( (= 1 (length collection))
        ;; open file directly
        (setq rlt (car collection)))
-     ((fboundp 'ivy-read)
-      (setq rlt (ivy-read prompt collection)))
-     ((and (boundp 'ido-mode) ido-mode)
-      (setq rlt (ido-completing-read prompt collection)))
      (t
-      (setq rlt (completing-read prompt collection))))
+      (setq rlt (ivy-read prompt collection))))
     rlt))
 
 (defun ffip-project-files (keyword NUM)
@@ -325,14 +320,13 @@ directory they are found in so that they are unique."
                                     (error "No project root found")))))
     (cd (file-name-as-directory root))
     ;; make the prune pattern more general
-    (setq cmd (format "%s . \\( %s \\) -prune -o -type f %s %s %s %s -print %s"
+    (setq cmd (format "%s . \\( %s \\) -prune -o -type f %s %s %s %s -print"
                       (if ffip-find-executable ffip-find-executable (ffip--guess-gnu-find))
                       (ffip--prune-patterns)
                       (ffip--join-patterns ffip-patterns)
                       (ffip--create-filename-pattern-for-gnufind keyword)
                       (if (and NUM (> NUM 0)) (format "-mtime -%d" NUM) "")
-                      ffip-find-options
-                      (ffip-limit-find-results)))
+                      ffip-find-options))
 
     (if ffip-debug (message "run cmd at %s: %s" default-directory cmd))
     (setq rlt
@@ -408,9 +402,9 @@ If NUM is given, only files modfied NUM days before will be selected.
 ;;;###autoload
 (progn
   (put 'ffip-patterns 'safe-local-variable 'listp)
+  (put 'ffip-filename-rules 'safe-local-variable 'listp)
   (put 'ffip-project-file 'safe-local-variable 'stringp)
-  (put 'ffip-project-root 'safe-local-variable 'stringp)
-  (put 'ffip-limit 'safe-local-variable 'integerp))
+  (put 'ffip-project-root 'safe-local-variable 'stringp))
 
 (provide 'find-file-in-project)
 ;;; find-file-in-project.el ends here
