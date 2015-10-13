@@ -2,10 +2,12 @@
 
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
+;;
+;; Version: 3.6
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
-;; Version: 3.5
+;; Package-Requires: ((swiper "0.6.0"))
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
 ;; EmacsWiki: FindFileInProject
@@ -57,14 +59,11 @@
 ;; your .dir-locals.el.  See (info "(Emacs) Directory Variables") for
 ;; details.
 
-;; Ivy.el from https://github.com/abo-abo/swiper could be automatically
-;; used if you insert below line into ~/.emacs,
-;;   (autoload 'ivy-read "ivy")
-;; In Ivy.el, SPACE is translated to regex ".*".
+;; ivy-mode is used for filter/search UI
+;; In ivy-mode, SPACE is translated to regex ".*".
 ;; For exmaple, the search string "dec fun pro" is transformed into
 ;; a regex "\\(dec\\).*\\(fun\\).*\\(pro\\)"
 ;;
-;; If Ivy.el is not available, ido will be used.
 
 ;; GNU Find can be installed,
 ;;   - through `brew' on OS X
