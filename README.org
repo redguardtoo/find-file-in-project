@@ -1,28 +1,28 @@
 * find-file-in-project (v3.7)
-Find files in a project quickly.
+Find files in a project quickly, on *any operating system*.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU find]].
 
-By default, it will *automatically* search file in project managed by [[http://git-scm.com/][Git]]. But you can easily switch to other types of projects.
+By default, it will *automatically* search file in project managed by *git/subversion/mercurial*. But you can easily switch to other types of projects.
 
 Features:
-- The only dependency is GNU find
-- Works on Windows/Cygwin/Linux/Mac
+- Only dependency is GNU find
+- Works perfectly on any OS (Yes, *including Windows*)
+- It's quick. Tested with 50,000+ files with NO performance issue
 - Furthing tweaking of GNU find through flag `ffip-find-options` is possible
-- Tested with 50,000+ files (Linux Kernel) with NO performance issue
 - Versatile. You provide "helloWorld.html", we search "HelloWorld.html" "hello-world.css", "HelloWorld.js"
 * Install
-Please install through [[http://melpa.org/#/find-file-in-project][melpa]].
+Please use [[http://melpa.org/#/find-file-in-project][melpa]].
 
-[[https://github.com/abo-abo/swiper][Ivy-mode]] is the dependency which will be installed automatically if you use melpa.
+[[https://github.com/abo-abo/swiper][Ivy-mode]] is the dependency which is installed automatically if you use melpa.
 
 Since v3.7, Emacs 24.3+ is required.
 * Setup
-It works out of the box for project using Git.
-
 All variables may be overridden on a per-directory basis in your .dir-locals.el. See (info "(Emacs) Directory Variables") for details.
 
 Or you can check the `Per project setup` section in this README which only requires you modify ~/.emacs.
+
+Windows setup is as easy as *install Cygwin at default directory of any driver*. `GNU Find' will be detected automatically. You don't need tweak environment variable at all!
 * Usage
 - *`M-x find-file-in-project`* starts search immediately
 - *`M-x find-file-in-project-by-selected`* use the *selected region as keyword* to search. If no region selected, you need input the keyword
@@ -47,10 +47,12 @@ Or you can check the `Per project setup` section in this README which only requi
   ;; for this project, I'm only interested certain types of files
   (setq-local ffip-patterns '("*.html" "*.js" "*.css" "*.java" "*.xml" "*.js")))
 #+end_src
-** Specify root directory on Cygwin&Windows
+** Specify root directory on Windows
 #+begin_src elisp
 (if (eq system-type 'windows-nt)
+    ;; Native Windows
     (setq ffip-project-root "C:/Users/myname/projs/myproj1")
+  ;; Cygwin
   (setq ffip-project-root "~/projs/myprojs1"))
 #+end_src
 ** Search multiple file name patterns
@@ -69,5 +71,6 @@ As other varialbes, it could be customized per project,
               ffip-filename-camelcase-to-dashes))
 #+end_src
 
+That's especially useful when you are doing web frontend development.
 * Bug Report
 Check [[https://github.com/technomancy/find-file-in-project]]

@@ -1,4 +1,4 @@
-;;; find-file-in-project.el --- Find files in a project quickly.
+;;; find-file-in-project.el --- Find files in a project quickly, on any OS
 
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
@@ -76,6 +76,10 @@
 ;;   - through `cygwin' on Windows.
 ;;
 ;; This program works on Windows/Cygwin/Linux/Mac Emacs.
+;;
+;; Windows setup is as easy as installing Cygwin into default directory on
+;; ANY driver. That's all.
+;;
 ;; See https://github.com/technomancy/find-file-in-project for advanced tips
 
 ;; Recommended binding: (global-set-key (kbd "C-x f") 'find-file-in-project)
