@@ -64,12 +64,12 @@ For example, to find /home/john/proj1/test.js, below keywords are valid,
 ** Search multiple file name patterns
 The variable `ffip-filename-rules' create some extra file names for
 search when calling `find-file-in-project-by-selected'. For example,
-When file basename `hellWorld' provided, `HelloWorld', `hello-world'
+When file basename `helloWorld' provided, `HelloWorld', `hello-world'
 are added as the file name search patterns.
 
 `C-h v ffip-filename-rules' to see its default value.
 
-As other varialbes, it could be customized per project,
+As other variables, it could be customized per project,
 #+begin_src elisp
 (setq-local ffip-filename-rules
             '(ffip-filename-identity

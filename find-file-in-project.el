@@ -57,7 +57,7 @@
 
 ;; The variable `ffip-filename-rules' create some extra file names for
 ;; search when calling `find-file-in-project-by-selected'. For example,
-;; When file basename `hellWorld' provided, `HelloWorld', `hello-world'
+;; When file basename `helloWorld' provided, `HelloWorld', `hello-world'
 ;; are added as the file name search patterns.
 ;; `C-h v ffip-filename-rules' to see its default value.
 
@@ -67,7 +67,7 @@
 
 ;; ivy-mode is used for filter/search UI
 ;; In ivy-mode, SPACE is translated to regex ".*".
-;; For exmaple, the search string "dec fun pro" is transformed into
+;; For example, the search string "dec fun pro" is transformed into
 ;; a regex "\\(dec\\).*\\(fun\\).*\\(pro\\)"
 ;;
 
@@ -210,7 +210,7 @@ This overrides variable `ffip-project-root' when set.")
 
 ;;;###autoload
 (defun ffip-filename-identity (keyword)
-  "Return indentical KEYWORD."
+  "Return identical KEYWORD."
   keyword)
 
 ;;;###autoload
@@ -361,7 +361,7 @@ directory they are found in so that they are unique."
 ;;;###autoload
 (defun find-file-in-project (&optional NUM)
   "Prompt with a completing list of all files in the project to find one.
-If NUM is given, only files modfied NUM days before will be selected.
+If NUM is given, only files modified NUM days before will be selected.
 
 The project's scope is defined as the first directory containing
 a `ffip-project-file' (It's value is \".git\" by default.
@@ -389,7 +389,7 @@ For example, to find /home/john/proj1/test.js, below keywords are valid:
 - orj1/tes
 - john*test
 
-If NUM is given, only files modfied NUM days before will be selected."
+If NUM is given, only files modified NUM days before will be selected."
   (interactive "P")
   (let ((keyword (if (region-active-p)
                      (buffer-substring-no-properties (region-beginning) (region-end))
