@@ -1,4 +1,4 @@
-* find-file-in-project (v3.7)
+* find-file-in-project (v3.8)
 Find files in a project quickly, on *any operating system*.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU find]].
@@ -16,7 +16,7 @@ Please use [[http://melpa.org/#/find-file-in-project][melpa]].
 
 [[https://github.com/abo-abo/swiper][Ivy-mode]] is the dependency which is installed automatically if you use melpa.
 
-Since v3.7, Emacs 24.3+ is required.
+Since v3.7, Emacs 24.3 is required.
 * Setup
 All variables may be overridden on a per-directory basis in your .dir-locals.el. See (info "(Emacs) Directory Variables") for details.
 
@@ -25,8 +25,14 @@ Or you can check the `Per project setup` section in this README which only requi
 Windows setup is as easy as *install Cygwin at default directory of any driver*. `GNU Find' will be detected automatically. You don't need tweak environment variable at all!
 * Usage
 - *`M-x find-file-in-project`* starts search immediately
-- *`M-x find-file-in-project-by-selected`* use the *selected region as keyword* to search. If no region selected, you need input the keyword
+- *`M-x find-file-in-project-by-selected`* use the *selected region as keyword* to search. If no region selected, you need provide the keyword
 
+For `find-file-in-project-by-selected`, keyword could be ANY part of the file's full path and it supports wildcard.
+
+For example, to find /home/john/proj1/test.js, below keywords are valid,
+- test.js
+- orj1/tes
+- john*test
 * Tips
 ** Search files modified in recent 5 days
 `C-u 5 M-x find-file-in-project`

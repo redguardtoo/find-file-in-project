@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;;
-;; Version: 3.7
+;; Version: 3.8
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -210,17 +210,8 @@ This overrides variable `ffip-project-root' when set.")
 
 ;;;###autoload
 (defun ffip-filename-identity (keyword)
-  " HelloWorld => [Hh]elloWorld "
-  (let (rlt
-        (c (elt keyword 0))
-        nc)
-    ;; a => 97, z => 122
-    (if (and (<= 97 c) (<= c 122)) (setq nc (- c 32)))
-    ;; A => 65, Z => 90
-    (if (and (<= 65 c) (<= c 90)) (setq nc (+ c 32)))
-    (setq rlt (replace-regexp-in-string "^[a-zA-Z]" (concat "[" (string c nc) "]") keyword t))
-    (if (and rlt ffip-debug) (message "ffip-filename-identity called. rlt=%s" rlt))
-    rlt))
+  "Return indentical KEYWORD."
+  keyword)
 
 ;;;###autoload
 (defun ffip-filename-camelcase-to-dashes (keyword)
@@ -240,7 +231,7 @@ This overrides variable `ffip-project-root' when set.")
 
 ;;;###autoload
 (defun ffip-filename-dashes-to-camelcase (keyword)
-  " hello-world => [Hh]elloWorld "
+  " hello-world => HelloWorld "
   (let (rlt)
     (setq rlt (mapconcat (lambda (s) (capitalize s)) (split-string keyword "-") ""))
 
@@ -258,13 +249,13 @@ This overrides variable `ffip-project-root' when set.")
      ((not keyword)
       (setq rlt ""))
      ((not ffip-filename-rules)
-      (setq rlt (concat "-name \"*" keyword "*\"" )))
+      (setq rlt (concat "-iwholename \"*" keyword "*\"" )))
      (t
       (dolist (f ffip-filename-rules rlt)
         (let (tmp)
           (setq tmp (funcall f keyword))
           (when tmp
-            (setq rlt (concat rlt (unless (string= rlt "") " -o") " -name \"*" tmp "*\"")))))
+            (setq rlt (concat rlt (unless (string= rlt "") " -o") " -iwholename \"*" tmp "*\"")))))
       (unless (string= "" rlt)
         (setq rlt (concat "\\(" rlt " \\)")))
       ))
@@ -292,13 +283,13 @@ This overrides variable `ffip-project-root' when set.")
 (defun ffip--join-patterns (patterns)
   "Turn `ffip-patterns' into a string that `find' can use."
   (if ffip-patterns
-      (format "\\( %s \\)" (mapconcat (lambda (pat) (format "-name \"%s\"" pat))
+      (format "\\( %s \\)" (mapconcat (lambda (pat) (format "-iwholename \"%s\"" pat))
                          patterns " -or "))
     ""))
 
 (defun ffip--prune-patterns ()
   "Turn `ffip-prune-patterns' into a string that `find' can use."
-  (mapconcat (lambda (pat) (format "-name \"%s\"" pat))
+  (mapconcat (lambda (pat) (format "-iwholename \"%s\"" pat))
              ffip-prune-patterns " -or "))
 
 (defun ffip-completing-read (prompt collection)
@@ -387,17 +378,23 @@ You can override this by setting the variable `ffip-project-root'."
                         (ffip-project-root))))
 
 ;;;###autoload
-(defun find-file-in-project-by-selected (&optional NUM)
+(defun find-file-in-project-by-selected (&optional num)
   "Similar to find-file-in-project.
 But use string from selected region to search files in the project.
-If no region is selected, you need provide one.
-If NUM is given, only files modfied NUM days before will be selected.
-"
+If no region is selected, you need provide keyword.
+
+Keyword could be ANY part of the file's full path and support wildcard.
+For example, to find /home/john/proj1/test.js, below keywords are valid:
+- test.js
+- orj1/tes
+- john*test
+
+If NUM is given, only files modfied NUM days before will be selected."
   (interactive "P")
   (let ((keyword (if (region-active-p)
                      (buffer-substring-no-properties (region-beginning) (region-end))
                    (read-string "Enter keyword:"))))
-    (ffip-find-files keyword NUM)))
+    (ffip-find-files keyword num)))
 
 ;;;###autoload
 (defalias 'ffip 'find-file-in-project)
