@@ -110,29 +110,29 @@ May be set using .dir-locals.el. Checks each entry if set to a list.")
 ;;;###autoload
 (defvar ffip-prune-patterns
   '(;; VCS
-    ".git"
-    ".svn"
-    ".cvs"
-    ".bzr"
-    ".hg"
+    "*/.git"
+    "*/.svn"
+    "*/.cvs"
+    "*/.bzr"
+    "*/.hg"
     ;; project misc
     "*.log"
-    "bin"
+    "*/bin"
     ;; Mac
-    ".DS_Store"
+    "*/.DS_Store"
     ;; Ctags
-    "tags"
-    "TAGS"
+    "*/tags"
+    "*/TAGS"
     ;; Global/Cscope
-    "GTAGS"
-    "GPATH"
-    "GRTAGS"
-    "cscope.files"
+    "*/GTAGS"
+    "*/GPATH"
+    "*/GRTAGS"
+    "*/cscope.files"
     ;; html/javascript/css
     "*min.js"
     "*min.css"
-    "node_modules"
-    "bower_components"
+    "*/node_modules/*"
+    "*/bower_components/*"
     ;; Images
     "*.png"
     "*.jpg"
@@ -154,7 +154,7 @@ May be set using .dir-locals.el. Checks each entry if set to a list.")
     "*.dll"
     "*.exe"
     ;; Java
-    ".metadata"
+    "*/.metadata"
     ".gradle"
     "*.class"
     "*.war"
@@ -166,7 +166,7 @@ May be set using .dir-locals.el. Checks each entry if set to a list.")
     "*.swp"
     "*~"
     "*.elc"
-    ".cask"
+    "*/.cask/*"
     ;; Python
     "*.pyc")
   "List of directory/file patterns to not descend into when listing files in `find-file-in-project'.")
