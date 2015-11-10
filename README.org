@@ -1,4 +1,4 @@
-* find-file-in-project (v3.8)
+* find-file-in-project (v4.0)
 Find files in a project quickly, on *any operating system*.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU find]].
@@ -24,8 +24,13 @@ Or you can check the `Per project setup` section in this README which only requi
 
 Windows setup is as easy as *install Cygwin at default directory of any driver*. `GNU Find' will be detected automatically. You don't need tweak environment variable at all!
 * Usage
-- *`M-x find-file-in-project`* starts search immediately
 - *`M-x find-file-in-project-by-selected`* use the *selected region as keyword* to search. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of `-name` option
+
+- *`M-x find-file-in-project`* starts search immediately
+
+- *`M-x find-directory-in-project-by-selected`* use the *selected region as keyword* to search. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of `-iwholname` option
+
+If parameter is passed to above commands, file or diretory will be opened in new window.
 * Tips
 ** You prefer ido-mode?
 #+begin_src elisp
