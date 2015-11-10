@@ -69,7 +69,7 @@
 ;; In ivy-mode, SPACE is translated to regex ".*".
 ;; For example, the search string "dec fun pro" is transformed into
 ;; a regex "\\(dec\\).*\\(fun\\).*\\(pro\\)"
-;;
+;; You switch to ido-mode by `(setq ffip-prefer-ido-mode t)'
 
 ;; GNU Find can be installed,
 ;;   - through `brew' on OS X
@@ -100,8 +100,11 @@
 ;;;###autoload
 (defvar ffip-project-file '(".svn" ".git" ".hg")
   "The file that should be used to define a project root.
-
 May be set using .dir-locals.el. Checks each entry if set to a list.")
+
+;;;###autoload
+(defvar ffip-prefer-ido-mode nil
+  "Use ido-mode instead of ivy-mode for displaying candidates.")
 
 ;;;###autoload
 (defvar ffip-patterns nil
@@ -298,6 +301,9 @@ This overrides variable `ffip-project-root' when set.")
      ((= 1 (length collection))
        ;; open file directly
        (setq rlt (car collection)))
+     ;; support ido-mode
+     ((and ffip-prefer-ido-mode (boundp 'ido-mode) ido-mode)
+      (setq rlt (ido-completing-read prompt collection)))
      (t
       (setq rlt (ivy-read prompt collection))))
     rlt))

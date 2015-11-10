@@ -27,6 +27,11 @@ Windows setup is as easy as *install Cygwin at default directory of any driver*.
 - *`M-x find-file-in-project`* starts search immediately
 - *`M-x find-file-in-project-by-selected`* use the *selected region as keyword* to search. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of `-name` option
 * Tips
+** You prefer ido-mode?
+#+begin_src elisp
+(ido-mode 1)
+(setq ffip-prefer-ido-mode t)
+#+end_src
 ** Search files modified in recent 5 days
 `C-u 5 M-x find-file-in-project`
 `C-u 5 M-x find-file-in-project-by-selected`
