@@ -25,14 +25,7 @@ Or you can check the `Per project setup` section in this README which only requi
 Windows setup is as easy as *install Cygwin at default directory of any driver*. `GNU Find' will be detected automatically. You don't need tweak environment variable at all!
 * Usage
 - *`M-x find-file-in-project`* starts search immediately
-- *`M-x find-file-in-project-by-selected`* use the *selected region as keyword* to search. If no region selected, you need provide the keyword
-
-For `find-file-in-project-by-selected`, keyword could be ANY part of the file's full path and it supports wildcard.
-
-For example, to find /home/john/proj1/test.js, below keywords are valid,
-- test.js
-- orj1/tes
-- john*test
+- *`M-x find-file-in-project-by-selected`* use the *selected region as keyword* to search. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of `-name` option
 * Tips
 ** Search files modified in recent 5 days
 `C-u 5 M-x find-file-in-project`
@@ -49,7 +42,7 @@ For example, to find /home/john/proj1/test.js, below keywords are valid,
   ;; well, I'm not interested in concatenated BIG js file or file in dist/
   (setq-local ffip-find-options "-not -size +64k -not -iwholename '*/dist/*'")
   ;; do NOT search files in below directories
-  (setq-local ffip-prune-patterns '("*/.git" "*/.hg" "*/.svn" "*/node_modules/*" "*/bower_components/*")))
+  (setq-local ffip-prune-patterns '("*/.git/*" "*/.hg/*" "*/.svn/*" "*/node_modules/*" "*/bower_components/*")))
   ;; for this project, I'm only interested certain types of files
   (setq-local ffip-patterns '("*.html" "*.js" "*.css" "*.java" "*.xml" "*.js")))
 #+end_src

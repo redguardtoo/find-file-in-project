@@ -403,6 +403,7 @@ If NUM is given, only files modified NUM days before will be selected."
 ;;;###autoload
 (progn
   (put 'ffip-patterns 'safe-local-variable 'listp)
+  (put 'ffip-prune-patterns 'safe-local-variable 'listp)
   (put 'ffip-filename-rules 'safe-local-variable 'listp)
   (put 'ffip-project-file 'safe-local-variable 'stringp)
   (put 'ffip-project-root 'safe-local-variable 'stringp))
