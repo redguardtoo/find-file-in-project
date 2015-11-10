@@ -110,16 +110,16 @@ May be set using .dir-locals.el. Checks each entry if set to a list.")
 ;;;###autoload
 (defvar ffip-prune-patterns
   '(;; VCS
-    "*/.git"
-    "*/.svn"
-    "*/.cvs"
-    "*/.bzr"
-    "*/.hg"
+    "*/.git/*"
+    "*/.svn/*"
+    "*/.cvs/*"
+    "*/.bzr/*"
+    "*/.hg/*"
     ;; project misc
     "*.log"
-    "*/bin"
+    "*/bin/*"
     ;; Mac
-    "*/.DS_Store"
+    "*/.DS_Store/*"
     ;; Ctags
     "*/tags"
     "*/TAGS"
@@ -154,14 +154,14 @@ May be set using .dir-locals.el. Checks each entry if set to a list.")
     "*.dll"
     "*.exe"
     ;; Java
-    "*/.metadata"
-    ".gradle"
+    "*/.metadata*"
+    "*/.gradle/*"
     "*.class"
     "*.war"
     "*.jar"
     ;; Emacs/Vim
     "*flymake"
-    "#*#"
+    "*/#*#"
     ".#*"
     "*.swp"
     "*~"
@@ -249,13 +249,13 @@ This overrides variable `ffip-project-root' when set.")
      ((not keyword)
       (setq rlt ""))
      ((not ffip-filename-rules)
-      (setq rlt (concat "-iwholename \"*" keyword "*\"" )))
+      (setq rlt (concat "-name \"*" keyword "*\"" )))
      (t
       (dolist (f ffip-filename-rules rlt)
         (let (tmp)
           (setq tmp (funcall f keyword))
           (when tmp
-            (setq rlt (concat rlt (unless (string= rlt "") " -o") " -iwholename \"*" tmp "*\"")))))
+            (setq rlt (concat rlt (unless (string= rlt "") " -o") " -name \"*" tmp "*\"")))))
       (unless (string= "" rlt)
         (setq rlt (concat "\\(" rlt " \\)")))
       ))
@@ -295,14 +295,14 @@ This overrides variable `ffip-project-root' when set.")
 (defun ffip-completing-read (prompt collection)
   (let (rlt)
     (cond
-     ( (= 1 (length collection))
+     ((= 1 (length collection))
        ;; open file directly
        (setq rlt (car collection)))
      (t
       (setq rlt (ivy-read prompt collection))))
     rlt))
 
-(defun ffip-project-files (keyword NUM)
+(defun ffip-project-search (keyword NUM)
   "Return an alist of all filenames in the project and their path.
 
 Files with duplicate filenames are suffixed with the name of the
@@ -341,7 +341,7 @@ directory they are found in so that they are unique."
     rlt))
 
 (defun ffip-find-files (keyword NUM)
-  (let* ((project-files (ffip-project-files keyword NUM))
+  (let* ((project-files (ffip-project-search keyword NUM))
          (files (mapcar 'car project-files))
          file root)
     (cond
