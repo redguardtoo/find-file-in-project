@@ -30,16 +30,22 @@ Windows setup is as easy as *install Cygwin at default directory of any driver*.
 
 - *`M-x find-directory-in-project-by-selected`* use the *selected region as keyword* to search. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of `-iwholname` option
 
-If parameter is passed to above commands, file or diretory will be opened in new window.
+If parameter is passed to above commands, file or directory will be opened in new window.
+
+Project root is *automatically* detected if you use Git/Mercurical/Subversion.
+
+You can manually specify the root directory by set `ffip-project-root` any time to override the default root directory,
+#+begin_src elisp
+(setq ffip-project-root "~/projs/PROJECT_DIR")
+#+end_src
+
 * Tips
+Please note all tips are OPTIONAL. find-file-in-project works out of box in 99% cases.
 ** You prefer ido-mode?
 #+begin_src elisp
 (ido-mode 1)
 (setq ffip-prefer-ido-mode t)
 #+end_src
-** Search files modified in recent 5 days
-`C-u 5 M-x find-file-in-project`
-`C-u 5 M-x find-file-in-project-by-selected`
 ** APIs
 - "ffip-get-project-root-directory" return the full path of current project
 ** Per project setup
@@ -48,7 +54,7 @@ If parameter is passed to above commands, file or diretory will be opened in new
 ;; OR if I'm reading my personal issue track document,
 (when (ffip-current-full-filename-match-pattern-p "\\(/SUBPROJECT1\\|/SUBPROJECT2\\|issue-track.org\\)")
   ;; set the root directory into "~/projs/PROJECT_DIR"
-  (setq-local ffip-project-root ("~/projs/PROJECT_DIR"))
+  (setq-local ffip-project-root "~/projs/PROJECT_DIR")
   ;; well, I'm not interested in concatenated BIG js file or file in dist/
   (setq-local ffip-find-options "-not -size +64k -not -iwholename '*/dist/*'")
   ;; do NOT search files in below directories
