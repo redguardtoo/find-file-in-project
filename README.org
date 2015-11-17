@@ -70,7 +70,9 @@ Here is complete setup you could insert into "~/.emacs.d/init.el",
 ** Per-directory setup with .dir-locals.el
 All variables may be overridden on a per-directory basis in your .dir-locals.el. See (info "(Emacs) Directory Variables") for details.
 
-All you need to is actually place .dir-locals.el
+You only need place .dir-locals.el into your project root directory.
+
+Here is a sample .dir-locals.el,
 #+begin_src elisp
 ((nil . ((ffip-project-root . "~/projs/PROJECT_DIR")
          (ffip-find-options "-not -size +64k -not -iwholename '*/dist/*'")
@@ -79,7 +81,7 @@ All you need to is actually place .dir-locals.el
          )))
 #+end_src
 
-Please use either per-directory setup or per-project setup, not both.
+Please use either per-directory setup or per-project setup, *NOT* both.
 ** Specify root directory on Windows
 #+begin_src elisp
 (if (eq system-type 'windows-nt)
