@@ -3,7 +3,7 @@ Find files in a project quickly, on *any operating system*.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU find]].
 
-By default, it will *automatically* search file in project managed by *git/subversion/mercurial*. But you can easily switch to other types of projects.
+By default, it will *automatically* search file in directory managed by *git/subversion/mercurial*. But you can easily switch to other types of projects.
 
 Features:
 - Only dependency is GNU find
@@ -18,11 +18,9 @@ Please use [[http://melpa.org/#/find-file-in-project][melpa]].
 
 Since v3.7, Emacs 24.3 is required.
 * Setup
-All variables may be overridden on a per-directory basis in your .dir-locals.el. See (info "(Emacs) Directory Variables") for details.
+Windows setup is as easy as *install Cygwin at default directory of any driver*. `GNU Find' will be detected automatically. You don't need tweak environment variable! 
+For Linux and Mac, no setup is needed.
 
-Or you can check the `Per project setup` section in this README which only requires you modify "~/.emacs.d/init.el".
-
-Windows setup is as easy as *install Cygwin at default directory of any driver*. `GNU Find' will be detected automatically. You don't need tweak environment variable at all!
 * Usage
 - *`M-x find-file-in-project-by-selected`* use the *selected region as keyword* to search. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of `-name` option
 
@@ -48,7 +46,7 @@ Please note all tips are OPTIONAL. find-file-in-project works out of box in 99% 
 #+end_src
 ** APIs
 - "ffip-get-project-root-directory" return the full path of current project
-** Per project setup
+** Per-project setup using Emacs lisp
 Here is complete setup you could insert into "~/.emacs.d/init.el",
 #+begin_src elisp
 ;; if the full path of current file is under SUBPROJECT1 or SUBPROJECT2
@@ -69,6 +67,19 @@ Here is complete setup you could insert into "~/.emacs.d/init.el",
 ;; most major modes inherit from prog-mode, so below line is enough
 (add-hook 'prog-mode-hook 'my-setup-develop-environment)
 #+end_src
+** Per-directory setup with .dir-locals.el
+All variables may be overridden on a per-directory basis in your .dir-locals.el. See (info "(Emacs) Directory Variables") for details.
+
+All you need to is actually place .dir-locals.el
+#+begin_src elisp
+((nil . ((ffip-project-root . "~/projs/PROJECT_DIR")
+         (ffip-find-options "-not -size +64k -not -iwholename '*/dist/*'")
+         (ffip-patterns '("*.html" "*.js" "*.css" "*.java" "*.xml" "*.js"))
+         (ffip-prune-patterns '("*/.git/*" "*/node_modules/*" "*/index.js"))
+         )))
+#+end_src
+
+Please use either per-directory setup or per-project setup, not both.
 ** Specify root directory on Windows
 #+begin_src elisp
 (if (eq system-type 'windows-nt)
