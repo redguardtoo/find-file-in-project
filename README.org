@@ -1,16 +1,16 @@
 * find-file-in-project (v4.0)
 Find files in a project quickly, on *any operating system*.
 
-This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU find]].
+This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU Find]].
 
 By default, it will *automatically* search file in directory managed by *git/subversion/mercurial*. But you can easily switch to other types of projects.
 
 Features:
-- Only dependency is GNU find
+- Only dependency is GNU Find
 - Works perfectly on any OS (Yes, *including Windows*)
 - It's quick. Tested with 50,000+ files with NO performance issue
 - Furthing tweaking of GNU find through flag `ffip-find-options` is possible
-- Versatile. You provide "helloWorld.html", we search "HelloWorld.html" "hello-world.css", "HelloWorld.js"
+- Versatile. You provide "helloWorld", we search "HelloWorld.html" "hello-world.css", "HelloWorld.js"
 * Install
 Please use [[http://melpa.org/#/find-file-in-project][melpa]].
 
