@@ -1,4 +1,4 @@
-* find-file-in-project (v4.0)
+* find-file-in-project (v4.1)
 Find files in a project quickly, on *any operating system*.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU Find]].
@@ -102,8 +102,7 @@ As other variables, it could be customized per project,
 #+begin_src elisp
 (setq-local ffip-filename-rules
             '(ffip-filename-identity
-              ffip-filename-dashes-to-camelcase
-              ffip-filename-camelcase-to-dashes))
+              (ffip-filename-dashes-to-camelcase ffip-filename-camelcase-to-dashes)))
 #+end_src
 
 That's especially useful when you are doing web frontend development.

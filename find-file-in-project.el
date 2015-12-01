@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;;
-;; Version: 4.0
+;; Version: 4.1
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -91,8 +91,7 @@
 ;;;###autoload
 (defvar ffip-filename-rules
   '(ffip-filename-identity
-    ffip-filename-dashes-to-camelcase
-    ffip-filename-camelcase-to-dashes))
+    (ffip-filename-dashes-to-camelcase ffip-filename-camelcase-to-dashes)))
 
 ;;;###autoload
 (defvar ffip-find-executable nil "Path of GNU find.  If nil, we will find `find' path automatically.")
@@ -211,39 +210,70 @@ This overrides variable `ffip-project-root' when set.")
         (progn (message "No project was defined for the current file.")
                nil))))
 
+(defun ffip--find-rule-to-execute (keyword f)
+  "If F is a function, return it.
+
+If F is a list, assume each element is a function.
+Run each element with keyword as 1st parameter as KEYWORD and 2nd parameter as t.
+If the result is true, return the function."
+  (let (rlt found fn)
+    (cond
+     ((functionp f) (setq rlt f))
+
+     ((listp f)
+      (while (and f (not found))
+        (setq fn (car f))
+        (if (funcall fn (list keyword t))
+            (setq found t)
+          (setq f (cdr f))))
+      (setq rlt (if found fn 'identity)))
+
+     (t (setq rlt 'identity)))
+
+    rlt))
+
+
 ;;;###autoload
 (defun ffip-filename-identity (keyword)
   "Return identical KEYWORD."
   keyword)
 
 ;;;###autoload
-(defun ffip-filename-camelcase-to-dashes (keyword)
-  "HelloWorld => hello-world."
+(defun ffip-filename-camelcase-to-dashes (keyword &optional check-only)
+  "Convert KEYWORD from camel cased to dash seperated.
+If CHECK-ONLY is true, only do the check."
   (let (rlt
         (old-flag case-fold-search))
-    (setq case-fold-search nil)
-    ;; case sensitive replace
-    (setq rlt (downcase (replace-regexp-in-string "\\([a-z]\\)\\([A-Z]\\)" "\\1-\\2" keyword)))
-    (setq case-fold-search old-flag)
+    (cond
+     (check-only
+      (setq rlt (string-match "^[a-z0-9]+[A-Z]\\([A-Za-z0-9]\\)+$" keyword)))
+     (t
+      (setq case-fold-search nil)
+      ;; case sensitive replace
+      (setq rlt (downcase (replace-regexp-in-string "\\([a-z]\\)\\([A-Z]\\)" "\\1-\\2" keyword)))
+      (setq case-fold-search old-flag)
 
-    (if (string= rlt (downcase keyword)) (setq rlt nil))
+      (if (string= rlt (downcase keyword)) (setq rlt nil))
 
-    (if (and rlt ffip-debug)
-        (message "ffip-filename-camelcase-to-dashes called. rlt=%s" rlt))
+      (if (and rlt ffip-debug)
+          (message "ffip-filename-camelcase-to-dashes called. rlt=%s" rlt))))
     rlt))
 
 ;;;###autoload
-(defun ffip-filename-dashes-to-camelcase (keyword)
-  "hello-world => HelloWorld."
+(defun ffip-filename-dashes-to-camelcase (keyword &optional check-only)
+  "Convert KEYWORD from dash seperated to camel cased.
+If CHECK-ONLY is true, only do the check."
   (let (rlt)
-    (setq rlt (mapconcat (lambda (s) (capitalize s)) (split-string keyword "-") ""))
+    (cond
+     (check-only
+        (setq rlt (string-match "^[A-Za-z0-9]+\\(-[A-Za-z0-9]\\)+$" keyword)))
+     (t
+      (setq rlt (mapconcat (lambda (s) (capitalize s)) (split-string keyword "-") ""))
 
-    (if (string= rlt (capitalize keyword)) (setq rlt nil)
-      (setq rlt (ffip-filename-identity rlt)))
-
-    (if (and rlt ffip-debug)
-        (message "ffip-filename-dashes-to-camelcase called. rlt=%s" rlt))
-
+      (let ((first-char (substring rlt 0 1)))
+       (setq rlt (concat "[" first-char (downcase first-char) "]" (substring rlt 1))))
+      (if (and rlt ffip-debug)
+          (message "ffip-filename-dashes-to-camelcase called. rlt=%s" rlt))))
     rlt))
 
 (defun ffip--create-filename-pattern-for-gnufind (keyword)
@@ -255,8 +285,9 @@ This overrides variable `ffip-project-root' when set.")
       (setq rlt (concat "-name \"*" keyword "*\"" )))
      (t
       (dolist (f ffip-filename-rules rlt)
-        (let (tmp)
-          (setq tmp (funcall f keyword))
+        (let (tmp fn)
+          (setq fn (ffip--find-rule-to-execute keyword f))
+          (setq tmp (funcall fn keyword))
           (when tmp
             (setq rlt (concat rlt (unless (string= rlt "") " -o") " -name \"*" tmp "*\"")))))
       (unless (string= "" rlt)
