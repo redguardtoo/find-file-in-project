@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;;
-;; Version: 4.1
+;; Version: 4.2
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -108,6 +108,10 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
 ;;;###autoload
 (defvar ffip-patterns nil
   "List of patterns to look for with `find-file-in-project'.")
+
+;;;###autoload
+(defvar ffip-match-path-instead-of-filename nil
+  "Match full path instead of file name when calling `find-file-in-project-by-selected'")
 
 ;;;###autoload
 (defvar ffip-prune-patterns
@@ -282,14 +286,22 @@ If CHECK-ONLY is true, only do the check."
      ((not keyword)
       (setq rlt ""))
      ((not ffip-filename-rules)
-      (setq rlt (concat "-name \"*" keyword "*\"" )))
+      (setq rlt (concat (if ffip-match-path-instead-of-filename "-iwholename" "-name")
+                        " \"*"
+                        keyword
+                        "*\"" )))
      (t
       (dolist (f ffip-filename-rules rlt)
         (let (tmp fn)
           (setq fn (ffip--find-rule-to-execute keyword f))
           (setq tmp (funcall fn keyword))
           (when tmp
-            (setq rlt (concat rlt (unless (string= rlt "") " -o") " -name \"*" tmp "*\"")))))
+            (setq rlt (concat rlt (unless (string= rlt "") " -o")
+                              " "
+                              (if ffip-match-path-instead-of-filename "-iwholename" "-name")
+                              " \"*"
+                              tmp
+                              "*\"")))))
       (unless (string= "" rlt)
         (setq rlt (concat "\\(" rlt " \\)")))
       ))
@@ -471,6 +483,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   (put 'ffip-patterns 'safe-local-variable 'listp)
   (put 'ffip-prune-patterns 'safe-local-variable 'listp)
   (put 'ffip-filename-rules 'safe-local-variable 'listp)
+  (put 'ffip-match-path-instead-of-filename 'safe-local-variable 'booleanp)
   (put 'ffip-project-file 'safe-local-variable 'stringp)
   (put 'ffip-project-root 'safe-local-variable 'stringp))
 
