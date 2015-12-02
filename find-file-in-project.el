@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;;
-;; Version: 4.2
+;; Version: 4.3
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -227,7 +227,7 @@ If the result is true, return the function."
      ((listp f)
       (while (and f (not found))
         (setq fn (car f))
-        (if (funcall fn (list keyword t))
+        (if (funcall fn keyword t)
             (setq found t)
           (setq f (cdr f))))
       (setq rlt (if found fn 'identity)))
@@ -250,7 +250,8 @@ If CHECK-ONLY is true, only do the check."
         (old-flag case-fold-search))
     (cond
      (check-only
-      (setq rlt (string-match "^[a-z0-9]+[A-Z]\\([A-Za-z0-9]\\)+$" keyword)))
+      (setq rlt (string-match "^[a-z0-9]+[A-Z][A-Za-z0-9]+$" keyword))
+      (if ffip-debug (message "ffip-filename-camelcase-to-dashes called. check-only keyword=%s rlt=%s" keyword rlt)))
      (t
       (setq case-fold-search nil)
       ;; case sensitive replace
@@ -270,7 +271,8 @@ If CHECK-ONLY is true, only do the check."
   (let (rlt)
     (cond
      (check-only
-        (setq rlt (string-match "^[A-Za-z0-9]+\\(-[A-Za-z0-9]\\)+$" keyword)))
+        (setq rlt (string-match "^[A-Za-z0-9]+\\(-[A-Za-z0-9]+\\)+$" keyword))
+        (if ffip-debug (message "ffip-filename-dashes-to-camelcase called. check-only keyword=%s rlt=%s" keyword rlt)))
      (t
       (setq rlt (mapconcat (lambda (s) (capitalize s)) (split-string keyword "-") ""))
 
