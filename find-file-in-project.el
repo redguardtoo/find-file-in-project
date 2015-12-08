@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;;
-;; Version: 4.3
+;; Version: 4.4
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -69,6 +69,8 @@
 ;; In ivy-mode, SPACE is translated to regex ".*".
 ;; For example, the search string "dec fun pro" is transformed into
 ;; a regex "\\(dec\\).*\\(fun\\).*\\(pro\\)"
+;; `C-h i g (ivy)' for more key-binding tips.
+;;
 ;; You switch to ido-mode by `(setq ffip-prefer-ido-mode t)'
 
 ;; GNU Find can be installed,

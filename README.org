@@ -1,4 +1,4 @@
-* find-file-in-project (v4.3)
+* find-file-in-project (v4.4)
 Find files in a project quickly, on *any operating system*.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU Find]].
@@ -110,5 +110,7 @@ That's especially useful when you are doing web frontend development.
 You could `(setq ffip-match-path-instead-of-filename t)` before `M-x find-file-in-project-by-selected`.
 
 For example, if you want to search files belonging to directory "elpa" or the file name containing "elpa", you can `M-x find-file-in-project-by-selected ENTER elpa`.
+** More keybinding tips
+`C-h i g (ivy) Enter' for more key-binding tips.
 * Bug Report
 Check [[https://github.com/technomancy/find-file-in-project]]
