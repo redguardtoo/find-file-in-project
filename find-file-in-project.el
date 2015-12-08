@@ -1,4 +1,4 @@
-;;; find-file-in-project.el --- Find files in a project quickly, on any OS
+;;; find-file-in-project.el --- Find files in a project quickly, on any OS -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
@@ -7,7 +7,7 @@
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
-;; Package-Requires: ((swiper "0.6.0") (emacs "24.3"))
+;; Package-Requires: ((swiper "0.7.0") (emacs "24.3"))
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
 ;; EmacsWiki: FindFileInProject
@@ -340,18 +340,17 @@ If CHECK-ONLY is true, only do the check."
   (mapconcat (lambda (pat) (format "-iwholename \"%s\"" pat))
              ffip-prune-patterns " -or "))
 
-(defun ffip-completing-read (prompt collection)
-  (let (rlt)
-    (cond
-     ((= 1 (length collection))
-       ;; open file directly
-       (setq rlt (car collection)))
-     ;; support ido-mode
-     ((and ffip-prefer-ido-mode (boundp 'ido-mode) ido-mode)
-      (setq rlt (ido-completing-read prompt collection)))
-     (t
-      (setq rlt (ivy-read prompt collection))))
-    rlt))
+(defun ffip-completing-read (prompt collection action)
+  (cond
+    ((= 1 (length collection))
+     ;; open file directly
+     (funcall action (car collection)))
+    ;; support ido-mode
+    ((and ffip-prefer-ido-mode (boundp 'ido-mode) ido-mode)
+     (funcall action (ido-completing-read prompt collection)))
+    (t
+     (ivy-read prompt collection
+               :action action))))
 
 (defun ffip-project-search (keyword find-directory)
   "Return an alist of all filenames in the project and their path.
@@ -397,20 +396,27 @@ directory they are found in so that they are unique."
 (defun ffip-find-files (keyword open-another-window &optional find-directory)
   (let* ((project-files (ffip-project-search keyword find-directory))
          (files (mapcar 'car project-files))
-         file root
-         rlt)
-    (cond
-     ((and files (> (length files) 0))
-      (setq root (file-name-nondirectory (directory-file-name (or ffip-project-root (ffip-project-root)))))
-      (setq file (ffip-completing-read (format "Find in %s/: " root)  files))
-      (setq rlt (cdr (assoc file project-files)))
-      (if find-directory
-          ;; open dired because this rlt is a directory
-          (if open-another-window (dired-other-window rlt)
-            (switch-to-buffer (dired rlt)))
-        (if open-another-window (find-file-other-window rlt)
-            (find-file rlt))))
-     (t (message "Nothing found!")))))
+         file root)
+    (if (> (length files) 0)
+        (progn
+          (setq root (file-name-nondirectory
+                      (directory-file-name
+                       (or ffip-project-root (ffip-project-root)))))
+          (ffip-completing-read
+           (format "Find in %s/: " root)
+           files
+           (lambda (file)
+             (let ((rlt (cdr (assoc file project-files))))
+               (with-ivy-window
+                 (if find-directory
+                     ;; open dired because this rlt is a directory
+                     (if open-another-window
+                         (dired-other-window rlt)
+                       (switch-to-buffer (dired rlt)))
+                   (if open-another-window
+                       (find-file-other-window rlt)
+                     (find-file rlt))))))))
+      (message "Nothing found!"))))
 
 ;;;###autoload
 (defun ffip-current-full-filename-match-pattern-p (regex)
