@@ -118,6 +118,7 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
 ;;;###autoload
 (defvar ffip-prune-patterns
   '(;; VCS
+    "*/.idea/*"
     "*/.git/*"
     "*/.svn/*"
     "*/.cvs/*"
