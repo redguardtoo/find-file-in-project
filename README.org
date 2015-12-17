@@ -1,4 +1,4 @@
-* find-file-in-project (v4.4)
+* find-file-in-project (v4.5)
 Find files in a project quickly, on *any operating system*.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU Find]].
@@ -19,24 +19,31 @@ Please use [[http://melpa.org/#/find-file-in-project][melpa]].
 Since v3.7, Emacs 24.3 is required.
 * Setup
 Windows setup is as easy as *install Cygwin at default directory of any driver*. `GNU Find' will be detected automatically. You don't need tweak environment variable! 
-For Linux and Mac, no setup is needed.
 
+For Linux and Mac, NO setup is needed.
 * Usage
-- *`M-x find-file-in-project-by-selected`* use the *selected region as keyword* to search. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of `-name` option
+Project root is *automatically* detected if Git/Mercurical/Subversion used.
 
-- *`M-x find-file-in-project`* starts search immediately
-
-- *`M-x find-directory-in-project-by-selected`* use the *selected region as keyword* to search. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of `-iwholname` option
-
-If parameter is passed to above commands, file or directory will be opened in new window.
-
-Project root is *automatically* detected if you use Git/Mercurical/Subversion.
-
-You can manually specify the root directory by set `ffip-project-root` any time to override the default root directory,
+You can override the default root directory by set the variable `ffip-project-root`,
 #+begin_src elisp
 (setq ffip-project-root "~/projs/PROJECT_DIR")
 #+end_src
+** `M-x find-file-in-project-by-selected`
+Use the *selected region as keyword to search file*. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of `-name` option
 
+If parameter is passed , file will be opened in new window.
+** `M-x find-directory-in-project-by-selected`
+Use the *selected region as keyword to find directory*. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of `-iwholname` option
+
+If parameter is passed , directory will be opened in new window.
+** `M-x find-file-in-project`
+Starts search immediately
+** `M-x ffip-create-project-file`
+Create .dir-locals.el which "[[http://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html][defines the same set of local variables to all the files in a certain directory and its subdirector]]".
+
+You can use it to setup find-file-in-project variable like "ffip-project-root".
+
+See [[http://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html][Emacs manual]] for technical details.
 * Tips
 Please note all tips are OPTIONAL. find-file-in-project works out of box in 99% cases.
 ** You prefer ido-mode?
@@ -75,9 +82,9 @@ You only need place .dir-locals.el into your project root directory.
 Here is a sample .dir-locals.el,
 #+begin_src elisp
 ((nil . ((ffip-project-root . "~/projs/PROJECT_DIR")
-         (ffip-find-options "-not -size +64k -not -iwholename '*/dist/*'")
-         (ffip-patterns '("*.html" "*.js" "*.css" "*.java" "*.xml" "*.js"))
-         (ffip-prune-patterns '("*/.git/*" "*/node_modules/*" "*/index.js"))
+         (ffip-find-options . "-not -size +64k -not -iwholename '*/dist/*'")
+         (ffip-patterns . ("*.html" "*.js" "*.css" "*.java" "*.xml" "*.js"))
+         (ffip-prune-patterns . ("*/.git/*" "*/node_modules/*" "*/index.js"))
          )))
 #+end_src
 
@@ -112,5 +119,7 @@ You could `(setq ffip-match-path-instead-of-filename t)` before `M-x find-file-i
 For example, if you want to search files belonging to directory "elpa" or the file name containing "elpa", you can `M-x find-file-in-project-by-selected ENTER elpa`.
 ** More keybinding tips
 `C-h i g (ivy) Enter' for more key-binding tips.
+* Development
+Please note *only `ivy-read` from ivy-mode is used*. DO NOT use other APIs from ivy-mode. The less APIs used, the more stable this package will be.
 * Bug Report
 Check [[https://github.com/technomancy/find-file-in-project]]
