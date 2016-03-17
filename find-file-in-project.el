@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;;
-;; Version: 4.5
+;; Version: 4.6
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -64,10 +64,13 @@
 ;; When file basename `helloWorld' provided, `HelloWorld', `hello-world'
 ;; are added as the file name search patterns.
 ;; `C-h v ffip-filename-rules' to see its default value.
-
+;;
 ;; All these variables may be overridden on a per-directory basis in
 ;; your .dir-locals.el.  See (info "(Emacs) Directory Variables") for
 ;; details.
+
+;; To find in *current directory*, use `find-file-in-current-directory'
+;; and `find-file-in-current-directory-by-selected'.
 
 ;; ivy-mode is used for filter/search UI
 ;; In ivy-mode, SPACE is translated to regex ".*".
@@ -458,6 +461,16 @@ You can override this by setting the variable `ffip-project-root'."
                         (ffip-project-root))))
 
 ;;;###autoload
+(defun find-file-in-current-directory (&optional open-another-window)
+  "Like `find-file-in-project'.  But search only in current directory."
+  (interactive "P")
+  (let ((old-dir ffip-project-root))
+    (setq ffip-project-root default-directory)
+    (find-file-in-project open-another-window)
+    ;; restore to original value
+    (setq ffip-project-root old-dir)))
+
+;;;###autoload
 (defun find-file-in-project-by-selected (&optional open-another-window)
   "Similar to `find-file-in-project'.
 But use string from selected region to search files in the project.
@@ -475,6 +488,16 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
                      (buffer-substring-no-properties (region-beginning) (region-end))
                    (read-string "Enter keyword:"))))
     (ffip-find-files keyword open-another-window)))
+
+;;;###autoload
+(defun find-file-in-current-directory-by-selected (&optional open-another-window)
+  "Like `find-file-in-project-by-selected'.  But search only in current directory."
+  (interactive "P")
+  (let ((old-dir ffip-project-root))
+    (setq ffip-project-root default-directory)
+    (find-file-in-project-by-selected open-another-window)
+    ;; restore to original value
+    (setq ffip-project-root old-dir)))
 
 ;;;###autoload
 (defun find-directory-in-project-by-selected (&optional open-another-window)

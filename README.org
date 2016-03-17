@@ -1,4 +1,4 @@
-* find-file-in-project (v4.5)
+* find-file-in-project (v4.6)
 Find files in a project quickly, on *any operating system*.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU Find]].
@@ -9,7 +9,7 @@ Features:
 - Only dependency is GNU Find
 - Works perfectly on any OS (Yes, *including Windows*)
 - It's quick. Tested with 50,000+ files with NO performance issue
-- Furthing tweaking of GNU find through flag `ffip-find-options` is possible
+- Furthing tweaking of GNU find through flag =ffip-find-options= is possible
 - Versatile. You provide "helloWorld", we search "HelloWorld.html" "hello-world.css", "HelloWorld.js"
 * Install
 Please use [[http://melpa.org/#/find-file-in-project][melpa]].
@@ -18,32 +18,34 @@ Please use [[http://melpa.org/#/find-file-in-project][melpa]].
 
 Since v3.7, Emacs 24.3 is required.
 * Setup
-Windows setup is as easy as *install Cygwin at default directory of any driver*. `GNU Find' will be detected automatically. You don't need tweak environment variable! 
+Windows setup is as easy as *install Cygwin at default directory of any driver*. =GNU Find' will be detected automatically. You don't need tweak environment variable! 
 
 For Linux and Mac, NO setup is needed.
 * Usage
 Project root is *automatically* detected if Git/Mercurical/Subversion used.
 
-You can override the default root directory by set the variable `ffip-project-root`,
+You can override the default root directory by set the variable =ffip-project-root=,
 #+begin_src elisp
 (setq ffip-project-root "~/projs/PROJECT_DIR")
 #+end_src
-** `M-x find-file-in-project-by-selected`
-Use the *selected region as keyword to search file*. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of `-name` option
+** =M-x find-file-in-project-by-selected=
+Use the *selected region as keyword to search file*. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of =-name= option
 
 If parameter is passed , file will be opened in new window.
-** `M-x find-directory-in-project-by-selected`
-Use the *selected region as keyword to find directory*. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of `-iwholname` option
+** =M-x find-directory-in-project-by-selected=
+Use the *selected region as keyword to find directory*. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of =-iwholname= option
 
 If parameter is passed , directory will be opened in new window.
-** `M-x find-file-in-project`
+** =M-x find-file-in-project=
 Starts search immediately
-** `M-x ffip-create-project-file`
+** =M-x ffip-create-project-file=
 Create .dir-locals.el which "[[http://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html][defines the same set of local variables to all the files in a certain directory and its subdirector]]".
 
 You can use it to setup find-file-in-project variable like "ffip-project-root".
 
 See [[http://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html][Emacs manual]] for technical details.
+** =M-x find-file-in-current-directory= and =M-x find-file-in-current-directory-by-selected=
+Like =M-x find-file-in-project= and =M-x find-file-in-project-by-selected= but find only in current directory.
 * Tips
 Please note all tips are OPTIONAL. find-file-in-project works out of box in 99% cases.
 ** You prefer ido-mode?
@@ -74,7 +76,7 @@ Here is complete setup you could insert into "~/.emacs.d/init.el",
 ;; most major modes inherit from prog-mode, so below line is enough
 (add-hook 'prog-mode-hook 'my-setup-develop-environment)
 #+end_src
-** Per-directory setup with .dir-locals.el
+** Per-directory setup using .dir-locals.el
 All variables may be overridden on a per-directory basis in your .dir-locals.el. See (info "(Emacs) Directory Variables") for details.
 
 You only need place .dir-locals.el into your project root directory.
@@ -98,12 +100,12 @@ Please use either per-directory setup or per-project setup, *NOT* both.
   (setq ffip-project-root "~/projs/myprojs1"))
 #+end_src
 ** Search multiple file name patterns
-The variable `ffip-filename-rules' create some extra file names for
-search when calling `find-file-in-project-by-selected'. For example,
-When file basename `helloWorld' provided, `HelloWorld', `hello-world'
+The variable =ffip-filename-rules' create some extra file names for
+search when calling =find-file-in-project-by-selected'. For example,
+When file basename =helloWorld' provided, =HelloWorld', =hello-world'
 are added as the file name search patterns.
 
-`C-h v ffip-filename-rules' to see its default value.
+=C-h v ffip-filename-rules' to see its default value.
 
 As other variables, it could be customized per project,
 #+begin_src elisp
@@ -114,12 +116,12 @@ As other variables, it could be customized per project,
 
 That's especially useful when you are doing web frontend development.
 ** Search files in a directory
-You could `(setq ffip-match-path-instead-of-filename t)` before `M-x find-file-in-project-by-selected`.
+You could =(setq ffip-match-path-instead-of-filename t)= before =M-x find-file-in-project-by-selected=.
 
-For example, if you want to search files belonging to directory "elpa" or the file name containing "elpa", you can `M-x find-file-in-project-by-selected ENTER elpa`.
+For example, if you want to search files belonging to directory "elpa" or the file name containing "elpa", you can =M-x find-file-in-project-by-selected ENTER elpa=.
 ** More keybinding tips
-`C-h i g (ivy) Enter' for more key-binding tips.
+=C-h i g (ivy) Enter' for more key-binding tips.
 * Development
-Please note *only `ivy-read` from ivy-mode is used*. DO NOT use other APIs from ivy-mode. The less APIs used, the more stable this package will be.
+Please note *only =ivy-read= from ivy-mode is used*. DO NOT use other APIs from ivy-mode. The less APIs used, the more stable this package will be.
 * Bug Report
 Check [[https://github.com/technomancy/find-file-in-project]]
