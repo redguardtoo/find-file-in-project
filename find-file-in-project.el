@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;;
-;; Version: 4.6
+;; Version: 4.7
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -81,9 +81,13 @@
 ;; You switch to ido-mode by `(setq ffip-prefer-ido-mode t)'
 
 ;; GNU Find can be installed,
-;;   - through `brew' on OS X
-;;   - through `cygwin' on Windows.
+;;   - through `Brew' on OS X
+;;   - through `Cygwin' or `MYSYS2' on Windows.
+;; Find executable will be automatically detected. But you can manually
+;; specify the executable location by insert below code into ~/.emacs,
 ;;
+;;   (if (eq system-type 'windows-nt)
+;;      (setq ffip-find-executable "c:\\\\cygwin64\\\\bin\\\\find")
 ;; This program works on Windows/Cygwin/Linux/Mac Emacs.
 ;;
 ;; Windows setup is as easy as installing Cygwin into default directory on
@@ -311,22 +315,31 @@ If CHECK-ONLY is true, only do the check."
     (if ffip-debug (message "ffip--create-filename-pattern-for-gnufind called. rlt=%s" rlt))
     rlt))
 
+(defun ffip--guess-gnu-find-on-windows (driver path)
+  (let (rlt)
+    (if (executable-find (concat driver path))
+        (setq rlt (concat driver path)))
+    rlt))
+
 (defun ffip--guess-gnu-find ()
-  (let ((rlt "find"))
+  (let (rlt)
     (if (eq system-type 'windows-nt)
         (cond
-         ((executable-find "c:\\\\cygwin64\\\\bin\\\\find")
-          (setq rlt "c:\\\\cygwin64\\\\bin\\\\find"))
-         ((executable-find "d:\\\\cygwin64\\\\bin\\\\find")
-          (setq rlt "d:\\\\cygwin64\\\\bin\\\\find"))
-         ((executable-find "e:\\\\cygwin64\\\\bin\\\\find")
-          (setq rlt "e:\\\\cygwin64\\\\bin\\\\find"))
-         ((executable-find "c:\\\\cygwin\\\\bin\\\\find")
-          (setq rlt "c:\\\\cygwin\\\\bin\\\\find"))
-         ((executable-find "d:\\\\cygwin\\\\bin\\\\find")
-          (setq rlt "d:\\\\cygwin\\\\bin\\\\find"))
-         ((executable-find "e:\\\\cygwin\\\\bin\\\\find")
-          (setq rlt "e:\\\\cygwin\\\\bin\\\\find"))))
+         ;; cygwin
+         ((setq rlt (ffip--guess-gnu-find-on-windows "c" ":\\\\cygwin64\\\\bin\\\\find")))
+         ((setq rlt (ffip--guess-gnu-find-on-windows "d" ":\\\\cygwin64\\\\bin\\\\find")))
+         ((setq rlt (ffip--guess-gnu-find-on-windows "e" ":\\\\cygwin64\\\\bin\\\\find")))
+         ((setq rlt (ffip--guess-gnu-find-on-windows "c" ":\\\\cygwin\\\\bin\\\\find")))
+         ((setq rlt (ffip--guess-gnu-find-on-windows "d" ":\\\\cygwin\\\\bin\\\\find")))
+         ((setq rlt (ffip--guess-gnu-find-on-windows "e" ":\\\\cygwin\\\\bin\\\\find")))
+         ;; msys2
+         ((setq rlt (ffip--guess-gnu-find-on-windows "c" ":\\\\msys64\\\\usr\\\\bin\\\\find")))
+         ((setq rlt (ffip--guess-gnu-find-on-windows "d" ":\\\\msys64\\\\usr\\\\bin\\\\find")))
+         ((setq rlt (ffip--guess-gnu-find-on-windows "e" ":\\\\msys64\\\\usr\\\\bin\\\\find")))
+         ((setq rlt (ffip--guess-gnu-find-on-windows "c" ":\\\\msys32\\\\usr\\\\bin\\\\find")))
+         ((setq rlt (ffip--guess-gnu-find-on-windows "d" ":\\\\msys32\\\\usr\\\\bin\\\\find")))
+         ((setq rlt (ffip--guess-gnu-find-on-windows "e" ":\\\\msys32\\\\usr\\\\bin\\\\find")))
+         (t (setq rlt "find"))))
     rlt))
 
 (defun ffip--join-patterns (patterns)

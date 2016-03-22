@@ -1,4 +1,4 @@
-* find-file-in-project (v4.6)
+* find-file-in-project (v4.7)
 Find files in a project quickly, on *any operating system*.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU Find]].
@@ -7,10 +7,10 @@ By default, it will *automatically* search file in directory managed by *git/sub
 
 Features:
 - Only dependency is GNU Find
-- Works perfectly on any OS (Yes, *including Windows*)
-- It's quick. Tested with 50,000+ files with NO performance issue
-- Furthing tweaking of GNU find through flag =ffip-find-options= is possible
-- Versatile. You provide "helloWorld", we search "HelloWorld.html" "hello-world.css", "HelloWorld.js"
+- Works perfectly on any OS (Windows included)
+- It's quick. Tested with 50,000+ files
+- Tweaking of GNU find through flag =ffip-find-options= is possible
+- Versatile. For keyword "helloWorld", "HelloWorld.html" "hello-world.css", "HelloWorld.js" are searched
 * Install
 Please use [[http://melpa.org/#/find-file-in-project][melpa]].
 
@@ -18,9 +18,17 @@ Please use [[http://melpa.org/#/find-file-in-project][melpa]].
 
 Since v3.7, Emacs 24.3 is required.
 * Setup
-Windows setup is as easy as *install Cygwin at default directory of any driver*. =GNU Find' will be detected automatically. You don't need tweak environment variable! 
+** Windows
+Windows setup is as easy as *install [[http://cygwin.com][Cygwin]] or [[https://msys2.github.io/][MYSYS2]] at default directory of any driver*. =GNU Find= executable will be detected automatically.
 
-For Linux and Mac, NO setup is needed.
+You can also manually specify the location of find executable,
+#+begin_src elisp
+(if (eq system-type 'windows-nt)
+    (setq ffip-find-executable "c:\\\\cygwin64\\\\bin\\\\find")
+#+end_src
+
+** Linux and OS X
+NO setup needed.
 * Usage
 Project root is *automatically* detected if Git/Mercurical/Subversion used.
 
