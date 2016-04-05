@@ -14,7 +14,7 @@ Features:
 * Install
 Please use [[http://melpa.org/#/find-file-in-project][melpa]].
 
-[[https://github.com/abo-abo/swiper][Ivy-mode]] is the dependency which is installed automatically if you use melpa.
+[[https://github.com/abo-abo/swiper][Ivy-mode]] is the optional dependency which is installed automatically if you use melpa. If it is not found, ido will be used instead.
 
 Since v3.7, Emacs 24.3 is required.
 * Setup

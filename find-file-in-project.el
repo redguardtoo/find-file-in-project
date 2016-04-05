@@ -99,8 +99,6 @@
 
 ;;; Code:
 
-(require 'ivy)
-
 (defvar ffip-filename-rules
   '(ffip-filename-identity
     (ffip-filename-dashes-to-camelcase ffip-filename-camelcase-to-dashes)))
@@ -111,7 +109,7 @@
   "The file that should be used to define a project root.
 May be set using .dir-locals.el.  Checks each entry if set to a list.")
 
-(defvar ffip-prefer-ido-mode nil
+(defvar ffip-prefer-ido-mode (not (require 'ivy nil t))
   "Use `ido-mode' instead of `ivy-mode' for displaying candidates.")
 
 (defvar ffip-patterns nil
