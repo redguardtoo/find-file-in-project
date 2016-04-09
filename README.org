@@ -7,10 +7,15 @@ By default, it will *automatically* search file in directory managed by *git/sub
 
 Features:
 - Only dependency is GNU Find
-- Works perfectly on any OS (Windows included)
-- It's quick. Tested with 50,000+ files
-- Tweaking of GNU find through flag =ffip-find-options= is possible
-- Versatile. For keyword "helloWorld", "HelloWorld.html" "hello-world.css", "HelloWorld.js" are searched
+- Works perfectly on any OS with minimum or no setup
+- Quick. Tested with 50,000+ files
+- You can tweak GNU find through flag =ffip-find-options=
+- Smart. For keyword "helloWorld", "HelloWorld.html" "hello-world.css", "HelloWorld.js" are searched
+
+Screenshot:
+
+[[https://raw.githubusercontent.com/technomancy/find-file-in-project/master/ffip-screenshot-nq8.png]]
+
 * Install
 Place [[https://raw.githubusercontent.com/technomancy/find-file-in-project/master/find-file-in-project.el][find-file-in-project.el]] on your =load-path=, and add this to your configuration:
 
@@ -36,7 +41,7 @@ You can also manually specify the location of find executable,
 ** Linux and OS X
 NO setup needed.
 * Usage
-Project root is *automatically* detected if Git/Mercurical/Subversion used.
+Project root is *automatically* detected if Git/Mercurial/Subversion used.
 
 You can override the default root directory by set the variable =ffip-project-root=,
 #+begin_src elisp
@@ -47,7 +52,7 @@ Use the *selected region as keyword to search file*. If no region selected, you 
 
 If parameter is passed , file will be opened in new window.
 ** =M-x find-directory-in-project-by-selected=
-Use the *selected region as keyword to find directory*. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of =-iwholname= option
+Use the *selected region as keyword to find directory*. If no region selected, you need provide the keyword. Keyword could contain wildcard character which passed to Find as value of =-iwholname= option
 
 If parameter is passed , directory will be opened in new window.
 ** =M-x find-file-in-project=
@@ -114,9 +119,9 @@ Please use either per-directory setup or per-project setup, *NOT* both.
   (setq ffip-project-root "~/projs/myprojs1"))
 #+end_src
 ** Search multiple file name patterns
-The variable =ffip-filename-rules' create some extra file names for
-search when calling =find-file-in-project-by-selected'. For example,
-When file basename =helloWorld' provided, =HelloWorld', =hello-world'
+The variable =ffip-filename-rules= create some extra file names for
+search when calling =find-file-in-project-by-selected=. For example,
+When file basename =helloWorld= provided, =HelloWorld=, =hello-world=
 are added as the file name search patterns.
 
 =C-h v ffip-filename-rules' to see its default value.
@@ -128,7 +133,7 @@ As other variables, it could be customized per project,
               (ffip-filename-dashes-to-camelcase ffip-filename-camelcase-to-dashes)))
 #+end_src
 
-That's especially useful when you are doing web frontend development.
+That's especially useful when you are doing web development.
 ** Search files in a directory
 You could =(setq ffip-match-path-instead-of-filename t)= before =M-x find-file-in-project-by-selected=.
 
@@ -138,4 +143,4 @@ For example, if you want to search files belonging to directory "elpa" or the fi
 * Development
 Please note *only =ivy-read= from ivy-mode is used*. DO NOT use other APIs from ivy-mode. The less APIs used, the more stable this package will be.
 * Bug Report
-Check [[https://github.com/technomancy/find-file-in-project]]
+Check [[https://github.com/technomancy/find-file-in-project]].
