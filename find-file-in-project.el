@@ -152,6 +152,7 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
     "*.gif"
     "*.bmp"
     "*.tiff"
+    "*.ico"
     ;; documents
     "*.doc"
     "*.docx"
