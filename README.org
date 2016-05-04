@@ -52,6 +52,8 @@ You can override the default root directory by set the variable =ffip-project-ro
 ** =M-x find-file-in-project-by-selected=
 Use the *selected region as keyword to search file*. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of =-name= option
 
+If keyword contains line number like "hello.txt:32" or "hello.txt:32:", we will move to that line in opened file.
+
 If parameter is passed , file will be opened in new window.
 
 If you =(setq ffip-match-path-instead-of-filename t)= before =M-x find-file-in-project-by-selected=, we try to match selected text any part of full path (directory+file name) before displaying candidates. It's a little slower than the original setup but make find-file-in-project behaves exactly like Sublime Text's Cmd+P.
