@@ -29,3 +29,15 @@
     (setq files (mapcar 'car (ffip-project-search "ivy" nil)))
     ;; (message "files=%s" files)
     (should (string-match-p "ivy.el" (car files)))))
+
+
+(ert-deftest ffip-test-ffip ()
+  (let (files)
+    (setq ffip-project-root default-directory)
+    (setq files (mapcar 'car (ffip-project-search nil nil)))
+    (should (> (length files) 1))
+    (should (not (active-minibuffer-window)))
+    (setq ivy-read-called nil)
+    ;; ffip will call ivy by default
+    (ffip-find-files nil nil)
+    (should ivy-read-called)))

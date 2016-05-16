@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;;
-;; Version: 4.9
+;; Version: 4.9.1
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -422,7 +422,8 @@ directory they are found in so that they are unique."
          root)
 
     ;; extract line num if exists
-    (when (string-match "^\\(.*\\):\\([0-9]+\\):?$" keyword)
+    (when (and keyword
+               (string-match "^\\(.*\\):\\([0-9]+\\):?$" keyword))
       (setq lnum (string-to-number (match-string 2 keyword)))
       (setq keyword (match-string 1 keyword)))
 

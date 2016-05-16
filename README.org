@@ -1,4 +1,4 @@
-* find-file-in-project (v4.9)
+* find-file-in-project (v4.9.1)
 Find files in a project quickly, on *any operating system*.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU Find]].
