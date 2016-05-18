@@ -58,7 +58,7 @@ If parameter is passed , file will be opened in new window.
 
 If you =(setq ffip-match-path-instead-of-filename t)= before =M-x find-file-in-project-by-selected=, we try to match selected text any part of full path (directory+file name) before displaying candidates. It's a little slower than the original setup but make find-file-in-project behaves exactly like Sublime Text's Cmd+P.
 ** =M-x find-directory-in-project-by-selected=
-Use the *selected region as keyword to find directory*. If no region selected, you need provide the keyword. Keyword could contain wildcard character which passed to Find as value of =-iwholname= option
+Use the *selected region as keyword to find directory*. If no region selected, you need provide the keyword. Keyword could contain wildcard character which passed to Find as value of =-iwholename= option
 
 If parameter is passed , directory will be opened in new window.
 ** =M-x find-file-in-project=
@@ -130,12 +130,14 @@ search when calling =find-file-in-project-by-selected=. For example,
 When file basename =helloWorld= provided, =HelloWorld=, =hello-world=
 are added as the file name search patterns.
 
-=C-h v ffip-filename-rules' to see its default value.
+=C-h v ffip-filename-rules= to see its default value.
 
 As other variables, it could be customized per project,
 #+begin_src elisp
 (setq-local ffip-filename-rules
-            '(ffip-filename-identity
+            '(;; first, search by the original file name
+              ffip-filename-identity
+              ;; second, apply either below rule
               (ffip-filename-dashes-to-camelcase ffip-filename-camelcase-to-dashes)))
 #+end_src
 
