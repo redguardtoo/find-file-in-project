@@ -3,11 +3,11 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;;
-;; Version: 4.9.1
+;; Version: 5.0
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
-;; Package-Requires: ((swiper "0.7.0") (emacs "24.3"))
+;; Package-Requires: ((ivy "0.7.0") (emacs "24.3"))
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
 ;; EmacsWiki: FindFileInProject
@@ -72,6 +72,14 @@
 ;; To find in *current directory*, use `find-file-in-current-directory'
 ;; and `find-file-in-current-directory-by-selected'.
 
+;; `ffip-show-diff' execute the backend from `ffip-diff-backends'.
+;; The selected index is the parameter passed to `ffip-show-diff'
+;; whose default value in one.
+;; The output of execution is expected be in Unified Diff Format.
+;; The output is inserted into *ffip-diff* buffer.
+;; In the buffer, press "o/C-c C-c"/ENTER" or `M-x ffip-diff-find-file'
+;; to open correspong file.
+
 ;; ivy-mode is used for filter/search UI
 ;; In ivy-mode, SPACE is translated to regex ".*".
 ;; For example, the search string "dec fun pro" is transformed into
@@ -87,7 +95,7 @@
 ;; specify the executable location by insert below code into ~/.emacs,
 ;;
 ;;   (if (eq system-type 'windows-nt)
-;;      (setq ffip-find-executable "c:\\\\cygwin64\\\\bin\\\\find")
+;;      (setq ffip-find-executable "c:\\\\cygwin64\\\\bin\\\\find"))
 ;; This program works on Windows/Cygwin/Linux/Mac Emacs.
 ;;
 ;; Windows setup is as easy as installing Cygwin into default directory on
@@ -99,13 +107,39 @@
 
 ;;; Code:
 
+(require 'diff-mode)
+
 (defvar ffip-filename-rules
   '(ffip-filename-identity
-    (ffip-filename-dashes-to-camelcase ffip-filename-camelcase-to-dashes)))
+    (ffip-filename-dashes-to-camelcase ffip-filename-camelcase-to-dashes))
+  "Rules to create extra file names for `find'")
+
+(defvar ffip-diff-backends
+  '((if (require 'ivy nil t)
+        (let ((line (ivy-read "git log:"
+                  (split-string (shell-command-to-string "git --no-pager log --date=short --pretty=format:'%h|%ad|%s|%an'") "\n" t))))
+          (shell-command-to-string (format "git show %s" (car (split-string line "|" t)))))
+        "git show")
+    "cd $(git rev-parse --show-toplevel) && git diff"
+    "cd $(git rev-parse --show-toplevel) && git diff --cached"
+    (car kill-ring)
+    (if (require 'ivy nil t)
+        (let ((line (ivy-read "git log:"
+                              (split-string (shell-command-to-string "hg log --template '{node|short}|{date|shortdate}|{desc|strip|firstline}|{author|user}\n'
+") "\n" t))))
+          (shell-command-to-string (format "hg log -p -g -r %s" (car (split-string line "|" t)))))
+      "hg log -p -g -r tip")
+    "cd $(hg root) && hg diff"
+    "svn diff")
+  "The list of back-ends.
+If back-end is string, it is run in `shell-command-to-string'.
+If it's a function or lisp expression, it will be executed.
+
+The output of excution is inserted into *ffip-diff* buffer with `diff-mode' on")
 
 (defvar ffip-find-executable nil "Path of GNU find.  If nil, we will find `find' path automatically.")
 
-(defvar ffip-project-file '(".svn" ".git" ".hg")
+(defvar ffip-project-file '(".svn" ".hg" ".git")
   "The file that should be used to define a project root.
 May be set using .dir-locals.el.  Checks each entry if set to a list.")
 
@@ -272,8 +306,7 @@ If CHECK-ONLY is true, only do the check."
 
       (if (string= rlt (downcase keyword)) (setq rlt nil))
 
-      (if (and rlt ffip-debug)
-          (message "ffip-filename-camelcase-to-dashes called. rlt=%s" rlt))))
+      (if (and rlt ffip-debug) (message "ffip-filename-camelcase-to-dashes called. rlt=%s" rlt))))
     rlt))
 
 ;;;###autoload
@@ -290,8 +323,7 @@ If CHECK-ONLY is true, only do the check."
 
       (let ((first-char (substring rlt 0 1)))
        (setq rlt (concat "[" first-char (downcase first-char) "]" (substring rlt 1))))
-      (if (and rlt ffip-debug)
-          (message "ffip-filename-dashes-to-camelcase called. rlt=%s" rlt))))
+      (if (and rlt ffip-debug) (message "ffip-filename-dashes-to-camelcase called. rlt=%s" rlt))))
     rlt))
 
 (defun ffip--create-filename-pattern-for-gnufind (keyword)
@@ -377,7 +409,10 @@ If CHECK-ONLY is true, only do the check."
   "Return an alist of all filenames in the project and their path.
 
 Files with duplicate filenames are suffixed with the name of the
-directory they are found in so that they are unique."
+directory they are found in so that they are unique.
+
+If KEYWORD is string, it's the file name or file path to find file.
+If KEYWORD is list, it's the list of file names."
   (let (rlt
         cmd
         (old-default-directory default-directory)
@@ -393,8 +428,14 @@ directory they are found in so that they are unique."
                       (ffip--join-patterns ffip-patterns)
                       ;; When finding directory, the keyword is like:
                       ;; "proj/hello/world"
-                      (if find-directory (format "-iwholename \"*%s\"" keyword)
-                          (ffip--create-filename-pattern-for-gnufind keyword))
+                      (cond
+                       ((listp keyword)
+                        ;; already got enough files names to handle
+                        (let ((ffip-filename-rules nil))
+                          (ffip--create-filename-pattern-for-gnufind keyword)))
+                       (t
+                        (if find-directory (format "-iwholename \"*%s\"" keyword)
+                          (ffip--create-filename-pattern-for-gnufind keyword))))
                       ffip-find-options))
 
     (if ffip-debug (message "run cmd at %s: %s" default-directory cmd))
@@ -414,7 +455,15 @@ directory they are found in so that they are unique."
     (cd old-default-directory)
     rlt))
 
-(defun ffip-find-files (keyword open-another-window &optional find-directory)
+(defun ffip--forward-line (lnum)
+  "Forward LNUM lines"
+  (if ffip-debug (message "ffip--forward-line called => %s" lnum))
+  (when (and lnum (> lnum 0))
+    (goto-char (point-min))
+    (forward-line (1- lnum))))
+
+(defun ffip-find-files (keyword open-another-window &optional find-directory fn)
+  "The API to find files."
   (let* (project-files
          files
          lnum
@@ -422,7 +471,7 @@ directory they are found in so that they are unique."
          root)
 
     ;; extract line num if exists
-    (when (and keyword
+    (when (and keyword (stringp keyword)
                (string-match "^\\(.*\\):\\([0-9]+\\):?$" keyword))
       (setq lnum (string-to-number (match-string 2 keyword)))
       (setq keyword (match-string 1 keyword)))
@@ -449,9 +498,9 @@ directory they are found in so that they are unique."
                      (find-file-other-window rlt)
                    (find-file rlt))
                  ;; goto line if needed
-                 (when (and lnum (> lnum 0))
-                   (goto-char (point-min))
-                   (forward-line (1- lnum))))))))
+                 (ffip--forward-line lnum)
+                 (if fn (funcall fn rlt))
+                 )))))
       (message "Nothing found!"))))
 
 (defun ffip--prepare-root-data-for-project-file (root)
@@ -591,8 +640,112 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
 ;;;###autoload
 (defalias 'ffip 'find-file-in-project)
 
+
+;;;###autoload
+(defun ffip-diff-quit ()
+  (interactive)
+  (quit-window kill-buffer))
+
+;;;###autoload
+(defun ffip-diff-find-file (&optional open-another-window)
+  "File file(s) in current hunk."
+  (interactive "P")
+  (let* ((files (mapcar 'file-name-nondirectory (diff-hunk-file-names)))
+        (alnum 0)
+        (blnum 0))
+
+    (save-excursion
+      (diff-beginning-of-hunk t)
+      (when (looking-at "\\(?:\\*\\{15\\}.*\n\\)?[-@* ]*\\([0-9,]+\\)\\([ acd+]+\\([0-9,]+\\)\\)?")
+        (setq alnum (string-to-number (match-string 1)))
+        (setq blnum (string-to-number (match-string 3)))))
+
+    (if (and (> (length files) 1)
+             (string= (nth 0 files) (nth 1 files)))
+        (ffip-find-files (nth 0 files)
+                         open-another-window
+                         nil
+                         (lambda (opened-file)
+                           ;; use line number in new file since there is only one file name candidate
+                           (ffip--forward-line blnum)))
+      (ffip-find-files files
+                       open-another-window
+                       nil
+                       (lambda (opened-file)
+                         (cond
+                          ((string= (file-name-nondirectory opened-file) (nth 0 files))
+                           (ffip--forward-line alnum))
+                          (t
+                           (ffip--forward-line blnum)))
+                         )))))
+
+(defvar ffip-diff-mode-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map diff-mode-map)
+    (define-key map "p" 'diff-hunk-prev)
+    (define-key map "n" 'diff-hunk-next)
+    (define-key map "P" 'diff-file-prev)
+    (define-key map "N" 'diff-file-next)
+    (define-key map [remap diff-goto-source] 'ffip-diff-find-file)
+    map)
+  "Mode map based on `diff-mode-map'")
+
+(define-derived-mode ffip-diff-mode diff-mode "ffip"
+  "Show diff/patch."
+  (setq buffer-read-only t)
+  (setq truncate-lines t)
+  (use-local-map ffip-diff-mode-map))
+
+(defun ffip-show-content-in-diff-mode (content)
+  (let (rlt-buf)
+    (if (get-buffer "*ffip-diff*")
+        (kill-buffer "*ffip-diff*"))
+    (setq rlt-buf (get-buffer-create "*ffip-diff*"))
+    (save-current-buffer
+      (switch-to-buffer-other-window rlt-buf)
+      (set-buffer rlt-buf)
+      (erase-buffer)
+      (insert content)
+      (ffip-diff-mode)
+      (goto-char (point-min)))))
+
+;;;###autoload
+(defun ffip-show-diff (&optional num)
+  "Show the diff output by excuting selected ffip-diff-backends.
+NUM is the index selected backend from ffip-diff-backends.  NUM is 1 based"
+  (interactive "P")
+  (cond
+   ((or (not num) (< num 1))
+    (setq num 0))
+   ((> num (length ffip-diff-backends))
+    (setq num (- (length ffip-diff-backends)) 1))
+   (t
+    (setq num (- num 1))))
+
+  (let* ((backend (nth num ffip-diff-backends))
+         content
+         rlt-buf)
+    (message "ffip backend %S executed." backend)
+    (when backend
+      (cond
+       ((stringp backend)
+        (setq content (shell-command-to-string backend))
+        )
+       ((functionp backend)
+        (ffip-show-content-in-diff-mode (funcall backend)))
+       ((consp backend)
+        (ffip-show-content-in-diff-mode (funcall `(lambda () ,backend))))
+       )
+      (cond
+       ((and content (not (string= content "")))
+        (ffip-show-content-in-diff-mode content))
+       (t (message "Output of %S is empty!" backend)))
+      )
+  ))
+
 ;; safe locals
 (progn
+  (put 'ffip-diff-backends 'safe-local-variable 'listp)
   (put 'ffip-patterns 'safe-local-variable 'listp)
   (put 'ffip-prune-patterns 'safe-local-variable 'listp)
   (put 'ffip-filename-rules 'safe-local-variable 'listp)
