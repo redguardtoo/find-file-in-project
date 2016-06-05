@@ -23,6 +23,7 @@ Place [[https://raw.githubusercontent.com/technomancy/find-file-in-project/maste
 (autoload 'find-file-in-project "find-file-in-project" nil t)
 (autoload 'find-file-in-project "find-file-in-project-by-selected" nil t)
 (autoload 'find-file-in-project "find-directory-in-project-by-selected" nil t)
+(autoload 'find-file-in-project "ffip-show-diff" nil t)
 #+end_src
 
 It is also possible to use [[http://stable.melpa.org/#/find-file-in-project][melpa]]; however be aware that as of the time of this writing installation using =package.el= is [[https://glyph.twistedmatrix.com/2015/11/editor-malware.html][not recommended]] due to flaws in Emacs's TLS implementation.
