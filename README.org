@@ -74,10 +74,10 @@ Like =M-x find-file-in-project= but find only in current directory.
 ** =M-x find-file-in-current-directory-by-selected=
 Like =M-x find-file-in-project-by-selected= but find only in current directory.
 ** =M-x ffip-show-diff=
-Execute selected backend from =ffip-diff-backends=. The selected index is the parameter passed to =ffip-show-diff= whose default value in one.
+Execute selected backend from =ffip-diff-backends=. The selected index, whose default value in one, is the parameter passed to =ffip-show-diff=.
 
 The output of execution of backend is expected to be compatible with [[http://www.gnu.org/software/diffutils/manual/html_node/Unified-Format.html][Unified Diff Format]].
-The output is inserted into a new buffer "*ffip-diff*" where you can press =o=, =C-c C-c=, =ENTER= , =M-x ffip-diff-find-file=  to open the corresponding file.
+The output is inserted into  =*ffip-diff*= buffer where you can press =o=, =C-c C-c=, =ENTER= , =M-x ffip-diff-find-file=  to open the corresponding file.
 
 For example, you can =M-x ffip-show-diff= to view the git commit and open corresponding file.
 
@@ -85,7 +85,7 @@ If you use [[https://www.mercurial-scm.org/][Mercurial]], =M-x 5 ffip-show-diff=
 
 Please press =C-h v ffip-diff-backends= to view the available backends.
 
-Here are other key bindings available in =*ffip-diff*= buffer,
+Other key bindings available in =*ffip-diff*= buffer,
 | key binding | command        |
 |-------------+----------------|
 | p           | diff-hunk-prev |
