@@ -79,6 +79,15 @@
 ;; The output is inserted into *ffip-diff* buffer.
 ;; In the buffer, press "o/C-c C-c"/ENTER" or `M-x ffip-diff-find-file'
 ;; to open correspong file.
+;; If you use evil-mode, insert below code into ~/.emacs,
+;;   (defun ffip-diff-mode-hook-setup ()
+;;       (evil-local-set-key 'normal "p" 'diff-hunk-prev)
+;;       (evil-local-set-key 'normal "n" 'diff-hunk-next)
+;;       (evil-local-set-key 'normal "P" 'diff-file-prev)
+;;       (evil-local-set-key 'normal "N" 'diff-file-next)
+;;       (evil-local-set-key 'normal (kbd "RET") 'ffip-diff-find-file)
+;;       (evil-local-set-key 'normal "o" 'ffip-diff-find-file))
+;;   (add-hook 'ffip-diff-mode-hook 'ffip-diff-mode-hook-setup)
 
 ;; ivy-mode is used for filter/search UI
 ;; In ivy-mode, SPACE is translated to regex ".*".
