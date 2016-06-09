@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;;
-;; Version: 5.0
+;; Version: 5.0.1
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -572,7 +572,7 @@ See (info \"(Emacs) Directory Variables\") for details."
 If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window.
 
 The project's scope is defined as the first directory containing
-a `ffip-project-file' (It's value is \".git\" by default.
+a `ffip-project-file' whose value is \".git\" by default.
 
 You can override this by setting the variable `ffip-project-root'."
 
@@ -706,6 +706,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   (use-local-map ffip-diff-mode-map))
 
 (defun ffip-show-content-in-diff-mode (content)
+  "Insert content into *ffip-diff* buffer."
   (let (rlt-buf)
     (if (get-buffer "*ffip-diff*")
         (kill-buffer "*ffip-diff*"))
@@ -720,37 +721,40 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
 
 ;;;###autoload
 (defun ffip-show-diff (&optional num)
-  "Show the diff output by excuting selected ffip-diff-backends.
-NUM is the index selected backend from ffip-diff-backends.  NUM is 1 based"
+  "Show the diff output by excuting selected `ffip-diff-backends'.
+NUM is the index selected backend from `ffip-diff-backends'.  NUM is 1 based"
   (interactive "P")
   (cond
    ((or (not num) (< num 1))
     (setq num 0))
    ((> num (length ffip-diff-backends))
-    (setq num (- (length ffip-diff-backends)) 1))
+    (setq num (1- (length ffip-diff-backends))))
    (t
-    (setq num (- num 1))))
+    (setq num (1- num))))
 
   (let* ((backend (nth num ffip-diff-backends))
          content
          rlt-buf)
-    (message "ffip backend %S executed." backend)
+
+    ;; (message "ffip backend %S executed." backend)
     (when backend
       (cond
+       ;; shell command
        ((stringp backend)
         (setq content (shell-command-to-string backend))
         )
+       ;; command
        ((functionp backend)
         (ffip-show-content-in-diff-mode (funcall backend)))
+       ;; lisp exipression
        ((consp backend)
-        (ffip-show-content-in-diff-mode (funcall `(lambda () ,backend))))
-       )
-      (cond
-       ((and content (not (string= content "")))
-        (ffip-show-content-in-diff-mode content))
-       (t (message "Output of %S is empty!" backend)))
-      )
-  ))
+        (ffip-show-content-in-diff-mode (funcall `(lambda () ,backend)))))
+
+      ;; show diff now!
+      (if (and content (not (string= content "")))
+          (ffip-show-content-in-diff-mode content)
+        (message "Output of %S is empty!" backend)))
+    ))
 
 ;; safe locals
 (progn
