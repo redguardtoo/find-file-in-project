@@ -722,15 +722,14 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
 ;;;###autoload
 (defun ffip-show-diff (&optional num)
   "Show the diff output by excuting selected `ffip-diff-backends'.
-NUM is the index selected backend from `ffip-diff-backends'.  NUM is 1 based"
+NUM is the index selected backend from `ffip-diff-backends'.
+NUM is zero based.  Its default value is zero."
   (interactive "P")
   (cond
-   ((or (not num) (< num 1))
+   ((or (not num) (< num 0))
     (setq num 0))
    ((> num (length ffip-diff-backends))
-    (setq num (1- (length ffip-diff-backends))))
-   (t
-    (setq num (1- num))))
+    (setq num (1- (length ffip-diff-backends)))))
 
   (let* ((backend (nth num ffip-diff-backends))
          content
