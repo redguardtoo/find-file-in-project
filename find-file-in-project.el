@@ -653,7 +653,8 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
 ;;;###autoload
 (defun ffip-diff-quit ()
   (interactive)
-  (quit-window kill-buffer))
+  ;; kill buffer instead of bury it
+  (quit-window t))
 
 ;;;###autoload
 (defun ffip-diff-find-file (&optional open-another-window)
