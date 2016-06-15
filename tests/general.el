@@ -48,7 +48,7 @@
         (ffip-diff-backends '((with-temp-buffer
                                 (insert-file-contents "git-diff.diff")
                                 (buffer-string)))))
-    (ffip-show-diff 1)
+    (ffip-show-diff)
 
     ;; the first is general.el
     (switch-to-buffer "*ffip-diff*")
