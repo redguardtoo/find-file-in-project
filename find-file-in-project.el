@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015
 ;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;;
-;; Version: 5.0.1
+;; Version: 5.1.0
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -79,6 +79,9 @@
 ;; The output is inserted into *ffip-diff* buffer.
 ;; In the buffer, press "o/C-c C-c"/ENTER" or `M-x ffip-diff-find-file'
 ;; to open correspong file.
+;;
+;; `ffip-diff-find-file-before-hook' is called before `ffip-diff-find-file'.
+;;
 ;; If you use evil-mode, insert below code into ~/.emacs,
 ;;   (defun ffip-diff-mode-hook-setup ()
 ;;       (evil-local-set-key 'normal "p" 'diff-hunk-prev)
@@ -122,6 +125,9 @@
   '(ffip-filename-identity
     (ffip-filename-dashes-to-camelcase ffip-filename-camelcase-to-dashes))
   "Rules to create extra file names for `find'")
+
+(defvar ffip-diff-find-file-before-hook nil
+  "Hook run before `ffip-diff-find-file' move focus out of *ffip-diff* buffer.")
 
 (defvar ffip-diff-backends
   '((if (require 'ivy nil t)
@@ -678,6 +684,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
                          (lambda (opened-file)
                            ;; use line number in new file since there is only one file name candidate
                            (ffip--forward-line blnum)))
+      (run-hook-with-args 'ffip-diff-find-file-before-hook)
       (ffip-find-files files
                        open-another-window
                        nil
