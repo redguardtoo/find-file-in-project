@@ -65,7 +65,7 @@ If parameter is passed , directory will be opened in new window.
 ** =M-x find-file-in-project=
 Starts search immediately
 ** =M-x ffip-create-project-file=
-Create .dir-locals.el which "[[http://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html][defines the same set of local variables to all the files in a certain directory and its subdirector]]".
+Create .dir-locals.el which "[[http://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html][defines the same set of local variables to all the files in a certain directory and its subdirectory]]".
 
 You can use it to setup find-file-in-project variable like "ffip-project-root".
 
@@ -205,6 +205,6 @@ That's especially useful when you are doing web front end development.
 ** More keybinding tips
 =C-h i g (ivy) Enter' for more key-binding tips.
 * Development
-Please note *only =ivy-read= from ivy-mode is used*. DO NOT use other APIs from ivy-mode. The less APIs used, the more stable this package will be.
+Please note *only* =ivy-read= from ivy-mode is used. DO NOT use other APIs from ivy-mode. The less APIs used, the more stable this package will be.
 * Bug Report
 Check [[https://github.com/technomancy/find-file-in-project]].

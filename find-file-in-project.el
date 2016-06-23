@@ -1,7 +1,7 @@
 ;;; find-file-in-project.el --- Find files in a project quickly, on any OS
 
-;; Copyright (C) 2006-2009, 2011-2012, 2015
-;;   Phil Hagelberg, Doug Alcorn, and Will Farrington
+;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016
+;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
 ;; Version: 5.1.0
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
@@ -124,7 +124,7 @@
 (defvar ffip-filename-rules
   '(ffip-filename-identity
     (ffip-filename-dashes-to-camelcase ffip-filename-camelcase-to-dashes))
-  "Rules to create extra file names for `find'")
+  "Rules to create extra file names for GNU Find.")
 
 (defvar ffip-diff-find-file-before-hook nil
   "Hook run before `ffip-diff-find-file' move focus out of *ffip-diff* buffer.")
@@ -148,18 +148,19 @@
     "svn diff")
   "The list of back-ends.
 If back-end is string, it is run in `shell-command-to-string'.
-If it's a function or lisp expression, it will be executed.
+If it's a function or lisp expression, it will be executed and return a string.
 
-The output of excution is inserted into *ffip-diff* buffer with `diff-mode' on")
+The output of execution is inserted into *ffip-diff* buffer with `ffip-diff-mode' on.
+`ffip-diff-mode' inherits from `diff-mode'.")
 
-(defvar ffip-find-executable nil "Path of GNU find.  If nil, we will find `find' path automatically.")
+(defvar ffip-find-executable nil "Path of GNU find.  If nil, `ffip--guess-gnu-find' is called.")
 
 (defvar ffip-project-file '(".svn" ".hg" ".git")
-  "The file that should be used to define a project root.
+  "The file/directory used to locate project root.
 May be set using .dir-locals.el.  Checks each entry if set to a list.")
 
 (defvar ffip-prefer-ido-mode (not (require 'ivy nil t))
-  "Use `ido-mode' instead of `ivy-mode' for displaying candidates.")
+  "Use `ido-mode' instead of `ivy-mode' to display candidates.")
 
 (defvar ffip-patterns nil
   "List of patterns to look for with `find-file-in-project'.")
