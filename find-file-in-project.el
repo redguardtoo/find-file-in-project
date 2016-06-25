@@ -421,6 +421,7 @@ If CHECK-ONLY is true, only do the check."
      (ivy-read prompt collection
                :action action))))
 
+;;;###autoload
 (defun ffip-project-search (keyword find-directory)
   "Return an alist of all filenames in the project and their path.
 
@@ -478,6 +479,7 @@ If KEYWORD is list, it's the list of file names."
     (goto-char (point-min))
     (forward-line (1- lnum))))
 
+;;;###autoload
 (defun ffip-find-files (keyword open-another-window &optional find-directory fn)
   "The API to find files."
   (let* (project-files
