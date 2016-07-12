@@ -1,9 +1,9 @@
 * find-file-in-project (v5.2.0)
-Find files in a project quickly, on *any operating system*.
+Find files in a project quickly on *any operating system*.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU Find]].
 
-By default, it will *automatically* search file in directory managed by *git/subversion/mercurial*. But you can easily switch to other types of projects.
+By default, it will *automatically* search files in a directory managed by *git/subversion/mercurial*. But you can easily switch to other types of projects.
 
 Features:
 - Only dependency is GNU Find
@@ -35,7 +35,7 @@ It is also possible to use [[http://stable.melpa.org/#/find-file-in-project][mel
 Since v3.7, Emacs 24.3 is required.
 * Setup
 ** Windows
-Windows setup is as easy as *install [[http://cygwin.com][Cygwin]] or [[https://msys2.github.io/][MYSYS2]] at default directory of any driver*. =GNU Find= executable will be detected automatically.
+Windows setup is as easy as *installing [[http://cygwin.com][Cygwin]] or [[https://msys2.github.io/][MYSYS2]] at default directory of any driver*. =GNU Find= executable will be detected automatically.
 
 You can also manually specify the location of find executable,
 #+begin_src elisp
@@ -46,9 +46,9 @@ You can also manually specify the location of find executable,
 ** Linux and OS X
 NO setup needed.
 * Usage
-Project root is *automatically* detected if Git/Mercurial/Subversion used.
+Project root is *automatically* detected if Git/Mercurial/Subversion is used.
 
-You can override the default root directory by set the variable =ffip-project-root=,
+You can override the default root directory by setting =ffip-project-root=,
 #+begin_src elisp
 (setq ffip-project-root "~/projs/PROJECT_DIR")
 #+end_src
@@ -77,15 +77,15 @@ Like =M-x find-file-in-project= but find only in current directory.
 ** =M-x find-file-in-current-directory-by-selected=
 Like =M-x find-file-in-project-by-selected= but find only in current directory.
 ** =M-x ffip-show-diff=
-Execute selected backend from =ffip-diff-backends=. The selected index, whose default value in one, is the parameter passed to =ffip-show-diff=.
+Execute selected backend from =ffip-diff-backends=. The selected index, whose default value in zero, is the parameter passed to =ffip-show-diff=.
 
-The output of execution of backend is expected to be compatible with [[http://www.gnu.org/software/diffutils/manual/html_node/Unified-Format.html][Unified Diff Format]].
+The output of execution of backend is expected to be [[http://www.gnu.org/software/diffutils/manual/html_node/Unified-Format.html][Unified Diff Format]].
 
 The output is inserted into  =*ffip-diff*= buffer where you can press =o=, =C-c C-c=, =ENTER= , =M-x ffip-diff-find-file=  to open the corresponding file.
 
 =ffip-diff-find-file-before-hook= is called before =M-x ffip-diff-find-file=.
 
-For example, you can =M-x ffip-show-diff= to view the git commit and open corresponding.
+For example, you can =M-x ffip-show-diff= to view the git commit and open corresponding file.
 
 If you use [[https://www.mercurial-scm.org/][Mercurial]], =M-x 5 ffip-show-diff=.
 
@@ -136,11 +136,11 @@ You can customize the =ffip-diff-backends=,
 ** =M-x ffip-save-ivy-last= and =M-x ffip-ivy-resume=
 These two commands requires [[https://github.com/abo-abo/swiper][ivy-mode]].
 
-=ffip-save-ivy-last= saves previous search result.
+=ffip-save-ivy-last= saves the most recent search result.
 
-=ffip-ivy-resume= re-use the *saved* result by =ffip-save-ivy-last=.
+=ffip-ivy-resume= re-use the search result *saved* by =ffip-save-ivy-last=.
 
-You can always use =ivy-resume= to re-use previous search result.
+You can always use =ivy-resume= to re-use the most recent search result.
 * Tips
 All tips are OPTIONAL. find-file-in-project works out of box in 99% cases.
 ** You prefer ido-mode?
@@ -215,6 +215,6 @@ That's especially useful when you are doing web front end development.
 ** More keybinding tips
 =C-h i g (ivy) Enter' for more key-binding tips.
 * Development
-Please note *only* =ivy-read= from ivy-mode is used. DO NOT use other APIs from ivy-mode. The less APIs used, the more stable this package will be.
+Please note *only* =ivy-read= from ivy-mode is used. DO NOT use other APIs from =ivy-mode=. The less APIs used, the more stable this package will be.
 * Bug Report
 Check [[https://github.com/technomancy/find-file-in-project]].

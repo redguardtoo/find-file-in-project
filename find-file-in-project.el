@@ -98,7 +98,11 @@
 ;; a regex "\\(dec\\).*\\(fun\\).*\\(pro\\)"
 ;; `C-h i g (ivy)' for more key-binding tips.
 ;;
-;; You switch to ido-mode by `(setq ffip-prefer-ido-mode t)'
+;; `ffip-save-ivy-last' saves the most recent search result.
+;; `ffip-ivy-resume' re-use the save result. Both requires `ivy-mode'
+;; installed. You can use `ivy-resume' too.
+;;
+;; You can switch to ido-mode by `(setq ffip-prefer-ido-mode t)'
 
 ;; GNU Find can be installed,
 ;;   - through `Brew' on OS X
