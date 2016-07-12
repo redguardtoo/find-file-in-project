@@ -1,4 +1,4 @@
-* find-file-in-project (v5.1.0)
+* find-file-in-project (v5.2.0)
 Find files in a project quickly, on *any operating system*.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU Find]].
@@ -21,9 +21,11 @@ Place [[https://raw.githubusercontent.com/technomancy/find-file-in-project/maste
 
 #+begin_src elisp
 (autoload 'find-file-in-project "find-file-in-project" nil t)
-(autoload 'find-file-in-project "find-file-in-project-by-selected" nil t)
-(autoload 'find-file-in-project "find-directory-in-project-by-selected" nil t)
-(autoload 'find-file-in-project "ffip-show-diff" nil t)
+(autoload 'find-file-in-project-by-selected "find-file-in-project" nil t)
+(autoload 'find-directory-in-project-by-selected "find-file-in-project" nil t)
+(autoload 'ffip-show-diff "find-file-in-project" nil t)
+(autoload 'ffip-save-ivy-last "find-file-in-project" nil t)
+(autoload 'ffip-ivy-resume "find-file-in-project" nil t)
 #+end_src
 
 It is also possible to use [[http://stable.melpa.org/#/find-file-in-project][melpa]]; however be aware that as of the time of this writing installation using =package.el= is [[https://glyph.twistedmatrix.com/2015/11/editor-malware.html][not recommended]] due to flaws in Emacs's TLS implementation.
@@ -131,6 +133,14 @@ You can customize the =ffip-diff-backends=,
 
         "svn diff"))
 #+end_src
+** =M-x ffip-save-ivy-last= and =M-x ffip-ivy-resume=
+These two commands requires [[https://github.com/abo-abo/swiper][ivy-mode]].
+
+=ffip-save-ivy-last= saves previous search result.
+
+=ffip-ivy-resume= re-use the *saved* result by =ffip-save-ivy-last=.
+
+You can always use =ivy-resume= to re-use previous search result.
 * Tips
 All tips are OPTIONAL. find-file-in-project works out of box in 99% cases.
 ** You prefer ido-mode?

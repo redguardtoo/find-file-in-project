@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.1.0
+;; Version: 5.2.0
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -247,6 +247,9 @@ Use this to exclude portions of your project: \"-not -regex \\\".*svn.*\\\"\".")
 
 This overrides variable `ffip-project-root' when set.")
 
+(defvar ffip-ivy-last-saved nil
+  "Backup of `ivy-last'.  Requires ivy-mode.")
+
 (defvar ffip-full-paths t
   "If non-nil, show fully project-relative paths.")
 
@@ -298,6 +301,22 @@ If the result is true, return the function."
 
     rlt))
 
+;;;###autoload
+(defun ffip-save-ivy-last ()
+  "Save `ivy-last' into `ffip-ivy-last-saved'.  Requires `ivy-mode'."
+  (interactive)
+  (if (boundp 'ivy-last)
+      (setq ffip-ivy-last-saved ivy-last)
+    (message "Sorry. You need install `ivy-mode' first.")))
+
+;;;###autoload
+(defun ffip-ivy-resume ()
+  "Wrapper of `ivy-resume'.  Resume the search saved at `ffip-ivy-last-saved'."
+  (interactive)
+  (let* ((ivy-last ffip-ivy-last-saved))
+    (if (fboundp 'ivy-resume)
+        (ivy-resume)
+      (message "Sorry. You need install `ivy-mode' first."))))
 
 ;;;###autoload
 (defun ffip-filename-identity (keyword)
