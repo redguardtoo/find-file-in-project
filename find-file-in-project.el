@@ -483,7 +483,6 @@ If KEYWORD is list, it's the list of file names."
 (defun ffip-find-files (keyword open-another-window &optional find-directory fn)
   "The API to find files."
   (let* (project-files
-         files
          lnum
          file
          root)
@@ -495,30 +494,28 @@ If KEYWORD is list, it's the list of file names."
       (setq keyword (match-string 1 keyword)))
 
     (setq project-files (ffip-project-search keyword find-directory))
-    (setq files (mapcar 'car project-files))
-    (if (> (length files) 0)
+    (if (> (length project-files) 0)
         (progn
           (setq root (file-name-nondirectory
                       (directory-file-name
                        (or ffip-project-root (ffip-project-root)))))
           (ffip-completing-read
            (format "Find in %s/: " root)
-           files
+           project-files
            (lambda (file)
-             (let ((rlt (cdr (assoc file project-files))))
-               (if find-directory
-                   ;; open dired because this rlt is a directory
-                   (if open-another-window
-                       (dired-other-window rlt)
-                     (switch-to-buffer (dired rlt)))
-                 ;; open file
+             ;; only one item in project files
+             (if (listp file) (setq file (cdr file)))
+             (if find-directory
                  (if open-another-window
-                     (find-file-other-window rlt)
-                   (find-file rlt))
-                 ;; goto line if needed
-                 (ffip--forward-line lnum)
-                 (if fn (funcall fn rlt))
-                 )))))
+                     (dired-other-window file)
+                   (switch-to-buffer (dired file)))
+               ;; open file
+               (if open-another-window
+                   (find-file-other-window file)
+                 (find-file file))
+               ;; goto line if needed
+               (ffip--forward-line lnum)
+               (if fn (funcall fn file))))))
       (message "Nothing found!"))))
 
 (defun ffip--prepare-root-data-for-project-file (root)
