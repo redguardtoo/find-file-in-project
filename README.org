@@ -213,7 +213,7 @@ As other variables, it could be customized per project,
 
 That's especially useful when you are doing web front end development.
 ** More keybinding tips
-=C-h i g (ivy) Enter' for more key-binding tips.
+=C-h i g (ivy) Enter= for more key-binding tips.
 * Development
 Please note *only* =ivy-read= from ivy-mode is used. DO NOT use other APIs from =ivy-mode=. The less APIs used, the more stable this package will be.
 * Bug Report
