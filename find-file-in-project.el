@@ -194,6 +194,8 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
     "*/cscope.files"
     ;; html/javascript/css
     "*/.npm/*"
+    "*/.tmp/*" ; TypeScript
+    "*/.sass-cache/*" ; SCSS/SASS
     "*/.idea/*"
     "*min.js"
     "*min.css"
