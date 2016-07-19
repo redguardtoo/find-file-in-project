@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.2.2
+;; Version: 5.2.3
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -454,7 +454,9 @@ If CHECK-ONLY is true, only do the check."
     ;; if user prefer `ido-mode' or `ivy-read' is not defined,
     ;; we use `ido-completing-read'.
     ((or ffip-prefer-ido-mode (not (fboundp 'ivy-read)))
-     (funcall action (ido-completing-read prompt collection)))
+     ;; friendly UI for ido
+     (let* ((ido-collection (mapcar 'car collection)))
+       (funcall action (ido-completing-read prompt ido-collection))))
     (t
      (ivy-read prompt collection
                :action action))))
@@ -753,17 +755,21 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
 
 (defun ffip-show-content-in-diff-mode (content)
   "Insert content into *ffip-diff* buffer."
-  (let (rlt-buf)
-    (if (get-buffer "*ffip-diff*")
-        (kill-buffer "*ffip-diff*"))
-    (setq rlt-buf (get-buffer-create "*ffip-diff*"))
-    (save-current-buffer
-      (switch-to-buffer-other-window rlt-buf)
-      (set-buffer rlt-buf)
-      (erase-buffer)
-      (insert content)
-      (ffip-diff-mode)
-      (goto-char (point-min)))))
+  (cond
+   ((and content (not (string= content "")))
+    (let (rlt-buf)
+      (if (get-buffer "*ffip-diff*")
+          (kill-buffer "*ffip-diff*"))
+      (setq rlt-buf (get-buffer-create "*ffip-diff*"))
+      (save-current-buffer
+        (switch-to-buffer-other-window rlt-buf)
+        (set-buffer rlt-buf)
+        (erase-buffer)
+        (insert content)
+        (ffip-diff-mode)
+        (goto-char (point-min)))))
+   (t
+    (message "Output of %S is empty!" backend))))
 
 ;;;###autoload
 (defun ffip-show-diff (&optional num)
@@ -778,27 +784,19 @@ NUM is zero based.  Its default value is zero."
     (setq num (1- (length ffip-diff-backends)))))
 
   (let* ((backend (nth num ffip-diff-backends))
-         content
          rlt-buf)
 
-    ;; (message "ffip backend %S executed." backend)
     (when backend
       (cond
        ;; shell command
        ((stringp backend)
-        (setq content (shell-command-to-string backend))
-        )
+        (ffip-show-content-in-diff-mode (shell-command-to-string backend)))
        ;; command
        ((functionp backend)
         (ffip-show-content-in-diff-mode (funcall backend)))
        ;; lisp exipression
        ((consp backend)
-        (ffip-show-content-in-diff-mode (funcall `(lambda () ,backend)))))
-
-      ;; show diff now!
-      (if (and content (not (string= content "")))
-          (ffip-show-content-in-diff-mode content)
-        (message "Output of %S is empty!" backend)))
+        (ffip-show-content-in-diff-mode (funcall `(lambda () ,backend))))))
     ))
 
 ;; safe locals
