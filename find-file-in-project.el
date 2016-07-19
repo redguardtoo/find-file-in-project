@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.2.1
+;; Version: 5.2.2
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -328,7 +328,9 @@ If the result is true, return the function."
 (defun ffip-ivy-resume ()
   "Wrapper of `ivy-resume'.  Resume the search saved at `ffip-ivy-last-saved'."
   (interactive)
-  (let* ((ivy-last ffip-ivy-last-saved))
+  (let* ((ivy-last (if ffip-ivy-last-saved ffip-ivy-last-saved ivy-last))
+         (default-directory (or ffip-project-root (ffip-project-root)
+                                (error "No project root found"))))
     (if (fboundp 'ivy-resume)
         (ivy-resume)
       (message "Sorry. You need install `ivy-mode' first."))))
