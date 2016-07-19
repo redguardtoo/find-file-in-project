@@ -1,4 +1,4 @@
-* find-file-in-project (v5.2.0)
+* find-file-in-project (v5.2.1)
 Find files in a project quickly on *any operating system*.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU Find]].
@@ -114,23 +114,12 @@ Insert below code into ~/.emacs if you use evil-mode,
 You can customize the =ffip-diff-backends=,
 #+begin_src elisp
 (setq ffip-diff-backends
-      '((let ((line (ivy-read "git log:"
-                              (split-string (shell-command-to-string "git --no-pager log --date=short --pretty=format:'%h|%ad|%s|%an'") "\n" t))))
-          (shell-command-to-string (format "git show %s" (car (split-string line "|" t)))))
-
+      '(ffip-diff-backend-git-show-commit
         "cd $(git rev-parse --show-toplevel) && git diff"
-
         "cd $(git rev-parse --show-toplevel) && git diff --cached"
-
+        ffip-diff-backend-hg-show-commit
         (car kill-ring)
-
-        (let ((line (ivy-read "git log:"
-                              (split-string (shell-command-to-string "hg log --template '{node|short}|{date|shortdate}|{desc|strip|firstline}|{author|user}\n'
-") "\n" t))))
-          (shell-command-to-string (format "hg log -p -g -r %s" (car (split-string line "|" t)))))
-
         "cd $(hg root) && hg diff"
-
         "svn diff"))
 #+end_src
 ** =M-x ffip-save-ivy-last= and =M-x ffip-ivy-resume=

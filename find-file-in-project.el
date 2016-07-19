@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.2.0
+;; Version: 5.2.1
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -133,21 +133,30 @@
 (defvar ffip-diff-find-file-before-hook nil
   "Hook run before `ffip-diff-find-file' move focus out of *ffip-diff* buffer.")
 
+;;;###autoload
+(defun ffip-diff-backend-git-show-commit ()
+  (let* ((git-cmd "git --no-pager log --date=short --pretty=format:'%h|%ad|%s|%an'")
+         (collection (split-string (shell-command-to-string git-cmd) "\n" t)))
+    (ffip-completing-read "git log:"
+                          collection
+                          (lambda (line)
+                            (shell-command-to-string (format "git show %s" (car (split-string line "|" t))))))))
+
+;;;###autoload
+(defun ffip-diff-backend-hg-show-commit ()
+  (let* ((hg-cmd "hg log --template '{node|short}|{date|shortdate}|{desc|strip|firstline}|{author|user}\n'")
+         (collection (split-string (shell-command-to-string hg-cmd) "\n" t)))
+    (ffip-completing-read "hg log:"
+                          collection
+                          (lambda (line)
+                            (shell-command-to-string (format "hg log -p -g -r %s" (car (split-string line "|" t))))))))
+
 (defvar ffip-diff-backends
-  '((if (require 'ivy nil t)
-        (let ((line (ivy-read "git log:"
-                  (split-string (shell-command-to-string "git --no-pager log --date=short --pretty=format:'%h|%ad|%s|%an'") "\n" t))))
-          (shell-command-to-string (format "git show %s" (car (split-string line "|" t)))))
-        "git show")
+  '(ffip-diff-backend-git-show-commit
     "cd $(git rev-parse --show-toplevel) && git diff"
     "cd $(git rev-parse --show-toplevel) && git diff --cached"
     (car kill-ring)
-    (if (require 'ivy nil t)
-        (let ((line (ivy-read "git log:"
-                              (split-string (shell-command-to-string "hg log --template '{node|short}|{date|shortdate}|{desc|strip|firstline}|{author|user}\n'
-") "\n" t))))
-          (shell-command-to-string (format "hg log -p -g -r %s" (car (split-string line "|" t)))))
-      "hg log -p -g -r tip")
+    ffip-diff-backend-hg-show-commit
     "cd $(hg root) && hg diff"
     "svn diff")
   "The list of back-ends.
@@ -434,13 +443,15 @@ If CHECK-ONLY is true, only do the check."
   (mapconcat (lambda (pat) (format "-iwholename \"%s\"" pat))
              ffip-prune-patterns " -or "))
 
+;;;###autoload
 (defun ffip-completing-read (prompt collection action)
   (cond
     ((= 1 (length collection))
      ;; open file directly
      (funcall action (car collection)))
-    ;; support ido-mode
-    ((and ffip-prefer-ido-mode (boundp 'ido-mode) ido-mode)
+    ;; if user prefer `ido-mode' or `ivy-read' is not defined,
+    ;; we use `ido-completing-read'.
+    ((or ffip-prefer-ido-mode (not (fboundp 'ivy-read)))
      (funcall action (ido-completing-read prompt collection)))
     (t
      (ivy-read prompt collection
