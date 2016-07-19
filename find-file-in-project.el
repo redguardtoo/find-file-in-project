@@ -538,20 +538,20 @@ If KEYWORD is list, it's the list of file names."
           (ffip-completing-read
            (format "Find in %s/: " root)
            project-files
-           (lambda (file)
+           `(lambda (file)
              ;; only one item in project files
              (if (listp file) (setq file (cdr file)))
-             (if find-directory
-                 (if open-another-window
+             (if ,find-directory
+                 (if ,open-another-window
                      (dired-other-window file)
                    (switch-to-buffer (dired file)))
                ;; open file
-               (if open-another-window
+               (if ,open-another-window
                    (find-file-other-window file)
                  (find-file file))
                ;; goto line if needed
-               (ffip--forward-line lnum)
-               (if fn (funcall fn file))))))
+               (ffip--forward-line ,lnum)
+               (if ,fn (funcall ,fn file))))))
       (message "Nothing found!"))))
 
 (defun ffip--prepare-root-data-for-project-file (root)
