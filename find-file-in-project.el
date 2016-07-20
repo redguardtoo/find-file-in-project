@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.2.3
+;; Version: 5.2.4
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -448,18 +448,31 @@ If CHECK-ONLY is true, only do the check."
 ;;;###autoload
 (defun ffip-completing-read (prompt collection action)
   (cond
-    ((= 1 (length collection))
-     ;; open file directly
-     (funcall action (car collection)))
-    ;; if user prefer `ido-mode' or `ivy-read' is not defined,
-    ;; we use `ido-completing-read'.
-    ((or ffip-prefer-ido-mode (not (fboundp 'ivy-read)))
-     ;; friendly UI for ido
-     (let* ((ido-collection (mapcar 'car collection)))
-       (funcall action (ido-completing-read prompt ido-collection))))
-    (t
-     (ivy-read prompt collection
-               :action action))))
+   ((= 1 (length collection))
+    ;; open file directly
+    (funcall action (car collection)))
+   ;; if user prefer `ido-mode' or `ivy-read' is not defined,
+   ;; we use `ido-completing-read'.
+   ((or ffip-prefer-ido-mode (not (fboundp 'ivy-read)))
+    ;; friendly UI for ido
+    (let* ((list-of-pair (consp (car collection)))
+           (ido-collection (if list-of-pair
+                               (mapcar 'car collection)
+                             collection))
+           (ido-selected (ido-completing-read prompt ido-collection)))
+      (if ido-selected
+          (funcall action
+                   (if list-of-pair
+                       (cdar (delq nil
+                                   (mapcar (lambda (x)
+                                             (and (string= (car x)
+                                                           ido-selected)
+                                                  x))
+                                           collection)))
+                     ido-selected)))))
+   (t
+    (ivy-read prompt collection
+              :action action))))
 
 ;;;###autoload
 (defun ffip-project-search (keyword find-directory)
