@@ -782,7 +782,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
         (ffip-diff-mode)
         (goto-char (point-min)))))
    (t
-    (message "Output of %S is empty!" backend))))
+    (message "Output is empty!"))))
 
 ;;;###autoload
 (defun ffip-show-diff (&optional num)
