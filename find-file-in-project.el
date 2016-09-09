@@ -95,7 +95,7 @@
 ;; ivy-mode is used for filter/search UI
 ;; In ivy-mode, SPACE is translated to regex ".*".
 ;; For example, the search string "dec fun pro" is transformed into
-;; a regex "\\(dec\\).*\\(fun\\).*\\(pro\\)"
+;; regular expression "\\(dec\\).*\\(fun\\).*\\(pro\\)"
 ;; `C-h i g (ivy)' for more key-binding tips.
 ;;
 ;; `ffip-save-ivy-last' saves the most recent search result.
@@ -166,7 +166,7 @@ If it's a function or lisp expression, it will be executed and return a string.
 The output of execution is inserted into *ffip-diff* buffer with `ffip-diff-mode' on.
 `ffip-diff-mode' inherits from `diff-mode'.")
 
-(defvar ffip-find-executable nil "Path of GNU find.  If nil, `ffip--guess-gnu-find' is called.")
+(defvar ffip-find-executable nil "Path of GNU find.  If nil we will guess.")
 
 (defvar ffip-project-file '(".svn" ".hg" ".git")
   "The file/directory used to locate project root.
@@ -266,7 +266,7 @@ This overrides variable `ffip-project-root' when set.")
   "Backup of `ivy-last'.  Requires ivy-mode.")
 
 (defvar ffip-full-paths t
-  "If non-nil, show fully project-relative paths.")
+  "If nil only file names in search results are visible.")
 
 (defvar ffip-debug nil "Print debug information.")
 
@@ -344,17 +344,15 @@ If the result is true, return the function."
 (defun ffip-filename-camelcase-to-dashes (keyword &optional check-only)
   "Convert KEYWORD from camel cased to dash seperated.
 If CHECK-ONLY is true, only do the check."
-  (let (rlt
-        (old-flag case-fold-search))
+  (let* (rlt)
     (cond
      (check-only
       (setq rlt (string-match "^[a-z0-9]+[A-Z][A-Za-z0-9]+$" keyword))
       (if ffip-debug (message "ffip-filename-camelcase-to-dashes called. check-only keyword=%s rlt=%s" keyword rlt)))
      (t
-      (setq case-fold-search nil)
-      ;; case sensitive replace
-      (setq rlt (downcase (replace-regexp-in-string "\\([a-z]\\)\\([A-Z]\\)" "\\1-\\2" keyword)))
-      (setq case-fold-search old-flag)
+      (let* ((case-fold-search nil))
+        ;; case sensitive replace
+        (setq rlt (downcase (replace-regexp-in-string "\\([a-z]\\)\\([A-Z]\\)" "\\1-\\2" keyword))))
 
       (if (string= rlt (downcase keyword)) (setq rlt nil))
 
@@ -365,7 +363,7 @@ If CHECK-ONLY is true, only do the check."
 (defun ffip-filename-dashes-to-camelcase (keyword &optional check-only)
   "Convert KEYWORD from dash seperated to camel cased.
 If CHECK-ONLY is true, only do the check."
-  (let (rlt)
+  (let* (rlt)
     (cond
      (check-only
         (setq rlt (string-match "^[A-Za-z0-9]+\\(-[A-Za-z0-9]+\\)+$" keyword))
@@ -379,7 +377,7 @@ If CHECK-ONLY is true, only do the check."
     rlt))
 
 (defun ffip--create-filename-pattern-for-gnufind (keyword)
-  (let ((rlt ""))
+  (let* ((rlt ""))
     (cond
      ((not keyword)
       (setq rlt ""))
@@ -401,36 +399,39 @@ If CHECK-ONLY is true, only do the check."
                               tmp
                               "*\"")))))
       (unless (string= "" rlt)
-        (setq rlt (concat "\\(" rlt " \\)")))
-      ))
+        (setq rlt (concat "\\(" rlt " \\)")))))
+
     (if ffip-debug (message "ffip--create-filename-pattern-for-gnufind called. rlt=%s" rlt))
     rlt))
 
-(defun ffip--guess-gnu-find-on-windows (driver path)
-  (let (rlt)
-    (if (executable-find (concat driver path))
-        (setq rlt (concat driver path)))
+(defun ffip--win-executable-find (driver path exe)
+  (let* (rlt)
+    (if (executable-find (concat driver path exe))
+        (setq rlt (concat driver path exe)))
     rlt))
 
-(defun ffip--guess-gnu-find ()
-  (let (rlt)
-    (if (eq system-type 'windows-nt)
-        (cond
-         ;; cygwin
-         ((setq rlt (ffip--guess-gnu-find-on-windows "c" ":\\\\cygwin64\\\\bin\\\\find")))
-         ((setq rlt (ffip--guess-gnu-find-on-windows "d" ":\\\\cygwin64\\\\bin\\\\find")))
-         ((setq rlt (ffip--guess-gnu-find-on-windows "e" ":\\\\cygwin64\\\\bin\\\\find")))
-         ((setq rlt (ffip--guess-gnu-find-on-windows "c" ":\\\\cygwin\\\\bin\\\\find")))
-         ((setq rlt (ffip--guess-gnu-find-on-windows "d" ":\\\\cygwin\\\\bin\\\\find")))
-         ((setq rlt (ffip--guess-gnu-find-on-windows "e" ":\\\\cygwin\\\\bin\\\\find")))
-         ;; msys2
-         ((setq rlt (ffip--guess-gnu-find-on-windows "c" ":\\\\msys64\\\\usr\\\\bin\\\\find")))
-         ((setq rlt (ffip--guess-gnu-find-on-windows "d" ":\\\\msys64\\\\usr\\\\bin\\\\find")))
-         ((setq rlt (ffip--guess-gnu-find-on-windows "e" ":\\\\msys64\\\\usr\\\\bin\\\\find")))
-         ((setq rlt (ffip--guess-gnu-find-on-windows "c" ":\\\\msys32\\\\usr\\\\bin\\\\find")))
-         ((setq rlt (ffip--guess-gnu-find-on-windows "d" ":\\\\msys32\\\\usr\\\\bin\\\\find")))
-         ((setq rlt (ffip--guess-gnu-find-on-windows "e" ":\\\\msys32\\\\usr\\\\bin\\\\find")))))
-    (unless rlt (setq rlt "find"))
+(defun ffip--executable-find (exe)
+  (let* ((rlt (if (eq system-type 'windows-nt)
+                  (or
+                   ;; cygwin
+                   (ffip--win-executable-find "c" ":\\\\cygwin64\\\\bin\\\\" exe)
+                   (ffip--win-executable-find "d" ":\\\\cygwin64\\\\bin\\\\" exe)
+                   (ffip--win-executable-find "e" ":\\\\cygwin64\\\\bin\\\\" exe)
+                   (ffip--win-executable-find "c" ":\\\\cygwin\\\\bin\\\\" exe)
+                   (ffip--win-executable-find "d" ":\\\\cygwin\\\\bin\\\\" exe)
+                   (ffip--win-executable-find "e" ":\\\\cygwin\\\\bin\\\\" exe)
+                   ;; msys2
+                   (ffip--win-executable-find "c" ":\\\\msys64\\\\usr\\\\bin\\\\" exe)
+                   (ffip--win-executable-find "d" ":\\\\msys64\\\\usr\\\\bin\\\\" exe)
+                   (ffip--win-executable-find "e" ":\\\\msys64\\\\usr\\\\bin\\\\" exe)
+                   (ffip--win-executable-find "c" ":\\\\msys32\\\\usr\\\\bin\\\\" exe)
+                   (ffip--win-executable-find "d" ":\\\\msys32\\\\usr\\\\bin\\\\" exe)
+                   (ffip--win-executable-find "e" ":\\\\msys32\\\\usr\\\\bin\\\\" exe))
+                ;; *nix
+                (executable-find exe))))
+    (unless rlt
+      ;; well, `executable-find' failed
+      (setq rlt exe))
     rlt))
 
 (defun ffip--join-patterns (patterns)
@@ -483,16 +484,12 @@ directory they are found in so that they are unique.
 
 If KEYWORD is string, it's the file name or file path to find file.
 If KEYWORD is list, it's the list of file names."
-  (let (rlt
-        cmd
-        (old-default-directory default-directory)
-        (file-alist nil)
-        (root (expand-file-name (or ffip-project-root (ffip-project-root)
-                                    (error "No project root found")))))
-    (cd (file-name-as-directory root))
-    ;; make the prune pattern more general
-    (setq cmd (format "%s . \\( %s \\) -prune -o -type %s %s %s %s -print"
-                      (if ffip-find-executable ffip-find-executable (ffip--guess-gnu-find))
+  (let* (rlt
+         (root (expand-file-name (or ffip-project-root (ffip-project-root)
+                                     (error "No project root found"))))
+         (default-directory (file-name-as-directory root))
+         (cmd (format "%s . \\( %s \\) -prune -o -type %s %s %s %s -print"
+                      (if ffip-find-executable ffip-find-executable (ffip--executable-find "find"))
                       (ffip--prune-patterns)
                       (if find-directory "d" "f")
                       (ffip--join-patterns ffip-patterns)
@@ -501,12 +498,12 @@ If KEYWORD is list, it's the list of file names."
                       (cond
                        ((listp keyword)
                         ;; already got enough files names to handle
-                        (let ((ffip-filename-rules nil))
+                        (let* ((ffip-filename-rules nil))
                           (ffip--create-filename-pattern-for-gnufind keyword)))
                        (t
                         (if find-directory (format "-iwholename \"*%s\"" keyword)
                           (ffip--create-filename-pattern-for-gnufind keyword))))
-                      ffip-find-options))
+                      ffip-find-options)))
 
     (if ffip-debug (message "run cmd at %s: %s" default-directory cmd))
     (setq rlt
@@ -514,15 +511,10 @@ If KEYWORD is list, it's the list of file names."
                     (if ffip-full-paths
                         (cons (replace-regexp-in-string "^\./" "" file)
                               (expand-file-name file))
-                      (let ((file-cons (cons (file-name-nondirectory file)
-                                             (expand-file-name file))))
-                        (add-to-list 'file-alist file-cons)
-                        file-cons)))
+                      (cons (file-name-nondirectory file)
+                            (expand-file-name file))))
                   ;; #15 improving handling of directories containing space
                   (split-string (shell-command-to-string cmd) "[\r\n]+" t)))
-
-    ;; restore the original default-directory
-    (cd old-default-directory)
     rlt))
 
 (defun ffip--forward-line (lnum)
@@ -580,9 +572,10 @@ If KEYWORD is list, it's the list of file names."
 You can move .dir-locals.el to root directory.
 See (info \"(Emacs) Directory Variables\") for details."
   (interactive)
-  (let ((root (read-directory-name "Project root directory?" default-directory)) file)
-    (when (and root (file-exists-p root))
-      (setq file (concat (file-name-as-directory root) ".dir-locals.el"))
+  (let* ((root (read-directory-name "Project root directory?" default-directory))
+         (file (if (and root (file-exists-p root))
+                   (concat (file-name-as-directory root) ".dir-locals.el"))))
+    (when file
       (with-temp-buffer
         (let ((print-level nil)  (print-length nil) sexp (rlt '(a)))
           (cond
@@ -615,13 +608,12 @@ See (info \"(Emacs) Directory Variables\") for details."
           (when sexp
             (insert (format "%S" sexp))
             (write-file file)
-            (message "%s created." file))
-          )))))
+            (message "%s created." file)))))))
 
 ;;;###autoload
 (defun ffip-current-full-filename-match-pattern-p (regex)
   "Is current full file name (including directory) match the REGEX?"
-  (let ((dir (if (buffer-file-name) (buffer-file-name) "")))
+  (let* ((dir (if (buffer-file-name) (buffer-file-name) "")))
     (string-match-p regex dir)))
 
 ;;;###autoload
@@ -648,11 +640,8 @@ You can override this by setting the variable `ffip-project-root'."
 (defun find-file-in-current-directory (&optional open-another-window)
   "Like `find-file-in-project'.  But search only in current directory."
   (interactive "P")
-  (let ((old-dir ffip-project-root))
-    (setq ffip-project-root default-directory)
-    (find-file-in-project open-another-window)
-    ;; restore to original value
-    (setq ffip-project-root old-dir)))
+  (let* ((ffip-project-root default-directory))
+    (find-file-in-project open-another-window)))
 
 ;;;###autoload
 (defun find-file-in-project-by-selected (&optional open-another-window)
@@ -671,20 +660,17 @@ we will move to that line in opened file.
 
 If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   (interactive "P")
-  (let ((keyword (if (region-active-p)
-                     (buffer-substring-no-properties (region-beginning) (region-end))
-                   (read-string "Enter keyword:"))))
+  (let* ((keyword (if (region-active-p)
+                      (buffer-substring-no-properties (region-beginning) (region-end))
+                    (read-string "Enter keyword:"))))
     (ffip-find-files keyword open-another-window)))
 
 ;;;###autoload
 (defun find-file-in-current-directory-by-selected (&optional open-another-window)
   "Like `find-file-in-project-by-selected'.  But search only in current directory."
   (interactive "P")
-  (let ((old-dir ffip-project-root))
-    (setq ffip-project-root default-directory)
-    (find-file-in-project-by-selected open-another-window)
-    ;; restore to original value
-    (setq ffip-project-root old-dir)))
+  (let* ((ffip-project-root default-directory))
+    (find-file-in-project-by-selected open-another-window)))
 
 ;;;###autoload
 (defun find-directory-in-project-by-selected (&optional open-another-window)
@@ -700,9 +686,9 @@ For example, to find /home/john/proj1/test, below keywords are valid:
 
 If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   (interactive "P")
-  (let ((keyword (if (region-active-p)
-                     (buffer-substring-no-properties (region-beginning) (region-end))
-                   (read-string "Enter keyword:"))))
+  (let* ((keyword (if (region-active-p)
+                      (buffer-substring-no-properties (region-beginning) (region-end))
+                    (read-string "Enter keyword:"))))
     (ffip-find-files keyword open-another-window t)))
 
 ;;;###autoload
@@ -746,8 +732,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
                           ((string= (file-name-nondirectory opened-file) (nth 0 files))
                            (ffip--forward-line alnum))
                           (t
-                           (ffip--forward-line blnum)))
-                         )))))
+                           (ffip--forward-line blnum))))))))
 
 (defvar ffip-diff-mode-map
   (let ((map (make-sparse-keymap)))
@@ -799,7 +784,7 @@ NUM is zero based.  Its default value is zero."
   (let* ((backend (nth num ffip-diff-backends))
          rlt-buf)
 
-    (when backend
+    (if backend
       (cond
        ;; shell command
        ((stringp backend)
@@ -809,8 +794,7 @@ NUM is zero based.  Its default value is zero."
         (ffip-show-content-in-diff-mode (funcall backend)))
        ;; lisp exipression
        ((consp backend)
-        (ffip-show-content-in-diff-mode (funcall `(lambda () ,backend))))))
-    ))
+        (ffip-show-content-in-diff-mode (funcall `(lambda () ,backend))))))))
 
 ;; safe locals
 (progn
