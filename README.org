@@ -1,4 +1,4 @@
-* find-file-in-project (v5.2.4)
+* find-file-in-project (v5.2.5)
 Find files in a project quickly on *any operating system*.
 
 This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU Find]].
@@ -130,6 +130,16 @@ These two commands requires [[https://github.com/abo-abo/swiper][ivy-mode]].
 =ffip-ivy-resume= re-use the search result *saved* by =ffip-save-ivy-last=.
 
 You can always use =ivy-resume= to re-use the most recent search result.
+** =M-x find-relative-path=
+Find file/directory and copy its relative path into `kill-ring'.
+
+File's path is copied by default. =C-u M-x find-relative-path= copy directory's path.
+
+You can set =ffip-find-relative-path-callback= to format the string before copying.
+#+begin_src elisp
+;; (setq ffip-find-relative-path-callback 'ffip-copy-reactjs-import)
+(setq ffip-find-relative-path-callback 'ffip-copy-org-file-link)
+#+end_src
 * Tips
 All tips are OPTIONAL. find-file-in-project works out of box in 99% cases.
 ** You prefer ido-mode?
