@@ -737,8 +737,9 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
 (defvar ffip-diff-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map diff-mode-map)
-    (define-key map "p" 'diff-hunk-prev)
-    (define-key map "n" 'diff-hunk-next)
+    ;; EVIL friendly. ffip-diff-mode is read-only
+    (define-key map "K" 'diff-hunk-prev)
+    (define-key map "J" 'diff-hunk-next)
     (define-key map "P" 'diff-file-prev)
     (define-key map "N" 'diff-file-next)
     (define-key map [remap diff-goto-source] 'ffip-diff-find-file)
