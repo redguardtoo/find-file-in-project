@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.2.5
+;; Version: 5.2.6
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -355,7 +355,7 @@ If the result is true, return the function."
   "Wrapper of `ivy-resume'.  Resume the search saved at `ffip-ivy-last-saved'."
   (interactive)
   (let* ((ivy-last (if ffip-ivy-last-saved ffip-ivy-last-saved ivy-last))
-         (default-directory (or ffip-project-root (ffip-project-root)
+         (default-directory (or (file-name-as-directory ffip-project-root) (ffip-project-root)
                                 (error "No project root found"))))
     (if (fboundp 'ivy-resume)
         (ivy-resume)
@@ -569,7 +569,7 @@ If KEYWORD is list, it's the list of file names."
         (progn
           (setq root (file-name-nondirectory
                       (directory-file-name
-                       (or ffip-project-root (ffip-project-root)))))
+                       (or (file-name-as-directory ffip-project-root) (ffip-project-root)))))
           (ffip-completing-read
            (format "Find in %s/: " root)
            project-files
@@ -659,7 +659,7 @@ You can override this by setting the variable `ffip-project-root'."
 ;;;###autoload
 (defun ffip-get-project-root-directory ()
   "Get the full path of project root directory."
-  (expand-file-name (or ffip-project-root
+  (expand-file-name (or (file-name-as-directory ffip-project-root)
                         (ffip-project-root))))
 
 ;;;###autoload
@@ -716,7 +716,7 @@ You can set `ffip-find-relative-path-callback' to format the string before copyi
         (progn
           (setq root (file-name-nondirectory
                       (directory-file-name
-                       (or ffip-project-root (ffip-project-root)))))
+                       (or (file-name-as-directory ffip-project-root) (ffip-project-root)))))
           (ffip-completing-read
            (format "Find in %s/: " root)
            project-files
