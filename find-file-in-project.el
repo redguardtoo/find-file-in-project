@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.2.6
+;; Version: 5.2.7
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -351,12 +351,17 @@ If the result is true, return the function."
     (message "Sorry. You need install `ivy-mode' first.")))
 
 ;;;###autoload
+(defun ffip-get-project-root-directory ()
+  "Get the full path of project root directory."
+  (if ffip-project-root (file-name-as-directory ffip-project-root)
+    (ffip-project-root)))
+
+;;;###autoload
 (defun ffip-ivy-resume ()
   "Wrapper of `ivy-resume'.  Resume the search saved at `ffip-ivy-last-saved'."
   (interactive)
   (let* ((ivy-last (if ffip-ivy-last-saved ffip-ivy-last-saved ivy-last))
-         (default-directory (or (file-name-as-directory ffip-project-root) (ffip-project-root)
-                                (error "No project root found"))))
+         (default-directory (ffip-get-project-root-directory)))
     (if (fboundp 'ivy-resume)
         (ivy-resume)
       (message "Sorry. You need install `ivy-mode' first."))))
@@ -511,8 +516,7 @@ directory they are found in so that they are unique.
 If KEYWORD is string, it's the file name or file path to find file.
 If KEYWORD is list, it's the list of file names."
   (let* (rlt
-         (root (expand-file-name (or ffip-project-root (ffip-project-root)
-                                     (error "No project root found"))))
+         (root (ffip-get-project-root-directory))
          (default-directory (file-name-as-directory root))
          (cmd (format "%s . \\( %s \\) -prune -o -type %s %s %s %s -print"
                       (if ffip-find-executable ffip-find-executable (ffip--executable-find "find"))
@@ -565,29 +569,28 @@ If KEYWORD is list, it's the list of file names."
       (setq keyword (match-string 1 keyword)))
 
     (setq project-files (ffip-project-search keyword find-directory))
-    (if (> (length project-files) 0)
-        (progn
-          (setq root (file-name-nondirectory
-                      (directory-file-name
-                       (or (file-name-as-directory ffip-project-root) (ffip-project-root)))))
-          (ffip-completing-read
-           (format "Find in %s/: " root)
-           project-files
-           `(lambda (file)
-             ;; only one item in project files
-             (if (listp file) (setq file (cdr file)))
-             (if ,find-directory
-                 (if ,open-another-window
-                     (dired-other-window file)
-                   (switch-to-buffer (dired file)))
-               ;; open file
-               (if ,open-another-window
-                   (find-file-other-window file)
-                 (find-file file))
-               ;; goto line if needed
-               (ffip--forward-line ,lnum)
-               (if ,fn (funcall ,fn file))))))
-      (message "Nothing found!"))))
+    (cond
+     ((> (length project-files) 0)
+      (setq root (file-name-nondirectory (directory-file-name (ffip-get-project-root-directory))))
+      (ffip-completing-read
+       (format "Find in %s/: " root)
+       project-files
+       `(lambda (file)
+          ;; only one item in project files
+          (if (listp file) (setq file (cdr file)))
+          (if ,find-directory
+              (if ,open-another-window
+                  (dired-other-window file)
+                (switch-to-buffer (dired file)))
+            ;; open file
+            (if ,open-another-window
+                (find-file-other-window file)
+              (find-file file))
+            ;; goto line if needed
+            (ffip--forward-line ,lnum)
+            (if ,fn (funcall ,fn file))))))
+     (t
+      (message "Nothing found!")))))
 
 (defun ffip--prepare-root-data-for-project-file (root)
   (cons 'ffip-project-root root))
@@ -657,12 +660,6 @@ You can override this by setting the variable `ffip-project-root'."
   (ffip-find-files nil open-another-window))
 
 ;;;###autoload
-(defun ffip-get-project-root-directory ()
-  "Get the full path of project root directory."
-  (expand-file-name (or (file-name-as-directory ffip-project-root)
-                        (ffip-project-root))))
-
-;;;###autoload
 (defun find-file-in-current-directory (&optional open-another-window)
   "Like `find-file-in-project'.  But search only in current directory."
   (interactive "P")
@@ -712,22 +709,21 @@ You can set `ffip-find-relative-path-callback' to format the string before copyi
                     (read-string "Enter keyword (or press ENTER):")))
          (project-files (ffip-project-search keyword find-directory))
          root)
-    (if (> (length project-files) 0)
-        (progn
-          (setq root (file-name-nondirectory
-                      (directory-file-name
-                       (or (file-name-as-directory ffip-project-root) (ffip-project-root)))))
-          (ffip-completing-read
-           (format "Find in %s/: " root)
-           project-files
-           `(lambda (p)
-              ;; only one item in project files
-              (if (listp p) (setq p (cdr p)))
-              (if ,find-directory
-                  (setq p (file-name-as-directory p)))
-              (setq p (file-relative-name p (file-name-directory buffer-file-name)))
-              (funcall ffip-find-relative-path-callback p))))
-      (message "Nothing found!"))))
+    (cond
+     ((> (length project-files) 0)
+      (setq root (file-name-nondirectory (directory-file-name (ffip-get-project-root-directory))))
+      (ffip-completing-read
+       (format "Find in %s/: " root)
+       project-files
+       `(lambda (p)
+          ;; only one item in project files
+          (if (listp p) (setq p (cdr p)))
+          (if ,find-directory
+              (setq p (file-name-as-directory p)))
+          (setq p (file-relative-name p (file-name-directory buffer-file-name)))
+          (funcall ffip-find-relative-path-callback p))))
+     (t
+      (message "Nothing found!")))))
 
 ;;;###autoload
 (defun find-directory-in-project-by-selected (&optional open-another-window)
