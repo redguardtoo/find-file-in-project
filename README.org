@@ -214,6 +214,12 @@ That's especially useful when you are doing web front end development.
 ** More keybinding tips
 =C-h i g (ivy) Enter= for more key-binding tips.
 * Development
-Please note *only* =ivy-read= from ivy-mode is used. DO NOT use other APIs from =ivy-mode=. The less APIs used, the more stable this package will be.
+Please note *only* =ivy-read= from ivy-mode is used.
+
+DO NOT use other APIs from =ivy-mode=. The less APIs used, the more stable this package will be.
+
+Developer could run =ln -s tests/test.sh .git/hooks/pre-commit= to run test before =git commit=.
+
+=git commit --no-verify= will bypass the git pre-commit hook.
 * Bug Report
 Check [[https://github.com/technomancy/find-file-in-project]].

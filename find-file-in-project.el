@@ -835,9 +835,7 @@ NUM is zero based.  Its default value is zero."
    ((> num (length ffip-diff-backends))
     (setq num (1- (length ffip-diff-backends)))))
 
-  (let* ((backend (nth num ffip-diff-backends))
-         rlt-buf)
-
+  (let* ((backend (nth num ffip-diff-backends)))
     (if backend
       (cond
        ;; shell command
