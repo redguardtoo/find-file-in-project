@@ -1,3 +1,8 @@
+#+TITLE: Find-File-In-Project Readme
+#+Options: num:nil
+#+STARTUP: odd
+#+Style: <style> h1,h2,h3 {font-family: arial, helvetica, sans-serif} </style>
+
 * find-file-in-project (v5.2.7)
 Find files in a project quickly on *any operating system*.
 
@@ -218,8 +223,6 @@ Please note *only* =ivy-read= from ivy-mode is used.
 
 DO NOT use other APIs from =ivy-mode=. The less APIs used, the more stable this package will be.
 
-Developer could run =ln -s tests/test.sh .git/hooks/pre-commit= to run test before =git commit=.
-
-=git commit --no-verify= will bypass the git pre-commit hook.
+Run =tests/test.sh= before =git commit=.
 * Bug Report
 Check [[https://github.com/technomancy/find-file-in-project]].
