@@ -43,6 +43,16 @@
     (ffip-find-files nil nil)
     (should ivy-read-called)))
 
+(ert-deftest ffip-test-ffip-open-another ()
+  (let (files
+        (prefix-args '(4 (4))))
+    (dolist (open-another-arg prefix-args)
+      (setq ffip-project-root default-directory)
+      (setq files (mapcar 'car (ffip-project-search "ivy" nil)))
+      (should (= (length files) 1))
+      (should (not (active-minibuffer-window)))
+      (ffip-find-files "ivy" open-another-arg))))
+
 (ert-deftest ffip-ffip-show-diff ()
   (let (files
         (ffip-diff-backends '((with-temp-buffer
