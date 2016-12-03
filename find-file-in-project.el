@@ -579,11 +579,11 @@ If KEYWORD is list, it's the list of file names."
           ;; only one item in project files
           (if (listp file) (setq file (cdr file)))
           (if ,find-directory
-              (if ,open-another-window
+              (if (quote ,open-another-window)
                   (dired-other-window file)
                 (switch-to-buffer (dired file)))
             ;; open file
-            (if ,open-another-window
+            (if (quote ,open-another-window)
                 (find-file-other-window file)
               (find-file file))
             ;; goto line if needed
