@@ -10,5 +10,3 @@
                            action unwind re-builder matcher dynamic-collection caller)
   (setq ivy-read-called t)
   (message "`ivy-read' mockup is called"))
-
-(provide 'ivy)
