@@ -45,7 +45,7 @@ Windows setup is as easy as *installing [[http://cygwin.com][Cygwin]] or [[https
 You can also manually specify the location of find executable,
 #+begin_src elisp
 (if (eq system-type 'windows-nt)
-    (setq ffip-find-executable "c:\\\\cygwin64\\\\bin\\\\find")
+    (setq ffip-find-executable "c:\\\\cygwin64\\\\bin\\\\find"))
 #+end_src
 
 ** Linux and OS X
@@ -74,7 +74,9 @@ Starts search immediately
 ** =M-x ffip-create-project-file=
 Create .dir-locals.el which "[[http://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html][defines the same set of local variables to all the files in a certain directory and its subdirectory]]".
 
-You can use it to setup find-file-in-project variable like "ffip-project-root".
+You can use it to setup find-file-in-project variable like =ffip-project-root=.
+
+This command respects existing =.dir-locals.el=. So it will *merge* new setup into existing content.
 
 See [[http://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html][Emacs manual]] for technical details.
 ** =M-x find-file-in-current-directory=
@@ -161,7 +163,7 @@ Here is complete setup you could insert into "~/.emacs.d/init.el",
 ;; OR if I'm reading my personal issue track document,
 (defun my-setup-develop-environment ()
   (interactive)
-  (when (ffip-current-full-filename-match-pattern-p "\\(/|/PROJECT_DIR\\|issue-track.org\\)")
+  (when (ffip-current-full-filename-match-pattern-p "\\(PROJECT_DIR\\|issue-track.org\\)")
     ;; Though PROJECT_DIR is team's project, I care only its sub-directory "subproj1""
     (setq-local ffip-project-root "~/projs/PROJECT_DIR/subproj1")
     ;; well, I'm not interested in concatenated BIG js file or file in dist/
@@ -214,8 +216,6 @@ As other variables, it could be customized per project,
               ;; second, apply either below rule
               (ffip-filename-dashes-to-camelcase ffip-filename-camelcase-to-dashes)))
 #+end_src
-
-That's especially useful when you are doing web front end development.
 ** More keybinding tips
 =C-h i g (ivy) Enter= for more key-binding tips.
 * Development

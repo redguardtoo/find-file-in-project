@@ -1,6 +1,6 @@
 ;;; find-file-in-project.el --- Find files in a project quickly, on any OS
 
-;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016
+;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
 ;; Version: 5.2.7
