@@ -6,15 +6,14 @@
 * find-file-in-project (v5.2.7)
 Find files in a project quickly on *any operating system*.
 
-This program provides a couple methods for quickly finding any file in a given project. It depends on [[http://www.gnu.org/software/findutils/][GNU Find]].
+This program provides a couple methods for quickly finding any file in a given project. It depends on =BSD/GNU Find=.
 
 By default, it will *automatically* search files in a directory managed by *git/subversion/mercurial*. But you can easily switch to other types of projects.
 
 Features:
-- Only dependency is GNU Find
-- Works perfectly on any OS with minimum or no setup
+- Works perfectly at any OS with minimum setup. Only dependency is =Find=
 - Quick. Tested with 50,000+ files
-- You can tweak GNU find through flag =ffip-find-options=
+- You can tweak =Find= through flag =ffip-find-options=
 - Smart. For keyword "helloWorld", "HelloWorld.html" "hello-world.css", "HelloWorld.js" are searched
 
 Screenshot:
@@ -40,7 +39,7 @@ It is also possible to use [[http://stable.melpa.org/#/find-file-in-project][mel
 Since v3.7, Emacs 24.3 is required.
 * Setup
 ** Windows
-Windows setup is as easy as *installing [[http://cygwin.com][Cygwin]] or [[https://msys2.github.io/][MYSYS2]] at default directory of any driver*. =GNU Find= executable will be detected automatically.
+Windows setup is as easy as *installing [[http://cygwin.com][Cygwin]] or [[https://msys2.github.io/][MYSYS2]] at default directory of any driver*. =Find= executable will be detected automatically.
 
 You can also manually specify the location of find executable,
 #+begin_src elisp
