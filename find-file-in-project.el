@@ -1,9 +1,9 @@
-;;; find-file-in-project.el --- Find files in a project quickly, on any OS
+;;; find-file-in-project.el --- Find file/directory and review Diff/Patch/Commit efficiently everywhere
 
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.2.7
+;; Version: 5.3.0
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -72,9 +72,10 @@
 ;; To find in *current directory*, use `find-file-in-current-directory'
 ;; and `find-file-in-current-directory-by-selected'.
 
-;; `ffip-show-diff' execute the backend from `ffip-diff-backends'.
-;; The selected index is the parameter passed to `ffip-show-diff'
-;; whose default value in one.
+;; `ffip-show-diff-by-description' and `ffip-show-diff' execute the
+;; backend from `ffip-diff-backends'.
+;; `ffip-show-diff-by-description' has more friendly UI.
+;; `ffip-show-diff' has optional parameter as index of selected backend.
 ;; The output of execution is expected be in Unified Diff Format.
 ;; The output is inserted into *ffip-diff* buffer.
 ;; In the buffer, press "o/C-c C-c"/ENTER" or `M-x ffip-diff-find-file'
@@ -158,9 +159,9 @@
 
 (defvar ffip-diff-backends
   '(ffip-diff-backend-git-show-commit
-    "cd $(git rev-parse --show-toplevel) && git diff"
-    "cd $(git rev-parse --show-toplevel) && git diff --cached"
-    (car kill-ring)
+    ("git diff" . "cd $(git rev-parse --show-toplevel) && git diff")
+    ("git diff --cached" . "cd $(git rev-parse --show-toplevel) && git diff --cached")
+    ("Diff from `kill-ring'" . (car kill-ring))
     ffip-diff-backend-hg-show-commit
     "cd $(hg root) && hg diff"
     "svn diff")
@@ -822,20 +823,9 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
    (t
     (message "Output is empty!"))))
 
-;;;###autoload
-(defun ffip-show-diff (&optional num)
-  "Show the diff output by excuting selected `ffip-diff-backends'.
-NUM is the index selected backend from `ffip-diff-backends'.
-NUM is zero based.  Its default value is zero."
-  (interactive "P")
-  (cond
-   ((or (not num) (< num 0))
-    (setq num 0))
-   ((> num (length ffip-diff-backends))
-    (setq num (1- (length ffip-diff-backends)))))
 
-  (let* ((backend (nth num ffip-diff-backends)))
-    (if backend
+(defun ffip-diff-execute-backend (backend)
+  (if backend
       (cond
        ;; shell command
        ((stringp backend)
@@ -845,8 +835,60 @@ NUM is zero based.  Its default value is zero."
         (ffip-show-content-in-diff-mode (funcall backend)))
        ;; lisp exipression
        ((consp backend)
-        (ffip-show-content-in-diff-mode (funcall `(lambda () ,backend))))))))
+        (ffip-show-content-in-diff-mode (funcall `(lambda () ,backend)))))))
 
+(defun ffip-backend-description (backend)
+  (let* (rlt)
+    (cond
+     ;; shell command
+     ((stringp backend)
+      (setq rlt backend))
+     ;; command
+     ((functionp backend)
+      (setq rlt (symbol-name backend)))
+     ;; lisp exipression
+     ((consp backend)
+      ;; (cons "description" actual-backend)
+      (if (stringp (car backend))
+          (setq rlt (car backend))
+        (setq rlt "unknown"))))
+    rlt))
+
+;;;###autoload
+(defun ffip-show-diff (&optional num)
+  "Show the diff output by excuting selected `ffip-diff-backends'.
+NUM is the index selected backend from `ffip-diff-backends'.
+NUM is zero based whose default value is zero."
+  (interactive "P")
+  (cond
+   ((or (not num) (< num 0))
+    (setq num 0))
+   ((> num (length ffip-diff-backends))
+    (setq num (1- (length ffip-diff-backends)))))
+
+  (let* ((backend (nth num ffip-diff-backends)))
+    (if (and (consp backend)
+             (stringp (car backend)))
+        (setq backend (cdr backend)))
+    (ffip-diff-execute-backend backend)))
+
+(defun ffip-show-diff-by-description ()
+  (interactive)
+  (let* (descriptions
+         (i 0))
+    ;; format backend descriptions
+    (dolist (b ffip-diff-backends)
+      (add-to-list 'descriptions
+                   (format "%s: %s"
+                           i
+                           (ffip-backend-description b)) t)
+      (setq i (+ 1 i)))
+    (ffip-completing-read
+     "Run diff backend:"
+     descriptions
+     `(lambda (d)
+        (if (string-match "^\\([0-9]+\\): " d)
+            (ffip-show-diff (string-to-number (match-string 1 d))))))))
 ;; safe locals
 (progn
   (put 'ffip-diff-backends 'safe-local-variable 'listp)

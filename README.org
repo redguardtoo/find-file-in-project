@@ -2,16 +2,17 @@
 #+Options: num:nil
 #+STARTUP: odd
 #+Style: <style> h1,h2,h3 {font-family: arial, helvetica, sans-serif} </style>
+* find-file-in-project (v5.3.0)
+Find file/directory and review Diff/Patch/Commit quickly everywhere.
 
-* find-file-in-project (v5.2.7)
-Find files in a project quickly on *any operating system*.
+Scenario One:
+You want to find file/directory quickly in current project. The project root is detected *automatically* if Git/Subversion/Mercurial is used. Or else you can create a simple =.dir-locals= file by running our helper =ffip-create-project-file=. Please check our =find-file-*= and =find-directory-* commands.
 
-This program provides a couple methods for quickly finding any file in a given project. It depends on =BSD/GNU Find=.
-
-By default, it will *automatically* search files in a directory managed by *git/subversion/mercurial*. But you can easily switch to other types of projects.
+Scenario Two:
+You want to compare your current file under Version Control Software (VCS) to old version and edit the corresponding file when reviewing. Please check our =ffip-diff-*= commands. You have full freedom to use any VCS (perforce, for example) with this program.
 
 Features:
-- Works perfectly at any OS with minimum setup. Only dependency is =Find=
+- Works perfectly at any OS with minimum setup. Only dependency is =BSD/GNU Find=
 - Quick. Tested with 50,000+ files
 - You can tweak =Find= through flag =ffip-find-options=
 - Smart. For keyword "helloWorld", "HelloWorld.html" "hello-world.css", "HelloWorld.js" are searched
@@ -82,10 +83,14 @@ See [[http://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variabl
 Like =M-x find-file-in-project= but find only in current directory.
 ** =M-x find-file-in-current-directory-by-selected=
 Like =M-x find-file-in-project-by-selected= but find only in current directory.
-** =M-x ffip-show-diff=
-Execute selected backend from =ffip-diff-backends=. The selected index, whose default value in zero, is the parameter passed to =ffip-show-diff=.
+** =M-x ffip-show-diff-by-description= or =M-x ffip-show-diff=
+Execute selected backend from =ffip-diff-backends=.
 
-The output of execution of backend is expected to be [[http://www.gnu.org/software/diffutils/manual/html_node/Unified-Format.html][Unified Diff Format]].
+=ffip-show-diff-by-description= has more friendly UI so it's recommended for new users.
+
+The options parameter =ffip-show-diff= is the zero-base index of `ffip-diff-backends`.
+
+The output of backend executtion is expected to be [[http://www.gnu.org/software/diffutils/manual/html_node/Unified-Format.html][Unified Diff Format]].
 
 The output is inserted into  =*ffip-diff*= buffer where you can press =o=, =C-c C-c=, =ENTER= , =M-x ffip-diff-find-file=  to open the corresponding file.
 
@@ -124,7 +129,7 @@ You can customize the =ffip-diff-backends=,
         "cd $(git rev-parse --show-toplevel) && git diff"
         "cd $(git rev-parse --show-toplevel) && git diff --cached"
         ffip-diff-backend-hg-show-commit
-        (car kill-ring)
+        ("Diff from `kill-ring'" . (car kill-ring))
         "cd $(hg root) && hg diff"
         "svn diff"))
 #+end_src
