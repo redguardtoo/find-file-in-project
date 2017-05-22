@@ -1,4 +1,4 @@
-* find-file-in-project (v5.3.0)
+* find-file-in-project v5.3.1
 Find file/directory and review Diff/Patch/Commit quickly everywhere.
 
 *User Case One:*
@@ -61,6 +61,10 @@ If keyword contains line number like "hello.txt:32" or "hello.txt:32:", we will 
 If parameter is passed , file will be opened in new window.
 
 If you =(setq ffip-match-path-instead-of-filename t)= before =M-x find-file-in-project-by-selected=, we try to match selected text any part of full path (directory+file name) before displaying candidates. It's a little slower than the original setup but make find-file-in-project behaves exactly like Sublime Text's Cmd+P.
+** =M-x find-file-with-similar-name=
+Find file with similar name to current opened file.
+
+The regular expression =ffip-strip-file-name-regex= is also used by =find-file-with-similar-name=.
 ** =M-x find-directory-in-project-by-selected=
 Use the *selected region as keyword to find directory*. If no region selected, you need provide the keyword. Keyword could contain wildcard character which passed to Find as value of =-iwholename= option
 

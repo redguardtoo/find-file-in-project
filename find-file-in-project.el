@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.3.0
+;; Version: 5.3.1
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -64,8 +64,11 @@
 ;; When file basename `helloWorld' provided, `HelloWorld', `hello-world'
 ;; are added as the file name search patterns.
 ;; `C-h v ffip-filename-rules' to see its default value.
+;; `find-file-with-similar-name' find file with similar name to current
+;; opened file. The regular expression `ffip-strip-file-name-regex' is
+;; also used by `find-file-with-similar-name'.
 ;;
-;; All these variables may be overridden on a per-directory basis in
+;; all these variables may be overridden on a per-directory basis in
 ;; your .dir-locals.el.  See (info "(Emacs) Directory Variables") for
 ;; details.
 
@@ -135,6 +138,11 @@
   '(ffip-filename-identity
     (ffip-filename-dashes-to-camelcase ffip-filename-camelcase-to-dashes))
   "Rules to create extra file names for GNU Find.")
+
+(defvar ffip-strip-file-name-regex
+  "\\(\\.mock\\|\\.test\\|\\.mockup\\)"
+  "Strip file name to get minimum keyword with this regex.
+It's used by `find-file-with-similar-name'.")
 
 (defvar ffip-diff-find-file-before-hook nil
   "Hook run before `ffip-diff-find-file' move focus out of *ffip-diff* buffer.")
@@ -689,6 +697,21 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
     (ffip-find-files keyword open-another-window)))
 
 ;;;###autoload
+(defun find-file-with-similar-name (&optional open-another-window)
+  "Use base name of current file as keyword which could be further stripped
+by `ffip-strip-file-name-regex'.
+
+If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
+  (interactive "P")
+  (when buffer-file-name
+    (let* ((keyword (concat (file-name-base buffer-file-name) ".*") ))
+      (if ffip-strip-file-name-regex
+          (setq keyword (replace-regexp-in-string ffip-strip-file-name-regex
+                                                  ""
+                                                  keyword)))
+      (ffip-find-files keyword open-another-window))))
+
+;;;###autoload
 (defun find-file-in-current-directory-by-selected (&optional open-another-window)
   "Like `find-file-in-project-by-selected'.  But search only in current directory."
   (interactive "P")
@@ -897,6 +920,7 @@ NUM is zero based whose default value is zero."
   (put 'ffip-filename-rules 'safe-local-variable 'listp)
   (put 'ffip-match-path-instead-of-filename 'safe-local-variable 'booleanp)
   (put 'ffip-project-file 'safe-local-variable 'stringp)
+  (put 'ffip-strip-file-name-regex 'safe-local-variable 'stringp)
   (put 'ffip-project-root 'safe-local-variable 'stringp))
 
 (provide 'find-file-in-project)
