@@ -1,4 +1,4 @@
-* find-file-in-project v5.3.1
+* find-file-in-project v5.3.2
 Find file/directory and review Diff/Patch/Commit quickly everywhere.
 
 *User Case One:*
@@ -151,6 +151,8 @@ You can set =ffip-find-relative-path-callback= to format the string before copyi
 ;; (setq ffip-find-relative-path-callback 'ffip-copy-reactjs-import)
 (setq ffip-find-relative-path-callback 'ffip-copy-org-file-link)
 #+end_src
+** =M-x ffip-diff-apply-hunk=
+It applies current hunk in =diff-mode= (please note =ffip-diff-mode= inherits from =diff-mode=) to the target file. The target file could be located by searching =recentf-list=. Except this extra feature, =ffip-diff-apply-hunk= is same as =diff-apply-hunk=. So =diff-apply-hunk= can be replaced by =ffip-diff-apply-hunk=.
 * Tips
 All tips are OPTIONAL. find-file-in-project works out of box in 99% cases.
 ** You prefer ido-mode?
@@ -174,8 +176,10 @@ Here is complete setup you could insert into "~/.emacs.d/init.el",
     (setq-local ffip-find-options "-not -size +64k -not -iwholename '*/dist/*'")
     ;; for this project, I'm only interested certain types of files
     (setq-local ffip-patterns '("*.html" "*.js" "*.css" "*.java" "*.xml" "*.js"))
-    ;; exclude below directories and files
-    (setq-local ffip-prune-patterns '("*/.git/*" "*/node_modules/*" "*/index.js")))
+    ;; maybe you want to search files in `bin' directory?
+    (setq-local ffip-prune-patterns (delete "*/bin/*" ffip-prune-patterns))
+    ;; exclude `dist/' directory
+    (add-to-list 'ffip-prune-patterns "*/dist/*"))
   ;; insert more WHEN statements below this line for other projects
   )
 ;; most major modes inherit from prog-mode, so below line is enough
@@ -222,6 +226,8 @@ As other variables, it could be customized per project,
 #+end_src
 ** More keybinding tips
 =C-h i g (ivy) Enter= for more key-binding tips.
+** Search and grep files under Git control
+Install [[https://github.com/abo-abo/swiper][counsel]]. Then use =cousel-git= to find file and =counsel-git-grep= to grep. It's developed by the author of Ivy.
 * Development
 Please note *only* =ivy-read= from ivy-mode is used.
 

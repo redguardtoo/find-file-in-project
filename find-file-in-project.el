@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.3.1
+;; Version: 5.3.2
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -86,7 +86,13 @@
 ;;
 ;; `ffip-diff-find-file-before-hook' is called before `ffip-diff-find-file'.
 ;;
-;; If you use evil-mode, insert below code into ~/.emacs,
+;; `ffip-diff-apply-hunk' applies current hunk in `diff-mode' (please note
+;; `ffip-diff-mode' inherits from `diff-mode') to the target.
+;; file. The target file could be located by searching `recentf-list'.
+;; Except this extra feature, `ffip-diff-apply-hunk' is same as `diff-apply-hunk'.
+;; So `diff-apply-hunk' can be replaced by `ffip-diff-apply-hunk'.
+
+;; If you use `evil-mode', insert below code into ~/.emacs,
 ;;   (defun ffip-diff-mode-hook-setup ()
 ;;       (evil-local-set-key 'normal "K" 'diff-hunk-prev)
 ;;       (evil-local-set-key 'normal "J" 'diff-hunk-next)
@@ -146,6 +152,9 @@ It's used by `find-file-with-similar-name'.")
 
 (defvar ffip-diff-find-file-before-hook nil
   "Hook run before `ffip-diff-find-file' move focus out of *ffip-diff* buffer.")
+
+(defvar ffip-read-file-name-hijacked-p nil
+  "Internal flag used by `ffip-diff-apply-hunk'.")
 
 ;;;###autoload
 (defun ffip-diff-backend-git-show-commit ()
@@ -895,7 +904,9 @@ NUM is zero based whose default value is zero."
         (setq backend (cdr backend)))
     (ffip-diff-execute-backend backend)))
 
+;;;###autoload
 (defun ffip-show-diff-by-description ()
+  "Show the diff output by excuting selected `ffip-diff-backends. "
   (interactive)
   (let* (descriptions
          (i 0))
@@ -912,6 +923,32 @@ NUM is zero based whose default value is zero."
      `(lambda (d)
         (if (string-match "^\\([0-9]+\\): " d)
             (ffip-show-diff (string-to-number (match-string 1 d))))))))
+
+;;;###autoload
+(defun ffip-diff-apply-hunk (&optional reverse)
+  "Apply current hunk in `diff-mode'. Try to locate the file to patch
+from `recentf-list'. If nothing is found in `recentf-list', user need
+specify the file path.
+
+It's same as `diff-apply-hunk' except finding file in `recentf-list'.
+So please read documenation of `diff-apply-hunk' to get more details."
+  (interactive "P")
+  (unless recentf-mode (recentf-mode 1))
+  (setq ffip-read-file-name-hijacked-p t)
+  (defadvice read-file-name (around ffip-read-file-name-hack activate)
+    (cond
+     (ffip-read-file-name-hijacked-p
+      (let* ((args (ad-get-args 0))
+             (file-name (file-name-nondirectory (nth 2 args)))
+             (cands (remove nil (mapcar (lambda (s) (if (string-match-p (format "%s$" file-name) s) s))
+                                        (mapcar #'substring-no-properties recentf-list))))
+             (rlt (ivy-read "Recentf: " cands)))
+        (if rlt (setq ad-return-value rlt) rlt ad-doit)))
+     (t
+      ad-do-it)))
+  (diff-apply-hunk reverse)
+  (setq ffip-read-file-name-hijacked-p nil))
+
 ;; safe locals
 (progn
   (put 'ffip-diff-backends 'safe-local-variable 'listp)
