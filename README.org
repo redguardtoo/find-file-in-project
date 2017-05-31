@@ -5,7 +5,7 @@ Find file/directory and review Diff/Patch/Commit quickly everywhere.
 You want to find file/directory quickly in current project. The project root is detected *automatically* if Git/Subversion/Mercurial is used. Or else you can create a simple =.dir-locals= file by running our helper =ffip-create-project-file=. Please check our =find-file-*= and =find-directory-* commands.
 
 *User Case Two:*
-You want to compare your current file under Version Control Software (VCS) to old version and edit the corresponding file when reviewing. Please check our =ffip-diff-*= commands. You have full freedom to use any VCS (perforce, for example) with this program.
+You want to compare your current file under Version Control Software (VCS) to old version and edit the corresponding file when reviewing. Please check our "ffip-diff-*" commands. You have full freedom to use any VCS (perforce, for example) with this program.
 
 *Features:*
 - Works perfectly at any OS with minimum setup. Only dependency is =BSD/GNU Find=
