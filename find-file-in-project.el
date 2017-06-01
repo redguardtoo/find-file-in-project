@@ -71,7 +71,22 @@
 ;; all these variables may be overridden on a per-directory basis in
 ;; your .dir-locals.el.  See (info "(Emacs) Directory Variables") for
 ;; details.
-
+;;
+;; Sample .dir-locals.el,
+;;
+;; ((nil . ((ffip-project-root . "~/projs/PROJECT_DIR")
+;;          ;; ingore files bigger than 64k and directory "dist/"
+;;          (ffip-find-options . "-not -size +64k -not -iwholename '*/dist/*'")
+;;          ;; only search files with following extensions
+;;          (ffip-patterns . ("*.html" "*.js" "*.css" "*.java" "*.xml" "*.js"))
+;;          (eval . (progn
+;;                    (require 'find-file-in-project)
+;;                    ;; ingore directory ".tox/"
+;;                    (setq ffip-prune-patterns `("*/.tox/*" ,@ffip-prune-patterns))
+;;                    ;; Do NOT ignore directory "bin/"
+;;                    (setq ffip-prune-patterns `(delete "*/bin/*" ,@ffip-prune-patterns))))
+;;          )))
+;;
 ;; To find in *current directory*, use `find-file-in-current-directory'
 ;; and `find-file-in-current-directory-by-selected'.
 
@@ -929,9 +944,9 @@ NUM is zero based whose default value is zero."
   "Apply current hunk in `diff-mode'. Try to locate the file to patch
 from `recentf-list'. If nothing is found in `recentf-list', user need
 specify the file path.
-
-It's same as `diff-apply-hunk' except finding file in `recentf-list'.
-So please read documenation of `diff-apply-hunk' to get more details."
+It's same as `diff-apply-hunk' except it can find file in `recentf-list'.
+So `diff-apply-hunk' can be replaced by `ffip-diff-apply-hunk'.
+Please read documenation of `diff-apply-hunk' to get more details."
   (interactive "P")
   (unless recentf-mode (recentf-mode 1))
   (setq ffip-read-file-name-hijacked-p t)

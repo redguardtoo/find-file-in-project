@@ -36,9 +36,9 @@ It is also possible to use [[http://stable.melpa.org/#/find-file-in-project][mel
 Since v3.7, Emacs 24.3 is required.
 * Setup
 ** Windows
-Windows setup is as easy as *installing [[http://cygwin.com][Cygwin]] or [[https://msys2.github.io/][MYSYS2]] at default directory of any driver*. =Find= executable will be detected automatically.
+Windows setup is as easy as *installing [[http://cygwin.com][Cygwin]] or [[https://msys2.github.io/][MYSYS2]] at default directory of any driver*. =GNU Find= executable is detected automatically.
 
-You can also manually specify the location of find executable,
+You can also manually specify the file path,
 #+begin_src elisp
 (if (eq system-type 'windows-nt)
     (setq ffip-find-executable "c:\\\\cygwin64\\\\bin\\\\find"))
@@ -53,6 +53,8 @@ You can override the default root directory by setting =ffip-project-root=,
 #+begin_src elisp
 (setq ffip-project-root "~/projs/PROJECT_DIR")
 #+end_src
+
+Per-project and per-directory setup is easy. Check "Tips" section for details.
 ** =M-x find-file-in-project-by-selected=
 Use the *selected region as keyword to search file*. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of =-name= option
 
@@ -190,12 +192,19 @@ All variables may be overridden on a per-directory basis in your .dir-locals.el.
 
 You only need place .dir-locals.el into your project root directory.
 
-Here is a sample .dir-locals.el,
+A sample .dir-locals.el,
 #+begin_src elisp
 ((nil . ((ffip-project-root . "~/projs/PROJECT_DIR")
+         ;; ingore files bigger than 64k and directory "dist/"
          (ffip-find-options . "-not -size +64k -not -iwholename '*/dist/*'")
+         ;; only search files with following extensions
          (ffip-patterns . ("*.html" "*.js" "*.css" "*.java" "*.xml" "*.js"))
-         (ffip-prune-patterns . ("*/.git/*" "*/node_modules/*" "*/index.js"))
+         (eval . (progn
+                   (require 'find-file-in-project)
+                   ;; ingore directory ".tox/"
+                   (setq ffip-prune-patterns `("*/.tox/*" ,@ffip-prune-patterns))
+                   ;; Do NOT ignore directory "bin/"
+                   (setq ffip-prune-patterns `(delete "*/bin/*" ,@ffip-prune-patterns))))
          )))
 #+end_src
 
