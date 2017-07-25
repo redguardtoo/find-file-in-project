@@ -1,4 +1,4 @@
-* find-file-in-project v5.3.2
+* find-file-in-project v5.4.0
 Find file/directory and review Diff/Patch/Commit quickly everywhere.
 
 *User Case One:*
@@ -83,7 +83,7 @@ Execute selected backend from =ffip-diff-backends=.
 
 The options parameter =ffip-show-diff= is the zero-base index of `ffip-diff-backends`.
 
-The output of backend executtion is expected to be [[http://www.gnu.org/software/diffutils/manual/html_node/Unified-Format.html][Unified Diff Format]].
+The output of backend execution is expected to be [[http://www.gnu.org/software/diffutils/manual/html_node/Unified-Format.html][Unified Diff Format]].
 
 The output is inserted into  =*ffip-diff*= buffer where you can press =o=, =C-c C-c=, =ENTER= , =M-x ffip-diff-find-file=  to open the corresponding file.
 
@@ -145,7 +145,27 @@ You can set =ffip-find-relative-path-callback= to format the string before copyi
 (setq ffip-find-relative-path-callback 'ffip-copy-org-file-link)
 #+end_src
 ** =M-x ffip-diff-apply-hunk=
-It applies current hunk in =diff-mode= (please note =ffip-diff-mode= inherits from =diff-mode=) to the target file. The target file could be located by searching =recentf-list=. Except this extra feature, =ffip-diff-apply-hunk= is same as =diff-apply-hunk=. So =diff-apply-hunk= can be replaced by =ffip-diff-apply-hunk=.
+Similar to =diff-apply-hunk=, it applies current hunk in =diff-mode= to the target file (please note =ffip-diff-mode= inherits from =diff-mode=).
+
+The target file could be located by searching =(ffip-project-root)=. You can also apply extra operation on the file in =ffip-diff-apply-hunk-hook= before hunk applying actually happens.
+
+For example, for files under [[https://www.perforce.com/][Perforce]] control,
+#+begin_src elisp
+(defun p4-edit-file-and-make-buffer-writable(file)
+  "p4 edit FILE and make corresponding buffer writable."
+  (shell-command (format "p4 edit %s" file))
+  ;; make sure the buffer is readable
+  (let* ((buf (get-file-buffer file)))
+    (if buf
+        (with-current-buffer buf
+          ;; turn off read-only since we've already `p4 edit'
+          (read-only-mode -1)))))
+(defun ffip-diff-apply-hunk-hook-setup (file)
+  (unless (featurep 'init-perforce) (require 'init-perforce))
+  (if (string-match-p "/myproject/" file)
+      (p4-edit-file-and-make-buffer-writable file)))
+(add-hook 'ffip-diff-apply-hunk-hook 'ffip-diff-apply-hunk-hook-setup)
+#+end_src
 * Tips
 All tips are OPTIONAL. find-file-in-project works out of box in 99% cases.
 ** You prefer ido-mode?
