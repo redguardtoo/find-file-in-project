@@ -23,10 +23,10 @@ index a54fd6d..0c4738d 100644
      (setq ivy-read-called nil)
      ;; ffip will call ivy by default
      (ffip-find-files nil nil)
-diff --git a/tests/ivy.el b/tests/ivy.el
+diff --git a/tests/ivy-mock.el b/tests/ivy-mock.el
 index bacd2be..3a4d83d 100644
---- a/tests/ivy.el
-+++ b/tests/ivy.el
+--- a/tests/ivy-mock.el
++++ b/tests/ivy-mock.el
 @@ -9,6 +9,6 @@
                             history preselect keymap update-fn sort
                             action unwind re-builder matcher dynamic-collection caller)

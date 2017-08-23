@@ -26,9 +26,9 @@
 (ert-deftest ffip-test-find-by-selected ()
   (let (files)
     (setq ffip-project-root default-directory)
-    (setq files (mapcar 'car (ffip-project-search "ivy" nil)))
+    (setq files (mapcar 'car (ffip-project-search "ivy-mock" nil)))
     ;; (message "files=%s" files)
-    (should (string-match-p "ivy.el" (car files)))))
+    (should (string-match-p "ivy-mock.el" (car files)))))
 
 
 (ert-deftest ffip-test-ffip ()
@@ -36,12 +36,7 @@
     (setq ffip-project-root default-directory)
     (setq files (mapcar 'car (ffip-project-search nil nil)))
     (should (> (length files) 1))
-    (should (not (active-minibuffer-window)))
-
-    (setq ivy-read-called nil)
-    ;; ffip will call ivy by default
-    (ffip-find-files nil nil)
-    (should ivy-read-called)))
+    (should (not (active-minibuffer-window)))))
 
 (ert-deftest ffip-test-ffip-open-another ()
   (let (files
@@ -62,6 +57,8 @@
 
     ;; the first is general.el
     (switch-to-buffer "*ffip-diff*")
+    ;; the first file diff hunk
+    (goto-char (point-min))
     (diff-file-next)
     (setq ivy-read-called nil)
     ;; find now
@@ -69,13 +66,13 @@
     (should (not ivy-read-called)) ; only one candidate
     (should (string= (file-name-nondirectory (buffer-file-name)) "general.el"))
 
-    ;; the second is ivy.el
+    ;; move to the second file hunk
     (switch-to-buffer "*ffip-diff*")
     (diff-file-next)
     (setq ivy-read-called nil)
-    ;; find now
+    ;; find file in the first diff hunk now
     (ffip-diff-find-file)
     (should (not ivy-read-called)) ; only one candidate
-    (should (string= (file-name-nondirectory (buffer-file-name)) "ivy.el"))
+    (should (string= (file-name-nondirectory (buffer-file-name)) "ivy-mock.el"))
     ;; cleanup
     (kill-buffer "*ffip-diff*")))

@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.4.0
+;; Version: 5.4.1
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -514,13 +514,22 @@ If CHECK-ONLY is true, only do the check."
              ffip-prune-patterns " -or "))
 
 ;;;###autoload
-(defun ffip-completing-read (prompt collection action)
+(defun ffip-completing-read (prompt collection &optional action)
+  "Read a string in minibuffer, with completion.
+
+PROMPT is a string with same format as similar paramters in `ido-completing-read'.
+Collection is a list of strings.
+
+ACTION is a lambda function to call after selecting a result.
+
+This function returns the selected candidate or nil."
   (cond
-   ((= 1 (length collection))
+   ((and action (= 1 (length collection)))
     ;; open file directly
-    (funcall action (car collection)))
-   ;; if user prefer `ido-mode' or `ivy-read' is not defined,
-   ;; we use `ido-completing-read'.
+    (funcall action (car collection))
+    (car collection))
+   ;; If user prefer `ido-mode' or there is no ivy,
+   ;; use `ido-completing-read'.
    ((or ffip-prefer-ido-mode (not (fboundp 'ivy-read)))
     ;; friendly UI for ido
     (let* ((list-of-pair (consp (car collection)))
@@ -528,7 +537,7 @@ If CHECK-ONLY is true, only do the check."
                                (mapcar 'car collection)
                              collection))
            (ido-selected (ido-completing-read prompt ido-collection)))
-      (if ido-selected
+      (if (and ido-selected action)
           (funcall action
                    (if list-of-pair
                        (cdar (delq nil
@@ -537,7 +546,8 @@ If CHECK-ONLY is true, only do the check."
                                                            ido-selected)
                                                   x))
                                            collection)))
-                     ido-selected)))))
+                     ido-selected)))
+      ido-selected))
    (t
     (ivy-read prompt collection
               :action action))))
@@ -960,7 +970,7 @@ Please read documenation of `diff-apply-hunk' to get more details."
              (file-name (file-name-nondirectory (nth 2 args)))
              (default-directory (ffip-project-root))
              (cands (ffip-project-search file-name nil default-directory))
-             (rlt (if cands (ivy-read "Files: " cands))))
+             (rlt (if cands (ffip-completing-read "Files: " cands))))
         (when rlt
           (setq rlt (file-truename rlt))
           (run-hook-with-args 'ffip-diff-apply-hunk-hook rlt)
