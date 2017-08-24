@@ -22,6 +22,7 @@
 ;;; Code:
 
 (require 'find-file-in-project)
+(setq ffip-project-root (file-name-directory "./"))
 
 (ert-deftest ffip-test-find-by-selected ()
   (let (files)
