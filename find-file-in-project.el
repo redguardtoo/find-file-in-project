@@ -696,15 +696,13 @@ See (info \"(Emacs) Directory Variables\") for details."
 
 ;;;###autoload
 (defun find-file-in-project (&optional open-another-window)
-  "Prompt with a completing list of all files in the project to find one.
+"More powerful and efficient `find-file-in-project-by-selected' is recommended.
 
+Prompt with a completing list of all files in the project to find one.
 If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window.
-
 The project's scope is defined as the first directory containing
 a `ffip-project-file' whose value is \".git\" by default.
-
 You can override this by setting the variable `ffip-project-root'."
-
   (interactive "P")
   (ffip-find-files nil open-another-window))
 
@@ -717,9 +715,9 @@ You can override this by setting the variable `ffip-project-root'."
 
 ;;;###autoload
 (defun find-file-in-project-by-selected (&optional open-another-window)
-  "Similar to `find-file-in-project'.
-But use string from selected region to search files in the project.
-If no region is selected, you need provide keyword.
+  "Same as `find-file-in-project' but more poweful and efficient.
+It use string from selected region to search files in the project.
+If no region is selected, you could provide a keyword.
 
 Keyword could be ANY part of the file's full path and support wildcard.
 For example, to find /home/john/proj1/test.js, below keywords are valid:
@@ -729,6 +727,8 @@ For example, to find /home/john/proj1/test.js, below keywords are valid:
 
 If keyword contains line number like \"hello.txt:32\" or \"hello.txt:32:\",
 we will move to that line in opened file.
+
+If keyword is empty, it behaves same as `find-file-in-project'.
 
 If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   (interactive "P")

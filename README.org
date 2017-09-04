@@ -46,13 +46,15 @@ You can override the default root directory by setting =ffip-project-root=,
 
 Per-project and per-directory setup is easy. Check "Tips" section for details.
 ** =M-x find-file-in-project-by-selected=
-Use the *selected region as keyword to search file*. If no region selected, you need provide the keyword. Keyword could contain wildcard which passed to Find as value of =-name= option
+Use the *selected region as keyword to search file*. If no region selected, you may provide the keyword which could contain wildcard.
 
 If keyword contains line number like "hello.txt:32" or "hello.txt:32:", we will move to that line in opened file.
 
 If parameter is passed , file will be opened in new window.
 
-If you =(setq ffip-match-path-instead-of-filename t)= before =M-x find-file-in-project-by-selected=, we try to match selected text any part of full path (directory+file name) before displaying candidates. It's a little slower than the original setup but make find-file-in-project behaves exactly like Sublime Text's Cmd+P.
+If you =(setq ffip-match-path-instead-of-filename t)= before =M-x find-file-in-project-by-selected=, we try to match selected text with any part of full path before displaying candidates. It's a little slower than the original setup. 
+
+It could replace old command =find-file-in-project= (or =ffip=) because it's more efficient. It was tested searching in 50K+ files without any performance issue.
 ** =M-x find-file-with-similar-name=
 Find file with similar name to current opened file.
 
@@ -62,7 +64,7 @@ Use the *selected region as keyword to find directory*. If no region selected, y
 
 If parameter is passed , directory will be opened in new window.
 ** =M-x find-file-in-project=
-Starts search immediately
+Starts search immediately. This command is slow if there 10K+ files because it use ONLY Emacs Lisp to filter candidates. You should always use =find-file-in-project-by-selected= unless in small project.
 ** =M-x ffip-create-project-file=
 Create =.dir-locals.el= which "[[http://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html][defines the same set of local variables to all the files in a certain directory and its subdirectory]]".
 
