@@ -1,4 +1,4 @@
-* find-file-in-project v5.4.1
+* find-file-in-project v5.4.2
 Find file/directory and review Diff/Patch/Commit quickly everywhere.
 
 *User Case One:*
@@ -167,6 +167,8 @@ For example, for files under [[https://www.perforce.com/][Perforce]] control,
       (p4-edit-file-and-make-buffer-writable file)))
 (add-hook 'ffip-diff-apply-hunk-hook 'ffip-diff-apply-hunk-hook-setup)
 #+end_src
+** =ffip-split-window-horizontally= and =ffip-split-window-vertically=
+Find&Open file in split window.
 * Tips
 All tips are OPTIONAL. find-file-in-project works out of box in 99% cases.
 ** Use ido-mode instead of ivy

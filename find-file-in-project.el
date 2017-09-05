@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.4.1
+;; Version: 5.4.2
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -89,6 +89,9 @@
 ;;
 ;; To find in *current directory*, use `find-file-in-current-directory'
 ;; and `find-file-in-current-directory-by-selected'.
+;;
+;; `ffip-split-window-horizontally' and `ffip-split-window-vertically' find&open file
+;; in split window.
 
 ;; `ffip-show-diff-by-description' and `ffip-show-diff' execute the
 ;; backend from `ffip-diff-backends'.
@@ -154,6 +157,16 @@
 ;;; Code:
 
 (require 'diff-mode)
+(require 'windmove)
+
+(defvar ffip-window-ratio-alist
+  '((1 . 1.61803398875)
+    (2 . 2)
+    (3 . 3)
+    (4 . 4)
+    (5 . 0.61803398875))
+  "Dictionary to look up windows split ratio.
+Used by `ffip-split-window-horizontally' and `ffip-split-window-vertically'.")
 
 (defvar ffip-filename-rules
   '(ffip-filename-identity
@@ -215,7 +228,7 @@ The output of execution is inserted into *ffip-diff* buffer with `ffip-diff-mode
 May be set using .dir-locals.el.  Checks each entry if set to a list.")
 
 (defvar ffip-prefer-ido-mode (not (require 'ivy nil t))
-  "Use `ido-mode' instead of `ivy-mode' to display candidates.")
+  "Use `ido-mode' instead of `ivy-mode' to display cands.")
 
 (defvar ffip-patterns nil
   "List of patterns to look for with `find-file-in-project'.")
@@ -606,7 +619,7 @@ DIRECTORY-TO-SEARCH specify the root directory to search."
 ;;;###autoload
 (defun ffip-find-files (keyword open-another-window &optional find-directory fn)
   "The API to find files."
-  (let* (project-files
+  (let* (cands
          lnum
          file
          root)
@@ -617,13 +630,13 @@ DIRECTORY-TO-SEARCH specify the root directory to search."
       (setq lnum (string-to-number (match-string 2 keyword)))
       (setq keyword (match-string 1 keyword)))
 
-    (setq project-files (ffip-project-search keyword find-directory))
+    (setq cands (ffip-project-search keyword find-directory))
     (cond
-     ((> (length project-files) 0)
+     ((> (length cands) 0)
       (setq root (file-name-nondirectory (directory-file-name (ffip-get-project-root-directory))))
       (ffip-completing-read
        (format "Find in %s/: " root)
-       project-files
+       cands
        `(lambda (file)
           ;; only one item in project files
           (if (listp file) (setq file (cdr file)))
@@ -643,6 +656,12 @@ DIRECTORY-TO-SEARCH specify the root directory to search."
 
 (defun ffip--prepare-root-data-for-project-file (root)
   (cons 'ffip-project-root root))
+
+(defun ffip-read-keyword ()
+  "Read keyword from selected text or user input."
+  (if (region-active-p)
+      (buffer-substring-no-properties (region-beginning) (region-end))
+    (read-string "Enter keyword (or press ENTER):")))
 
 ;;;###autoload
 (defun ffip-create-project-file ()
@@ -732,10 +751,7 @@ If keyword is empty, it behaves same as `find-file-in-project'.
 
 If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   (interactive "P")
-  (let* ((keyword (if (region-active-p)
-                      (buffer-substring-no-properties (region-beginning) (region-end))
-                    (read-string "Enter keyword (or press ENTER):"))))
-    (ffip-find-files keyword open-another-window)))
+  (ffip-find-files (ffip-read-keyword) open-another-window))
 
 ;;;###autoload
 (defun find-file-with-similar-name (&optional open-another-window)
@@ -768,17 +784,14 @@ You can set `ffip-find-relative-path-callback' to format the string before copyi
   (setq ffip-find-relative-path-callback 'ffip-copy-reactjs-import)
   (setq ffip-find-relative-path-callback 'ffip-copy-org-file-link)"
   (interactive "P")
-  (let* ((keyword (if (region-active-p)
-                      (buffer-substring-no-properties (region-beginning) (region-end))
-                    (read-string "Enter keyword (or press ENTER):")))
-         (project-files (ffip-project-search keyword find-directory))
+  (let* ((cands (ffip-project-search (ffip-read-keyword) find-directory))
          root)
     (cond
-     ((> (length project-files) 0)
+     ((> (length cands) 0)
       (setq root (file-name-nondirectory (directory-file-name (ffip-get-project-root-directory))))
       (ffip-completing-read
        (format "Find in %s/: " root)
-       project-files
+       cands
        `(lambda (p)
           ;; only one item in project files
           (if (listp p) (setq p (cdr p)))
@@ -803,32 +816,67 @@ For example, to find /home/john/proj1/test, below keywords are valid:
 
 If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   (interactive "P")
-  (let* ((keyword (if (region-active-p)
-                      (buffer-substring-no-properties (region-beginning) (region-end))
-                    (read-string "Enter keyword (or press ENTER):"))))
-    (ffip-find-files keyword open-another-window t)))
+  (ffip-find-files (ffip-read-keyword) open-another-window t))
 
 ;;;###autoload
 (defalias 'ffip 'find-file-in-project)
 
 
+(defun ffip-split-window-api (split-fn mv-fn ratio)
+  "Use SPLIT-FN to split window and focus on new window by MV-FN.
+Window split in RATIO."
+  (let* (ratio-val
+         (cands (ffip-project-search (ffip-read-keyword) nil))
+         (file (if (= 1 (length cands)) (cdr (car cands))
+                 (ivy-read "Find file: " cands)))
+         (buf (if (and file (file-exists-p file)) (find-file-noselect file)
+                (o))))
+    (cond
+     (ratio
+      (setq ratio-val (cdr (assoc ratio ffip-window-ratio-alist)))
+      (funcall split-fn (floor (/ (window-body-width)
+                                           (1+ ratio-val)))))
+     (t
+      (funcall split-fn)))
+    (set-window-buffer (next-window) buf)
+    (if (or (not ratio-val)
+            (>= ratio-val 1))
+        (funcall mv-fn))))
+
+;;;###autoload
+(defun ffip-split-window-horizontally (&optional ratio)
+  "Find&Open file in horizontal split window.  New window size is looked
+up in `ffip-window-ratio-alist' by RATIO.
+Keyword to search new file is selected text or user input."
+  (interactive "P")
+  (ffip-split-window-api 'split-window-horizontally 'windmove-right ratio))
+
+;;;###autoload
+(defun ffip-split-window-vertically (&optional ratio)
+  "Find&Open file in vertical split window.  New window size is looked
+up in `ffip-window-ratio-alist' by RATIO.
+Keyword to search new file is selected text or user input."
+  (interactive "P")
+  (ffip-split-window-api 'split-window-vertically 'windmove-down ratio))
+
 ;;;###autoload
 (defun ffip-diff-quit ()
   (interactive)
   ;; kill buffer instead of bury it
-  (quit-window t))
+ (quit-window t))
 
 ;;;###autoload
 (defun ffip-diff-find-file (&optional open-another-window)
   "File file(s) in current hunk."
   (interactive "P")
   (let* ((files (mapcar 'file-name-nondirectory (diff-hunk-file-names)))
-        (alnum 0)
-        (blnum 0))
+         (alnum 0)
+         (blnum 0)
+         (regex "\\(?:\\*\\{15\\}.*\n\\)?[-@* ]*\\([0-9,]+\\)\\([ acd+]+\\([0-9,]+\\)\\)?"))
 
     (save-excursion
       (diff-beginning-of-hunk t)
-      (when (looking-at "\\(?:\\*\\{15\\}.*\n\\)?[-@* ]*\\([0-9,]+\\)\\([ acd+]+\\([0-9,]+\\)\\)?")
+      (when (looking-at regex)
         (setq alnum (string-to-number (match-string 1)))
         (setq blnum (string-to-number (match-string 3)))))
 
