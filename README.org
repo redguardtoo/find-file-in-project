@@ -1,4 +1,4 @@
-* find-file-in-project v5.4.2
+* find-file-in-project v5.4.3
 Find file/directory and review Diff/Patch/Commit quickly everywhere.
 
 *User Case One:*

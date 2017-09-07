@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.4.2
+;; Version: 5.4.3
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -99,8 +99,8 @@
 ;; `ffip-show-diff' has optional parameter as index of selected backend.
 ;; The output of execution is expected be in Unified Diff Format.
 ;; The output is inserted into *ffip-diff* buffer.
-;; In the buffer, press "o/C-c C-c"/ENTER" or `M-x ffip-diff-find-file'
-;; to open correspong file.
+;; Press "o" or "C-c C-c" or "ENTER" or `M-x ffip-diff-find-file' in the
+;; buffer to open corresponding file.
 ;;
 ;; `ffip-diff-find-file-before-hook' is called before `ffip-diff-find-file'.
 ;;
@@ -822,20 +822,26 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
 (defalias 'ffip 'find-file-in-project)
 
 
+(defun ffip-path (candidate)
+  "Get path from ivy candidate."
+  (let* ((default-directory (ffip-project-root)))
+    (file-truename (if (consp candidate) (cdr candidate)
+                     candidate))))
+
 (defun ffip-split-window-api (split-fn mv-fn ratio)
   "Use SPLIT-FN to split window and focus on new window by MV-FN.
 Window split in RATIO."
   (let* (ratio-val
          (cands (ffip-project-search (ffip-read-keyword) nil))
-         (file (if (= 1 (length cands)) (cdr (car cands))
-                 (ivy-read "Find file: " cands)))
+         (file (if (= 1 (length cands)) (ffip-path (car cands))
+                 (ffip-path (ivy-read "Find file: " cands))))
          (buf (if (and file (file-exists-p file)) (find-file-noselect file)
-                (o))))
+                (other-buffer))))
     (cond
      (ratio
       (setq ratio-val (cdr (assoc ratio ffip-window-ratio-alist)))
       (funcall split-fn (floor (/ (window-body-width)
-                                           (1+ ratio-val)))))
+                                  (1+ ratio-val)))))
      (t
       (funcall split-fn)))
     (set-window-buffer (next-window) buf)
