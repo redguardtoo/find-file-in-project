@@ -1,4 +1,7 @@
-* find-file-in-project v5.4.4
+* find-file-in-project v5.4.5
+
+[[http://stable.melpa.org/#/find-file-in-project][file:http://stable.melpa.org/packages/find-file-in-project]]
+
 Find file/directory and review Diff/Patch/Commit quickly everywhere.
 
 *User Case One:*
@@ -257,3 +260,7 @@ DO NOT use other APIs from =ivy-mode=. The less APIs used, the more stable this 
 Run =tests/test.sh= before =git commit=.
 * Bug Report
 Check [[https://github.com/technomancy/find-file-in-project]].
+* License
+find-file-in-project is free software: you can redistribute it and/or modify it under the terms of the [[https://raw.githubusercontent.com/technomancy/find-file-in-project/master/LICENSE][GNU General Public License]] as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+find-file-in-project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [[https://raw.githubusercontent.com/technomancy/find-file-in-project/master/LICENSE][GNU General Public License]] for more details.
