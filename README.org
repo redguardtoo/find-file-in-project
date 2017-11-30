@@ -27,6 +27,9 @@ It is also possible to use [[http://stable.melpa.org/#/find-file-in-project][mel
 [[https://github.com/abo-abo/swiper][Ivy-mode]] is the optional dependency which is installed automatically if you use melpa. If it is not found, ido will be used instead.
 
 Since v3.7, Emacs 24.3 is required.
+
+Users of Debian ≥10 and derivatives can install find-file-in-project with the following command:
+=sudo apt install elpa-find-file-in-project=
 * Setup
 ** Windows
 Windows setup is as easy as *installing [[http://cygwin.com][Cygwin]] or [[https://msys2.github.io/][MYSYS2]] at default directory of any driver*. =GNU Find= executable is detected automatically.
