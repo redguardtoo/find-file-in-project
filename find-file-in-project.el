@@ -7,7 +7,7 @@
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
-;; Package-Requires: ((ivy "0.7.0") (emacs "24.3"))
+;; Package-Requires: ((ivy "0.10.0") (emacs "24.3"))
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
 ;; EmacsWiki: FindFileInProject
@@ -829,7 +829,7 @@ Window split in RATIO."
   (let* (ratio-val
          (cands (ffip-project-search (ffip-read-keyword) nil))
          (file (if (= 1 (length cands)) (ffip-path (car cands))
-                 (ffip-path (ivy-read "Find file: " cands))))
+                 (ffip-path (ffip-completing-read "Find file: " cands))))
          (buf (if (and file (file-exists-p file)) (find-file-noselect file)
                 (other-buffer))))
     (cond
