@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.4.5
+;; Version: 5.4.6
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -183,31 +183,34 @@ It's used by `find-file-with-similar-name'.")
 The file path is passed to the hook as the first argument.")
 
 ;;;###autoload
-(defun ffip-diff-backend-git-show-commit ()
-  (let* ((git-cmd "git --no-pager log --date=short --pretty=format:'%h|%ad|%s|%an'")
-         (collection (split-string (shell-command-to-string git-cmd) "\n" t)))
-    (ffip-completing-read "git log:"
-                          collection
-                          (lambda (line)
-                            (shell-command-to-string (format "git show %s" (car (split-string line "|" t))))))))
+(defun ffip-git-diff-current-file ()
+  "Run 'git diff version:current-file current-file'."
+  (let* ((default-directory (locate-dominating-file default-directory ".git"))
+         (line (ivy-read "diff current file:" (my-git-versions))))
+    (shell-command-to-string (format "git --no-pager diff %s:%s %s"
+                                     (replace-regexp-in-string "^ *\\*? *" "" (car (split-string line "|" t)))
+                                     (file-relative-name buffer-file-name default-directory)
+                                     buffer-file-name))))
 
-;;;###autoload
-(defun ffip-diff-backend-hg-show-commit ()
-  (let* ((hg-cmd "hg log --template '{node|short}|{date|shortdate}|{desc|strip|firstline}|{author|user}\n'")
-         (collection (split-string (shell-command-to-string hg-cmd) "\n" t)))
-    (ffip-completing-read "hg log:"
-                          collection
-                          (lambda (line)
-                            (shell-command-to-string (format "hg log -p -g -r %s" (car (split-string line "|" t))))))))
+(defun ffip-git-diff-project()
+  "Run 'git diff version' in project."
+  (let* ((default-directory (locate-dominating-file default-directory ".git"))
+         (line (ivy-read "diff current file:" (my-git-versions)))
+         (version (replace-regexp-in-string "^ *\\*? *" "" (car (split-string line "|" t)))))
+    (shell-command-to-string (format "git --no-pager diff %s" version))))
 
 (defvar ffip-diff-backends
-  '(ffip-diff-backend-git-show-commit
-    ("git diff" . "cd $(git rev-parse --show-toplevel) && git diff")
-    ("git diff --cached" . "cd $(git rev-parse --show-toplevel) && git diff --cached")
-    ("Diff from `kill-ring'" . (car kill-ring))
-    ffip-diff-backend-hg-show-commit
-    "cd $(hg root) && hg diff"
-    "svn diff")
+  '(ffip-git-diff-current-file
+    ffip-git-diff-project
+    ("`git diff --cached` in project" . "cd $(git rev-parse --show-toplevel) && git diff --cached")
+    ("`git diff` in project" . "cd $(git rev-parse --show-toplevel) && git diff")
+    ("`git diff` current file" . (shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git diff '%s'"
+                                                                    (buffer-file-name))))
+    ("`git log -p` current file" . (shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git --no-pager log --date=short -p '%s'"
+                                                     (buffer-file-name))))
+    ("`git log -S keyword -p` in project" . (shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git --no-pager log --date=short -S'%s' -p"
+                                                              (read-string "Git search string:"))))
+    ("Diff from `kill-ring'" . (car kill-ring)))
   "The list of back-ends.
 If back-end is string, it is run in `shell-command-to-string'.
 If it's a function or lisp expression, it will be executed and return a string.
@@ -935,7 +938,6 @@ Keyword to search new file is selected text or user input."
         (goto-char (point-min)))))
    (t
     (message "Output is empty!"))))
-
 
 (defun ffip-diff-execute-backend (backend)
   (if backend
