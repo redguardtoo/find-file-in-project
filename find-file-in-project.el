@@ -202,6 +202,7 @@ The file path is passed to the hook as the first argument.")
 (defvar ffip-diff-backends
   '(ffip-git-diff-current-file
     ffip-git-diff-project
+    ("`git diff HEAD^` in project" . "cd $(git rev-parse --show-toplevel) && git diff HEAD^")
     ("`git diff --cached` in project" . "cd $(git rev-parse --show-toplevel) && git diff --cached")
     ("`git diff` in project" . "cd $(git rev-parse --show-toplevel) && git diff")
     ("`git diff` current file" . (shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git diff '%s'"
