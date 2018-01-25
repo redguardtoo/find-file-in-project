@@ -580,7 +580,12 @@ DIRECTORY-TO-SEARCH specify the root directory to search."
                    (ffip-get-project-root-directory)))
          (default-directory (file-name-as-directory root))
          (cmd (format "%s . \\( %s \\) -prune -o -type %s %s %s %s -print"
-                      (if ffip-find-executable ffip-find-executable (ffip--executable-find "find"))
+                      ;; In tramp mode and local win32, remote nix-like,
+                      ;; the ffip-find-executable with windows path can't be applied
+                      (if (file-remote-p default-directory)
+                          "find" ;; don't know how to find it in the remote
+                          (if ffip-find-executable ffip-find-executable (ffip--executable-find "find"))
+                        )
                       (ffip--prune-patterns)
                       (if is-finding-directory "d" "f")
                       (ffip--join-patterns ffip-patterns)
