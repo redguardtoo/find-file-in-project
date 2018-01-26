@@ -1,4 +1,4 @@
-* find-file-in-project v5.4.6
+* find-file-in-project v5.4.7
 
 [[http://stable.melpa.org/#/find-file-in-project][file:http://stable.melpa.org/packages/find-file-in-project]]
 
@@ -11,9 +11,10 @@ Find file/directory quickly in current project. The project root is detected *au
 Diff/patch files. Target files could be understand any Version Control Software (VCS) or there is no VCS at all. Please check =ffip-diff-*= commands.
 
 *Features:*
-- Works perfectly on any OS with minimum setup. Only dependency is =BSD/GNU Find=
+- Works perfectly on Windows64/Linux/Mac with minimum setup. Only dependency is =BSD/GNU Find=
 - Quick. Tested with 50,000+ files
 - You can speed up searching by tweaking =ffip-find-options= and =ffip-prune-patterns=
+- Work flawlessly with [[https://www.emacswiki.org/emacs/TrampMode][Tramp Mode]]
 
 *Screenshot:*
 
