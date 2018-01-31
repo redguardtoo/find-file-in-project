@@ -493,13 +493,27 @@ If CHECK-ONLY is true, only do the check."
     (if ffip-debug (message "ffip--create-filename-pattern-for-gnufind called. rlt=%s" rlt))
     rlt))
 
-(defun ffip--win-executable-find (driver path exe)
-  (let* (rlt)
-    (if (executable-find (concat driver path exe))
-        (setq rlt (concat driver path exe)))
-    rlt))
+(defun ffip--win-executable-find (exe)
+  "Find EXE on windows."
+  (let* ((drivers '("c" "d" "e" "g" "h" "i" "j" "k"))
+          (i 0)
+          j
+          (dirs '(":\\\\cygwin64\\\\bin\\\\"
+                 ":\\\\msys64\\\\usr\\\\bin\\\\"))
+          rlt)
+     (while (and (not rlt)
+                 (< i (length dirs)))
+       (setq j 0)
+       (while (and (not rlt)
+                   (< j (length drivers)))
+         (setq rlt (executable-find (concat (nth j drivers) (nth i dirs) exe)))))
+     (unless rlt
+       ;; nothing found, fall back to exe
+       (setq rlt exe))
+     rlt))
 
 (defun ffip--executable-find (exe)
+  "Find EXE on all environments."
   (let* (rlt)
     (cond
      ((file-remote-p default-directory)
@@ -510,17 +524,7 @@ If CHECK-ONLY is true, only do the check."
       (setq rlt exe))
      ((setq rlt ffip-find-executable))
      ((eq system-type 'windows-nt)
-      (setq rlt (or
-                 ;; cygwin
-                 (ffip--win-executable-find "c" ":\\\\cygwin64\\\\bin\\\\" exe)
-                 (ffip--win-executable-find "d" ":\\\\cygwin64\\\\bin\\\\" exe)
-                 (ffip--win-executable-find "e" ":\\\\cygwin64\\\\bin\\\\" exe)
-                 (ffip--win-executable-find "f" ":\\\\cygwin64\\\\bin\\\\" exe)
-                 ;; msys2
-                 (ffip--win-executable-find "c" ":\\\\msys64\\\\usr\\\\bin\\\\" exe)
-                 (ffip--win-executable-find "d" ":\\\\msys64\\\\usr\\\\bin\\\\" exe)
-                 (ffip--win-executable-find "e" ":\\\\msys64\\\\usr\\\\bin\\\\" exe)
-                 (ffip--win-executable-find "f" ":\\\\msys64\\\\usr\\\\bin\\\\" exe))))
+      (setq rlt (ffip--win-executable-find exe)))
      ((setq rlt (executable-find exe)))
      (t
       ;; well, `executable-find' failed
