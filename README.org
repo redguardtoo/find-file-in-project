@@ -234,22 +234,6 @@ BTW, please use either per-directory setup or per-project setup, *NOT* both.
   ;; Cygwin
   (setq ffip-project-root "~/projs/myprojs1"))
 #+end_src
-** Search multiple file name patterns
-The variable =ffip-filename-rules= create some extra file names for
-search when calling =find-file-in-project-by-selected=. For example,
-When file basename =helloWorld= provided, =HelloWorld=, =hello-world=
-are added as the file name search patterns.
-
-=C-h v ffip-filename-rules= to see its default value.
-
-As other variables, it could be customized per project,
-#+begin_src elisp
-(setq-local ffip-filename-rules
-            '(;; first, search by the original file name
-              ffip-filename-identity
-              ;; second, apply either below rule
-              (ffip-filename-dashes-to-camelcase ffip-filename-camelcase-to-dashes)))
-#+end_src
 ** More keybinding tips
 =C-h i g (ivy) Enter= for more key-binding tips.
 ** Search and grep files under Git control
