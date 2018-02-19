@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.4.7
+;; Version: 5.5.0
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -38,6 +38,8 @@
 ;; - Works flawlessly on Tramp Mode (https://www.emacswiki.org/emacs/TrampMode)
 ;;
 ;; Usage,
+;;   - `M-x find-file-in-project-at-point' guess the file name at point and
+;;      find file
 ;;   - `M-x find-file-in-project-by-selected' use the selected region
 ;;      as the keyword to search file.  Or you need provide the keyword
 ;;      if no region selected.
@@ -150,6 +152,7 @@
 
 (require 'diff-mode)
 (require 'windmove)
+(require 'ffap)
 
 (defvar ffip-window-ratio-alist
   '((1 . 1.61803398875)
@@ -699,6 +702,25 @@ You can override this by setting the variable `ffip-project-root'."
   (ffip-find-files nil open-another-window))
 
 ;;;###autoload
+(defun find-file-in-project-at-point (&optional open-another-window)
+  "Find file whose name is guessed around point.
+If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
+  (interactive "P")
+  (let* ((filename (or (ffap-file-at-point)
+                       (thing-at-point 'filename)
+                       (thing-at-point 'symbol)
+                       (read-string "No file name at point. Please provide file name:")))
+         ;; filename could be a path
+         (ffip-match-path-instead-of-filename t))
+    (cond
+     (filename
+      ;; strip prefix "../../" or "././" from file name
+      (setq filename (replace-regexp-in-string "^\\(\\.\\.*/\\)*" "" filename))
+      (ffip-find-files filename open-another-window))
+     (t
+      (message "No file name is provided.")))))
+
+;;;###autoload
 (defun find-file-in-current-directory (&optional open-another-window)
   "Like `find-file-in-project'.  But search only in current directory.
 IF OPEN-ANOTHER-WINDOW is t, results are displayed in new window."
@@ -1000,7 +1022,7 @@ If NUM is not nil, the corresponding backend is executed directly."
   "Apply current hunk in `diff-mode'.  Try to locate the file to patch.
 Similar to `diff-apply-hunk' but smarter.
 Please read documenation of `diff-apply-hunk' to get more details.
-If REVERSE is t, appied patch is reverted."
+If REVERSE is t, applied patch is reverted."
   (interactive "P")
   (setq ffip-read-file-name-hijacked-p t)
   (defadvice read-file-name (around ffip-read-file-name-hack activate)

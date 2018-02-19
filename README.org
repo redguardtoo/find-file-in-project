@@ -1,4 +1,4 @@
-* find-file-in-project v5.4.7
+* find-file-in-project v5.5.0
 
 [[http://stable.melpa.org/#/find-file-in-project][file:http://stable.melpa.org/packages/find-file-in-project]]
 
@@ -52,6 +52,8 @@ You can override the default root directory by setting =ffip-project-root=,
 #+end_src
 
 Per-project and per-directory setup is easy. Check "Tips" section for details.
+** =M-x find-file-in-project-at-point=
+Guess the file name at point and try to find file.
 ** =M-x find-file-in-project-by-selected=
 Use the *selected region as keyword to search file*. If no region selected, you may provide the keyword which could contain wildcard.
 
