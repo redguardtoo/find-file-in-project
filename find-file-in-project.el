@@ -633,10 +633,12 @@ This function is the API to find files."
   "Prepare data for ROOT."
   (cons 'ffip-project-root root))
 
+(defun ffip--read-selected ()
+  (buffer-substring-no-properties (region-beginning) (region-end)))
+
 (defun ffip-read-keyword ()
   "Read keyword from selected text or user input."
-  (if (region-active-p)
-      (buffer-substring-no-properties (region-beginning) (region-end))
+  (if (region-active-p) (ffip--read-selected)
     (read-string "Enter keyword (or press ENTER):")))
 
 ;;;###autoload
@@ -706,7 +708,8 @@ You can override this by setting the variable `ffip-project-root'."
   "Find file whose name is guessed around point.
 If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   (interactive "P")
-  (let* ((filename (or (ffap-file-at-point)
+  (let* ((filename (or (and (region-active-p) (ffip--read-selected))
+                       (ffap-file-at-point)
                        (thing-at-point 'filename)
                        (thing-at-point 'symbol)
                        (read-string "No file name at point. Please provide file name:")))
