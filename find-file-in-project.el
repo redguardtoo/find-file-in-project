@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.5.1
+;; Version: 5.5.2
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -176,6 +176,9 @@ It's used by `find-file-with-similar-name'.")
 (defvar ffip-diff-apply-hunk-hook nil
   "Hook when `ffip-diff-apply-hunk' find the file to apply hunk.
 The file path is passed to the hook as the first argument.")
+
+(defvar ffip-relative-path-pattern "^\\(\\.\\.*/\\)+"
+  "Pathern of relative path.")
 
 (defun ffip-shell-command-to-string (command)
   "Execute shell COMMAND and return its output as a string."
@@ -702,36 +705,45 @@ You can override this by setting the variable `ffip-project-root'."
   (interactive "P")
   (ffip-find-files nil open-another-window))
 
+(defun ffip-file-name-relative-p (filename)
+  "Is FILENAME relative?"
+  (if (string-match-p ffip-relative-path-pattern filename) t))
+
 ;;;###autoload
 (defun find-file-in-project-at-point (&optional open-another-window)
   "Find file whose name is guessed around point.
 If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   (interactive "P")
-  (let* ((fp (or (and (region-active-p) (ffip--read-selected))
+  (let* ((fn (or (and (region-active-p) (ffip--read-selected))
                        (thing-at-point 'filename)
                        (thing-at-point 'symbol)
                        (read-string "No file name at point. Please provide file name:")))
          ;; could be a path
-         (ffip-match-path-instead-of-filename t))
+         (ffip-match-path-instead-of-filename t)
+         tfn)
     (cond
-     (fp
-      (let* ((absolute-p (file-name-absolute-p fp)))
+     (fn
+      (cond
+       ((file-name-absolute-p fn)
+        ;; absolute path
         (cond
-         (absolute-p
-          ;; absolute path
-          (cond
-           ((file-exists-p fp)
-            ;; if absolute path file exists, open it directly
-            (if open-another-window (find-file-other-window fp)
-              (find-file fp)))
-           (t
-            ;; well, search by file name
-            (let* ((ffip-match-path-instead-of-filename t))
-              (ffip-find-files (file-name-nondirectory fp) open-another-window)))))
+         ((file-exists-p fn)
+          ;; if file has absolute path and file exists, open it directly
+          (if open-another-window (find-file-other-window fn)
+            (find-file fn)))
          (t
-          ;; strip prefix "../../" or "././" from file name
-          (setq fp (replace-regexp-in-string "^\\(\\.\\.*/\\)*" "" fp))
-          (ffip-find-files fp open-another-window)))))
+          ;; well, search by file name
+          (let* ((ffip-match-path-instead-of-filename nil))
+            (ffip-find-files (file-name-nondirectory fn) open-another-window)))))
+       ((and (ffip-file-name-relative-p fn)
+             (file-exists-p (setq tfn (file-truename fn))))
+        ;; file has relative path and file exist
+        (if open-another-window (find-file-other-window tfn)
+          (find-file tfn)))
+       (t
+        ;; strip prefix "../../" or "././" from file name
+        (setq tfn (replace-regexp-in-string ffip-relative-path-pattern "" fn))
+        (ffip-find-files tfn open-another-window))))
      (t
       (message "No file name is provided.")))))
 
