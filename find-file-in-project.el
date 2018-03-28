@@ -77,6 +77,9 @@
 ;;          (ffip-find-options . "-not -size +64k -not -iwholename '*/dist/*'")
 ;;          ;; only search files with following extensions
 ;;          (ffip-patterns . ("*.html" "*.js" "*.css" "*.java" "*.xml" "*.js"))
+;;          ;; see https://github.com/sharkdp/fd
+;;          (ffip-fd-options . " --ignore-file <path>...'")
+;;          (ffip-fd-patterns . (".html" ".js" ".css" ".java" ".xml" ".js"))
 ;;          (eval . (progn
 ;;                    (require 'find-file-in-project)
 ;;                    ;; ingore directory ".tox/"
@@ -223,6 +226,8 @@ If it's a function or expression, it'll be executed and return a string.
 
 The output is inserted into *ffip-diff* buffer.")
 
+(defvar ffip-fd-enable nil "If non-nil, enable fd. If nil, use GNU find")
+
 (defvar ffip-find-executable nil "Path of GNU find.  If nil we will guess.")
 
 (defvar ffip-project-file '(".svn" ".hg" ".git")
@@ -233,6 +238,9 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
   "Use ido instead of ivy to display candidates.")
 
 (defvar ffip-patterns nil
+  "List of patterns to look for with `find-file-in-project'.")
+
+(defvar ffip-fd-patterns nil
   "List of patterns to look for with `find-file-in-project'.")
 
 (defvar ffip-match-path-instead-of-filename nil
@@ -306,10 +314,23 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
     "*.pyc")
   "List of directory/file patterns to not descend into when listing files in `find-file-in-project'.")
 
+(defvar ffip-fd-prune-patterns
+  '(
+    ;; e.g.
+    ;; "/node_modules/"
+    ;; "/bower_components/"
+    )
+  "List of directory/file patterns to not descend into when listing files in `find-file-in-project'.")
+
 (defvar ffip-find-options ""
   "Extra options to pass to `find' when using `find-file-in-project'.
 
 Use this to exclude portions of your project: \"-not -regex \\\".*svn.*\\\"\".")
+
+(defvar ffip-fd-options ""
+  "Extra options to pass to `fd' when using `find-file-in-project'.
+
+Use this to exclude portions of your project: \"--exclude <pattern>...\".")
 
 (defvar ffip-project-root nil
   "If non-nil, overrides the project root directory location.")
@@ -456,6 +477,20 @@ If CHECK-ONLY is true, only do the check."
     (if ffip-debug (message "ffip--create-filename-pattern-for-gnufind called. rlt=%s" rlt))
     rlt))
 
+(defun ffip--fd-create-filename-pattern-for-fd (keyword)
+  "Create search patthern from KEYWORD."
+  (let* ((rlt ""))
+    (cond
+     ((not keyword)
+      (setq rlt ""))
+     (t
+      (setq rlt (concat (if ffip-match-path-instead-of-filename "-a" "")
+                        " \""
+                        keyword
+                        "\""))))
+    (if ffip-debug (message "ffip--fd-create-filename-pattern-for-fd called. rlt=%s" rlt))
+    rlt))
+
 (defun ffip--win-executable-find (exe)
   "Find EXE on windows."
   (let* ((drivers '("c" "d" "e" "g" "h" "i" "j" "k"))
@@ -505,6 +540,18 @@ If CHECK-ONLY is true, only do the check."
   "Turn `ffip-prune-patterns' into a string that `find' can use."
   (mapconcat (lambda (pat) (format "-iwholename \"%s\"" pat))
              ffip-prune-patterns " -or "))
+
+(defun ffip--fd-join-patterns (patterns)
+  "Convert PATTERNS into cli arguments."
+  (if ffip-fd-patterns
+      (format " %s" (mapconcat (lambda (pat) (format "-e \"%s\"" pat))
+                               patterns " "))
+    ""))
+
+(defun ffip--fd-prune-patterns ()
+  "Turn `ffip-fd-prune-patterns' into a string that `fd' can use."
+  (mapconcat (lambda (pat) (format "-E \"%s\"" pat))
+             ffip-fd-prune-patterns " "))
 
 ;;;###autoload
 (defun ffip-completing-read (prompt collection &optional action)
@@ -560,16 +607,25 @@ DIRECTORY-TO-SEARCH specify the root directory to search."
          (root (or directory-to-search
                    (ffip-get-project-root-directory)))
          (default-directory (file-name-as-directory root))
-         (cmd (format "%s . \\( %s \\) -prune -o -type %s %s %s %s -print"
-                      (ffip--executable-find "find")
-                      (ffip--prune-patterns)
-                      (if is-finding-directory "d" "f")
-                      (ffip--join-patterns ffip-patterns)
-                      ;; When finding directory, the keyword is like:
-                      ;; "proj/hello/world"
-                      (if is-finding-directory (format "-iwholename \"*%s\"" keyword)
-                        (ffip--create-filename-pattern-for-gnufind keyword))
-                      ffip-find-options)))
+         (cmd (if ffip-fd-enable
+                  (format "%s %s -t %s %s %s %s"
+                          (ffip--executable-find "fd")
+                          (ffip--fd-prune-patterns)
+                          (if is-finding-directory "d" "f")
+                          (ffip--fd-join-patterns ffip-fd-patterns)
+                          (if is-finding-directory (format "\"%s\"" keyword)
+                            (ffip--fd-create-filename-pattern-for-fd keyword))
+                          ffip-fd-options)
+                (format "%s . \\( %s \\) -prune -o -type %s %s %s %s -print"
+                        (ffip--executable-find "find")
+                        (ffip--prune-patterns)
+                        (if is-finding-directory "d" "f")
+                        (ffip--join-patterns ffip-patterns)
+                        ;; When finding directory, the keyword is like:
+                        ;; "proj/hello/world"
+                        (if is-finding-directory (format "-iwholename \"*%s\"" keyword)
+                          (ffip--create-filename-pattern-for-gnufind keyword))
+                        ffip-find-options))))
 
     (if ffip-debug (message "run cmd at %s: %s" default-directory cmd))
     (setq rlt
@@ -1074,6 +1130,8 @@ If REVERSE is t, applied patch is reverted."
   (put 'ffip-diff-backends 'safe-local-variable 'listp)
   (put 'ffip-patterns 'safe-local-variable 'listp)
   (put 'ffip-prune-patterns 'safe-local-variable 'listp)
+  (put 'ffip-fd-patterns 'safe-local-variable 'listp)
+  (put 'ffip-fd-prune-patterns 'safe-local-variable 'listp)
   (put 'ffip-match-path-instead-of-filename 'safe-local-variable 'booleanp)
   (put 'ffip-project-file 'safe-local-variable 'stringp)
   (put 'ffip-strip-file-name-regex 'safe-local-variable 'stringp)
