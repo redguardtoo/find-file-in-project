@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.6.0
+;; Version: 5.6.1
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -584,7 +584,7 @@ BSD/GNU Find use glob pattern."
                         (if ffip-rust-fd-respect-ignore-files "" " -I")
                         " %s"))
       ;; fd use regular expression for target pattern (but glob pattern when excluding, sigh)
-      (setq tgt (format ".*%s" keyword)))
+      (setq tgt (if keyword (format ".*%s" keyword) "")))
      (t
       (setq tgt
             (if is-finding-directory (format "-iwholename \"*%s\"" keyword)
