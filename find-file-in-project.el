@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.6.2
+;; Version: 5.6.3
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -159,6 +159,9 @@
 
 (defvar ffip-rust-fd-respect-ignore-files t
   "Don 't show search results from '.*ignore' files")
+
+(defvar ffip-rust-fd-extra-opts ""
+  "rust fd extra options passed to cli.")
 
 (defvar ffip-window-ratio-alist
   '((1 . 1.61803398875)
@@ -529,6 +532,9 @@ If CHECK-ONLY is true, only do the check."
   "Turn `ffip-prune-patterns' into a string that `find' can use."
   (cond
    (ffip-use-rust-fd
+    ;; rust use "regular expression" which matches part of string
+    ;; while find use "glob pattern" which matches the whole string
+    ;; @see https://en.wikipedia.org/wiki/Glob_%28programming%29
     (mapconcat (lambda (p)
                  (format "-E \"%s\"" (replace-regexp-in-string "^\*/" "" p)))
                ffip-prune-patterns " "))
@@ -591,9 +597,11 @@ BSD/GNU Find use glob pattern."
       (setq fmt (concat "%s %s -c never -i -t %s %s %s"
                         (if ffip-full-paths " -p" "")
                         (if ffip-rust-fd-respect-ignore-files "" " -I")
+                        " "
+                        ffip-rust-fd-extra-opts
                         " %s"))
       ;; fd use regular expression for target pattern (but glob pattern when excluding, sigh)
-      (setq tgt (if keyword (format ".*%s" keyword) "")))
+      (setq tgt (if keyword (format "\".*%s\"" keyword) "")))
      (t
       (setq tgt
             (if is-finding-directory (format "-iwholename \"*%s\"" keyword)
