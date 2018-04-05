@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.6.3
+;; Version: 5.6.4
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -243,7 +243,7 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
   "Use ido instead of ivy to display candidates.")
 
 (defvar ffip-patterns nil
-  "List of patterns to look for with `find-file-in-project'.")
+  "List of glob patterns to look for with `find-file-in-project'.")
 
 (defvar ffip-match-path-instead-of-filename nil
   "Match full path instead of file name when calling `find-file-in-project-by-selected'.")
@@ -319,7 +319,7 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
     "*/.cask/*"
     ;; Python
     "*.pyc")
-  "List of directory/file patterns to not descend into when listing files in `find-file-in-project'.")
+  "List of directory/file glob patterns to not descend into when listing files in `find-file-in-project'.")
 
 (defvar ffip-find-options ""
   "Extra options to pass to `find' when using `find-file-in-project'.
@@ -523,10 +523,14 @@ If CHECK-ONLY is true, only do the check."
 
 (defun ffip--join-patterns (patterns)
   "Convert PATTERNS into cli arguments."
-  (if ffip-patterns
-      (format "\\( %s \\)" (mapconcat (lambda (pat) (format "-iwholename \"%s\"" pat))
-                         patterns " -or "))
-    ""))
+  (cond
+   ((and ffip-patterns (not ffip-use-rust-fd))
+    (format "\\( %s \\)" (mapconcat (lambda (pat) (format "-iwholename \"%s\"" pat))
+                                    patterns " -or ")))
+   (t
+    ;; rust fd only supports ONE pattern (and it's regular expression)
+    ;; which is precious resource to waste here
+    "")))
 
 (defun ffip--prune-patterns ()
   "Turn `ffip-prune-patterns' into a string that `find' can use."
@@ -612,12 +616,18 @@ BSD/GNU Find use glob pattern."
                       (ffip--executable-find)
                       (ffip--prune-patterns)
                       (if is-finding-directory "d" "f")
-                      (ffip--join-patterns ffip-patterns)
                       ;; When finding directory, the keyword is like:
                       ;; "proj/hello/world"
                       ffip-find-options
+                      (ffip--join-patterns ffip-patterns)
                       tgt))
     cmd))
+
+(defun ffip-glob-to-regex (s)
+  "Convert glob pattern S into regular expression."
+  (setq s (replace-regexp-in-string "\\." "\\\\." s))
+  (setq s (replace-regexp-in-string "\*" ".*" s))
+  s)
 
 ;;;###autoload
 (defun ffip-project-search (keyword is-finding-directory &optional directory-to-search)
@@ -634,9 +644,17 @@ DIRECTORY-TO-SEARCH specify the root directory to search."
          (root (or directory-to-search
                    (ffip-get-project-root-directory)))
          (default-directory (file-name-as-directory root))
-         (cmd (ffip-create-shell-command keyword)))
+         (cmd (ffip-create-shell-command keyword))
+         (collection (split-string (ffip-shell-command-to-string cmd) "[\r\n]+" t)))
 
     (if ffip-debug (message "run command at %s: %s" default-directory cmd))
+
+    (when (and ffip-use-rust-fd ffip-patterns)
+      ;; filter result with Lisp because fd does NOT support multiple patterns
+      (let* ((r (concat "^" (mapconcat 'ffip-glob-to-regex ffip-patterns "\\|") "$")))
+        (setq collection (delq nil (mapcar (lambda (s)
+                                             (if (string-match-p r s) s))
+                                           collection)))))
     (setq rlt
           (mapcar (lambda (file)
                     (if ffip-full-paths
@@ -645,7 +663,7 @@ DIRECTORY-TO-SEARCH specify the root directory to search."
                       (cons (file-name-nondirectory file)
                             (expand-file-name file))))
                   ;; #15 improving handling of directories containing space
-                  (split-string (ffip-shell-command-to-string cmd) "[\r\n]+" t)))
+                  collection))
     rlt))
 
 (defun ffip--forward-line (lnum)
