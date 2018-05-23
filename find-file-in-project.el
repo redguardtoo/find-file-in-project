@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.6.4
+;; Version: 5.6.5
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -1129,6 +1129,23 @@ If NUM is not nil, the corresponding backend is executed directly."
 
 (defalias 'ffip-show-diff 'ffip-show-diff-by-description)
 
+(defadvice read-file-name (around ffip-read-file-name-hack activate)
+  (cond
+   (ffip-read-file-name-hijacked-p
+    ;; only hack read-file-name once
+    (setq ffip-read-file-name-hijacked-p nil)
+    (let* ((args (ad-get-args 0))
+           (file-name (file-name-nondirectory (nth 2 args)))
+           (default-directory (ffip-project-root))
+           (cands (ffip-project-search file-name nil default-directory))
+           (rlt (if cands (ffip-completing-read "Files: " cands))))
+      (when rlt
+        (setq rlt (file-truename rlt))
+        (run-hook-with-args 'ffip-diff-apply-hunk-hook rlt)
+        (setq ad-return-value rlt))))
+   (t
+    ad-do-it)))
+
 ;;;###autoload
 (defun ffip-diff-apply-hunk (&optional reverse)
   "Apply current hunk in `diff-mode'.  Try to locate the file to patch.
@@ -1139,20 +1156,6 @@ If REVERSE is t, applied patch is reverted."
   (cond
    ((derived-mode-p 'diff-mode)
     (setq ffip-read-file-name-hijacked-p t)
-    (defadvice read-file-name (around ffip-read-file-name-hack activate)
-      (cond
-       (ffip-read-file-name-hijacked-p
-        (let* ((args (ad-get-args 0))
-               (file-name (file-name-nondirectory (nth 2 args)))
-               (default-directory (ffip-project-root))
-               (cands (ffip-project-search file-name nil default-directory))
-               (rlt (if cands (ffip-completing-read "Files: " cands))))
-          (when rlt
-            (setq rlt (file-truename rlt))
-            (run-hook-with-args 'ffip-diff-apply-hunk-hook rlt)
-            (setq ad-return-value rlt))))
-       (t
-        ad-do-it)))
     (diff-apply-hunk reverse)
     (setq ffip-read-file-name-hijacked-p nil))
    (t
