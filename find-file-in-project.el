@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.6.5
+;; Version: 5.6.6
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -465,7 +465,7 @@ If CHECK-ONLY is true, only do the check."
      ((not keyword)
       (setq rlt ""))
      (t
-      (setq rlt (concat (if ffip-match-path-instead-of-filename "-iwholename" "-name")
+      (setq rlt (concat (if ffip-match-path-instead-of-filename "-iwholename" "-iname")
                         " \"*"
                         keyword
                         "*\"" ))))
