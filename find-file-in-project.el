@@ -326,6 +326,12 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
 
 Use this to exclude portions of your project: \"-not -regex \\\".*svn.*\\\"\".")
 
+(defcustom ffip-find-pre-path-options ""
+  "Extra options to pass to `find' before path name options when using `find-file-in-project'.
+
+As required by `find', `-H', `-L', `-P', `-D' and `-O' must appear before the first path name, `.' for ffip's case.
+For example, use this to follow symbolic links inside your project: \"-L\".")
+
 (defvar ffip-project-root nil
   "If non-nil, overrides the project root directory location.")
 
@@ -610,7 +616,9 @@ BSD/GNU Find use glob pattern."
       (setq tgt
             (if is-finding-directory (format "-iwholename \"*%s\"" keyword)
               (ffip--create-filename-pattern-for-gnufind keyword)))
-      (setq fmt "%s . \\( %s \\) -prune -o -type %s %s %s %s -print")))
+      (setq fmt (concat "%s "
+                        ffip-find-pre-path-options
+                        " . \\( %s \\) -prune -o -type %s %s %s %s -print"))))
 
     (setq cmd (format fmt
                       (ffip--executable-find)
