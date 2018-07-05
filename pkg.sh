@@ -1,6 +1,6 @@
 #!/bin/bash
 name=find-file-in-project
-version=5.6.6
+version=5.6.7
 pkg=$name-$version
 mkdir $pkg
 cp *.el $pkg

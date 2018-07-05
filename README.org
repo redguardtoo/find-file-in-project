@@ -1,4 +1,4 @@
-* find-file-in-project v5.6.6
+* find-file-in-project v5.6.7
 
 [[http://stable.melpa.org/#/find-file-in-project][file:http://stable.melpa.org/packages/find-file-in-project]]
 
@@ -172,6 +172,8 @@ For example, for files under [[https://www.perforce.com/][Perforce]] control,
 #+end_src
 ** =ffip-split-window-horizontally= and =ffip-split-window-vertically=
 Find&Open file in split window.
+** =M-x ffip-insert-file=
+Insert file content into current buffer.
 * Tips
 All tips are OPTIONAL. find-file-in-project works out of box in 99% cases.
 ** Use fd (A simple, fast and user-friendly alternative to 'find')
