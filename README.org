@@ -1,4 +1,4 @@
-* find-file-in-project v5.6.7
+* find-file-in-project v5.6.8
 
 [[http://stable.melpa.org/#/find-file-in-project][file:http://stable.melpa.org/packages/find-file-in-project]]
 
@@ -52,9 +52,9 @@ You can override the default root directory by setting =ffip-project-root=,
 #+end_src
 
 Per-project and per-directory setup is easy. Check "Tips" section for details.
-** =M-x find-file-in-project-at-point=
+** =find-file-in-project-at-point=
 Guess the file name at point and try to find file.
-** =M-x find-file-in-project-by-selected=
+** =find-file-in-project-by-selected=
 Use the *selected region as keyword to search file*. If no region selected, you may provide the keyword which could contain wildcard.
 
 If keyword contains line number like "hello.txt:32" or "hello.txt:32:", we will move to that line in opened file.
@@ -64,17 +64,17 @@ If parameter is passed , file will be opened in new window.
 If you =(setq ffip-match-path-instead-of-filename t)= before =M-x find-file-in-project-by-selected=, we try to match selected text with any part of full path before displaying candidates. It's a little slower than the original setup. 
 
 It could replace old command =find-file-in-project= (or =ffip=) because it's more efficient. It was tested searching in 50K+ files without any performance issue.
-** =M-x find-file-with-similar-name=
+** =find-file-with-similar-name=
 Find file with similar name to current opened file.
 
 The regular expression =ffip-strip-file-name-regex= is also used by =find-file-with-similar-name=.
-** =M-x find-directory-in-project-by-selected=
+** =find-directory-in-project-by-selected=
 Use the *selected region as keyword to find directory*. If no region selected, you need provide the keyword. Keyword could contain wildcard character which passed to Find as value of =-iwholename= option
 
 If parameter is passed , directory will be opened in new window.
-** =M-x find-file-in-project=
+** =find-file-in-project=
 Starts search immediately. This command is slow if there 10K+ files because it use ONLY Emacs Lisp to filter candidates. You should always use =find-file-in-project-by-selected= unless in small project.
-** =M-x ffip-create-project-file=
+** =ffip-create-project-file=
 Create =.dir-locals.el= which "[[http://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html][defines the same set of local variables to all the files in a certain directory and its subdirectory]]".
 
 You can use it to setup variables like =ffip-project-root=.
@@ -82,11 +82,11 @@ You can use it to setup variables like =ffip-project-root=.
 This command *respects* existing =.dir-locals.el=. So it will *merge* new setup into existing content.
 
 See [[http://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html][Emacs manual]] for technical details.
-** =M-x find-file-in-current-directory=
-Like =M-x find-file-in-project= but find only in current directory.
-** =M-x find-file-in-current-directory-by-selected=
-Like =M-x find-file-in-project-by-selected= but find only in current directory.
-** =M-x ffip-show-diff=
+** =find-file-in-current-directory=
+Like =find-file-in-project= but find only in current directory.
+** =find-file-in-current-directory-by-selected=
+Like =find-file-in-project-by-selected= but find only in current directory.
+** =ffip-show-diff=
 Execute selected backend from =ffip-diff-backends=.
 
 The output of backend execution is in [[http://www.gnu.org/software/diffutils/manual/html_node/Unified-Format.html][Unified Diff Format]] and is inserted into  =*ffip-diff*= buffer where you can press =o=, =C-c C-c=, =ENTER= , =M-x ffip-diff-find-file=  to open the corresponding file.
@@ -130,7 +130,7 @@ You can customize the =ffip-diff-backends=,
         "cd $(hg root) && hg diff"
         "svn diff"))
 #+end_src
-** =M-x ffip-save-ivy-last= and =M-x ffip-ivy-resume=
+** =ffip-save-ivy-last= and =ffip-ivy-resume=
 These two commands requires [[https://github.com/abo-abo/swiper][ivy-mode]].
 
 =ffip-save-ivy-last= saves the most recent search result.
@@ -138,7 +138,7 @@ These two commands requires [[https://github.com/abo-abo/swiper][ivy-mode]].
 =ffip-ivy-resume= re-use the search result *saved* by =ffip-save-ivy-last=.
 
 You can always use =ivy-resume= to re-use the most recent search result.
-** =M-x find-relative-path=
+** =find-relative-path=
 Find file/directory and copy its relative path into `kill-ring'.
 
 File's path is copied by default. =C-u M-x find-relative-path= copy directory's path.
@@ -148,7 +148,7 @@ You can set =ffip-find-relative-path-callback= to format the string before copyi
 ;; (setq ffip-find-relative-path-callback 'ffip-copy-reactjs-import)
 (setq ffip-find-relative-path-callback 'ffip-copy-org-file-link)
 #+end_src
-** =M-x ffip-diff-apply-hunk=
+** =ffip-diff-apply-hunk=
 Similar to =diff-apply-hunk=, it applies current hunk in =diff-mode= to the target file (please note =ffip-diff-mode= inherits from =diff-mode=).
 
 The target file could be located by searching =(ffip-project-root)=. You can also apply extra operation on the file in =ffip-diff-apply-hunk-hook= before hunk applying actually happens.
@@ -172,7 +172,7 @@ For example, for files under [[https://www.perforce.com/][Perforce]] control,
 #+end_src
 ** =ffip-split-window-horizontally= and =ffip-split-window-vertically=
 Find&Open file in split window.
-** =M-x ffip-insert-file=
+** =ffip-insert-file=
 Insert file content into current buffer.
 * Tips
 All tips are OPTIONAL. find-file-in-project works out of box in 99% cases.

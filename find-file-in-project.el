@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.6.7
+;; Version: 5.6.8
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -594,8 +594,9 @@ This function returns the selected candidate or nil."
     (ivy-read prompt collection
               :action action))))
 
-(defun ffip-create-shell-command (keyword)
-  "Produce command to search KEYWORD for shell.
+(defun ffip-create-shell-command (keyword is-finding-directory)
+  "Produce command to search KEYWORD.
+If IS-FINDING-DIRECTORY is t, we look up directory instead of file.
 Rust fd use regular expression.
 BSD/GNU Find use glob pattern."
   (let* (cmd fmt tgt)
@@ -654,7 +655,7 @@ DIRECTORY-TO-SEARCH specify the root directory to search."
          (root (or directory-to-search
                    (ffip-get-project-root-directory)))
          (default-directory (file-name-as-directory root))
-         (cmd (ffip-create-shell-command keyword))
+         (cmd (ffip-create-shell-command keyword is-finding-directory))
          (collection (split-string (ffip-shell-command-to-string cmd) "[\r\n]+" t)))
 
     (if ffip-debug (message "run command at %s: %s" default-directory cmd))
@@ -876,7 +877,8 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   "Insert contents of file in current buffer.
 The file name is selected interactively from candidates in project."
   (interactive)
-  (let* ((cands (ffip-project-search (ffip-read-keyword) nil)))
+  (let* ((cands (ffip-project-search (ffip-read-keyword) nil))
+         root)
     (when (> (length cands) 0)
       (setq root (file-name-nondirectory (directory-file-name (ffip-get-project-root-directory))))
       (ffip-completing-read
