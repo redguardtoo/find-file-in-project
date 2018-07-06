@@ -872,7 +872,6 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   (ffip-find-files (ffip-read-keyword) open-another-window))
 
 ;;;###autoload
-
 (defun ffip-insert-file ()
   "Insert contents of file in current buffer.
 The file name is selected interactively from candidates in project."
@@ -888,7 +887,7 @@ The file name is selected interactively from candidates in project."
           (if (listp file) (setq file (cdr file)))
           (insert-file file))))))
 
-;;;###autoloadi
+;;;###autoload
 (defun find-file-with-similar-name (&optional open-another-window)
   "Use base name of current file as keyword which could be further stripped.
 by `ffip-strip-file-name-regex'.
