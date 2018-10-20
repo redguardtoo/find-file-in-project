@@ -1,4 +1,4 @@
-* find-file-in-project v5.6.8
+* find-file-in-project v5.7.0
 
 [[http://stable.melpa.org/#/find-file-in-project][file:http://stable.melpa.org/packages/find-file-in-project]]
 
@@ -13,7 +13,6 @@ Diff/patch files. Target files could be understand any Version Control Software 
 *Features:*
 - Works perfectly on Windows64/Linux/Mac with minimum setup. Only dependency is =BSD/GNU Find=
 - Quick. Tested with 50,000+ files
-- You can speed up searching by tweaking =ffip-find-options= and =ffip-prune-patterns=
 - Work flawlessly with [[https://www.emacswiki.org/emacs/TrampMode][Tramp Mode]]
 
 *Screenshot:*
@@ -199,10 +198,10 @@ Here is complete setup you could insert into =~/.emacs.d/init.el=,
     (setq-local ffip-find-options "-not -size +64k -not -iwholename '*/dist/*'")
     ;; for this project, I'm only interested certain types of files
     (setq-local ffip-patterns '("*.html" "*.js" "*.css" "*.java" "*.xml" "*.js"))
-    ;; maybe you want to search files in `bin' directory?
-    (setq-local ffip-prune-patterns (delete "*/bin/*" ffip-prune-patterns))
+    ;; ignore files whose name match certain glob pattern
+    (setq-local ffip-ignore-filenames '("*.bmp" "*.jpg"))
     ;; exclude `dist/' directory
-    (add-to-list 'ffip-prune-patterns "*/dist/*"))
+    (add-to-list 'ffip-prune-patterns "*/dist"))
   ;; insert more WHEN statements below this line for other projects
   )
 ;; most major modes inherit from prog-mode, so below line is enough
@@ -223,9 +222,9 @@ A sample =.dir-locals.el=,
          (eval . (progn
                    (require 'find-file-in-project)
                    ;; ignore directory ".tox/" when searching
-                   (setq ffip-prune-patterns `("*/.tox/*" ,@ffip-prune-patterns))
+                   (setq ffip-prune-patterns `("*/.tox" ,@ffip-prune-patterns))
                    ;; Do NOT ignore directory "bin/" when searching
-                   (setq ffip-prune-patterns `(delete "*/bin/*" ,@ffip-prune-patterns))))
+                   (setq ffip-prune-patterns `(delete "*/bin" ,@ffip-prune-patterns))))
          )))
 #+end_src
 

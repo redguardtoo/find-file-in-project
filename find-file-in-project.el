@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.6.8
+;; Version: 5.7.0
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -84,9 +84,11 @@
 ;;          (eval . (progn
 ;;                    (require 'find-file-in-project)
 ;;                    ;; ignore directory ".tox/" when searching
-;;                    (setq ffip-prune-patterns `("*/.tox/*" ,@ffip-prune-patterns))
+;;                    (setq ffip-prune-patterns `("*/.tox" ,@ffip-prune-patterns))
+                      ;; ignore BMP image file
+;;                    (setq ffip-ignore-filenames `("*.bmp" ,@ffip-ignore-filenames))
 ;;                    ;; Do NOT ignore directory "bin/" when searching
-;;                    (setq ffip-prune-patterns `(delete "*/bin/*" ,@ffip-prune-patterns))))
+;;                    (setq ffip-prune-patterns `(delete "*/bin" ,@ffip-prune-patterns))))
 ;;          )))
 ;;
 ;; To find in *current directory*, use `find-file-in-current-directory'
@@ -190,7 +192,7 @@ It's used by `find-file-with-similar-name'.")
 The file path is passed to the hook as the first argument.")
 
 (defvar ffip-relative-path-pattern "^\\(\\.\\.*/\\)+"
-  "Pathern of relative path.")
+  "Pattern of relative path.")
 
 (defun ffip-shell-command-to-string (command)
   "Execute shell COMMAND and return its output as a string."
@@ -257,33 +259,49 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
 ;; Maybe it's bug of fd.
 (defvar ffip-prune-patterns
   '(;; VCS
-    "*/.git/*"
-    "*/.svn/*"
-    "*/.cvs/*"
-    "*/.bzr/*"
-    "*/.hg/*"
+    "*/.git"
+    "*/.svn"
+    "*/.cvs"
+    "*/.tox"
+    "*/.bzr"
+    "*/.hg"
+    "*/bin"
+    "*/.DS_Store"
+    "*/.sass-cache"
+    "*/.npm"
+    "*/.tmp"
+    "*/.idea"
+    "*/node_modules"
+    "*/bower_components"
+    "*/.gradle"
+    "*/.cask")
+  "Ignored directories(prune patterns).")
+
+(defvar ffip-ignore-filenames
+  '(;; VCS
+    ;; simple text file
+    "*.json"
     ;; project misc
     "*.log"
-    "*/bin/*"
-    ;; Mac
-    "*/.DS_Store/*"
     ;; Ctags
-    "*/tags"
-    "*/TAGS"
+    "tags"
+    "TAGS"
+    ;; compressed
+    "*.tgz"
+    "*.gz"
+    "*.xz"
+    "*.zip"
+    "*.tar"
+    "*.rar"
     ;; Global/Cscope
-    "*/GTAGS"
-    "*/GPATH"
-    "*/GRTAGS"
-    "*/cscope.files"
+    "GTAGS"
+    "GPATH"
+    "GRTAGS"
+    "cscope.files"
     ;; html/javascript/css
-    "*/.npm/*"
-    "*/.tmp/*" ; TypeScript
-    "*/.sass-cache/*" ; SCSS/SASS
-    "*/.idea/*"
+    "*bundle.js"
     "*min.js"
     "*min.css"
-    "*/node_modules/*"
-    "*/bower_components/*"
     ;; Images
     "*.png"
     "*.jpg"
@@ -295,33 +313,37 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
     ;; documents
     "*.doc"
     "*.docx"
+    "*.xls"
+    "*.ppt"
     "*.pdf"
+    "*.odt"
     ;; C/C++
     "*.obj"
+    "*.so"
     "*.o"
     "*.a"
+    "*.ifso"
+    "*.tbd"
     "*.dylib"
     "*.lib"
     "*.d"
     "*.dll"
     "*.exe"
     ;; Java
-    "*/.metadata*"
-    "*/.gradle/*"
+    ".metadata*"
     "*.class"
     "*.war"
     "*.jar"
     ;; Emacs/Vim
     "*flymake"
-    "*/#*#"
+    "#*#"
     ".#*"
     "*.swp"
     "*~"
     "*.elc"
-    "*/.cask/*"
     ;; Python
     "*.pyc")
-  "List of directory/file glob patterns to not descend into when listing files in `find-file-in-project'.")
+  "Ignore file names.  Wildcast is supported.")
 
 (defvar ffip-find-options ""
   "Extra options to pass to `find' when using `find-file-in-project'.
@@ -331,7 +353,7 @@ Use this to exclude portions of your project: \"-not -regex \\\".*svn.*\\\"\".")
 (defcustom ffip-find-pre-path-options ""
   "Extra options to pass to `find' before path name options when using `find-file-in-project'.
 
-As required by `find', `-H', `-L', `-P', `-D' and `-O' must appear before the first path name, `.' for ffip's case.
+As required by `find', `-H', `-L', `-P', `-D' and `-O' must appear before the first path name, `.'.
 For example, use this to follow symbolic links inside your project: \"-L\".")
 
 (defvar ffip-project-root nil
@@ -344,10 +366,6 @@ This overrides variable `ffip-project-root' when set.")
 
 (defvar ffip-ivy-last-saved nil
   "Backup of `ivy-last'.  Requires ivy.")
-
-(defvar ffip-full-paths t
-  "If nil, search pattern only matches against file/directory name.
-If t,the pattern is matched against the full path.")
 
 (defvar ffip-debug nil "Print debug information.")
 
@@ -432,7 +450,7 @@ If t,the pattern is matched against the full path.")
 
 ;;;###autoload
 (defun ffip-filename-camelcase-to-dashes (keyword &optional check-only)
-  "Convert KEYWORD from camel cased to dash seperated.
+  "Convert KEYWORD from camel cased to dash separated.
 If CHECK-ONLY is true, only do the check."
   (let* (rlt)
     (cond
@@ -451,7 +469,7 @@ If CHECK-ONLY is true, only do the check."
 
 ;;;###autoload
 (defun ffip-filename-dashes-to-camelcase (keyword &optional check-only)
-  "Convert KEYWORD from dash seperated to camel cased.
+  "Convert KEYWORD from dash separated to camel cased.
 If CHECK-ONLY is true, only do the check."
   (let* (rlt)
     (cond
@@ -467,7 +485,7 @@ If CHECK-ONLY is true, only do the check."
     rlt))
 
 (defun ffip--create-filename-pattern-for-gnufind (keyword)
-  "Create search patthern from KEYWORD."
+  "Create search pattern from KEYWORD."
   (let* ((rlt ""))
     (cond
      ((not keyword)
@@ -542,18 +560,31 @@ If CHECK-ONLY is true, only do the check."
 
 (defun ffip--prune-patterns ()
   "Turn `ffip-prune-patterns' into a string that `find' can use."
+  ;; Both fd and find use "glob pattern"
+  ;; @see https://en.wikipedia.org/wiki/Glob_%28programming%29
   (cond
    (ffip-use-rust-fd
-    ;; rust use "regular expression" which matches part of string
-    ;; while find use "glob pattern" which matches the whole string
-    ;; @see https://en.wikipedia.org/wiki/Glob_%28programming%29
+    ;; fd match relative path
     (mapconcat (lambda (p)
                  (format "-E \"%s\"" (replace-regexp-in-string "^\*/" "" p)))
                ffip-prune-patterns " "))
    (t
+    ;; find match whole path
     (mapconcat (lambda (p)
                  (format "-iwholename \"%s\"" p))
                ffip-prune-patterns " -or "))))
+
+(defun ffip--ignore-file-names ()
+  "Turn `ffip-ignore-filenames' into a string that `find' can use."
+  ;; @see `ffip-prune-patterns' for fd vs find.
+  (cond
+   (ffip-use-rust-fd
+    (mapconcat (lambda (p)
+                 (format "-E \"%s\"" p))
+               ffip-ignore-filenames " "))
+   (t
+    (mapconcat (lambda (n) (format "-not -name \"%s\"" n))
+               ffip-ignore-filenames " "))))
 
 ;;;###autoload
 (defun ffip-completing-read (prompt collection &optional action)
@@ -606,9 +637,7 @@ BSD/GNU Find use glob pattern."
       ;; `-c` => color
       ;; `-i` => case insensitive
       ;; `-t` => directory (d) or file (f)
-      ;; `-p` => match full path
-      (setq fmt (concat "%s %s -c never -i -t %s %s %s"
-                        (if ffip-full-paths " -p" "")
+      (setq fmt (concat "%s %s -c never -i -t %s %s %s %s"
                         (if ffip-rust-fd-respect-ignore-files "" " -I")
                         " "
                         ffip-rust-fd-extra-opts
@@ -621,14 +650,13 @@ BSD/GNU Find use glob pattern."
               (ffip--create-filename-pattern-for-gnufind keyword)))
       (setq fmt (concat "%s "
                         ffip-find-pre-path-options
-                        " . \\( %s \\) -prune -o -type %s %s %s %s -print"))))
+                        " . \\( %s \\) -prune -o -type %s %s %s %s %s -print"))))
 
     (setq cmd (format fmt
                       (ffip--executable-find)
                       (ffip--prune-patterns)
                       (if is-finding-directory "d" "f")
-                      ;; When finding directory, the keyword is like:
-                      ;; "proj/hello/world"
+                      (ffip--ignore-file-names)
                       ffip-find-options
                       (ffip--join-patterns ffip-patterns)
                       tgt))
@@ -651,8 +679,7 @@ If KEYWORD is string, it's the file name or file path to find file.
 If KEYWORD is list, it's the list of file names.
 IF IS-FINDING-DIRECTORY is t, we are searching directories, else files.
 DIRECTORY-TO-SEARCH specify the root directory to search."
-  (let* (rlt
-         (root (or directory-to-search
+  (let* ((root (or directory-to-search
                    (ffip-get-project-root-directory)))
          (default-directory (file-name-as-directory root))
          (cmd (ffip-create-shell-command keyword is-finding-directory))
@@ -666,16 +693,11 @@ DIRECTORY-TO-SEARCH specify the root directory to search."
         (setq collection (delq nil (mapcar (lambda (s)
                                              (if (string-match-p r s) s))
                                            collection)))))
-    (setq rlt
-          (mapcar (lambda (file)
-                    (if ffip-full-paths
-                        (cons (replace-regexp-in-string "^\./" "" file)
-                              (expand-file-name file))
-                      (cons (file-name-nondirectory file)
-                            (expand-file-name file))))
-                  ;; #15 improving handling of directories containing space
-                  collection))
-    rlt))
+    (mapcar (lambda (file)
+              (cons (replace-regexp-in-string "^\./" "" file)
+                    (expand-file-name file)))
+            ;; #15 improving handling of directories containing space
+            collection)))
 
 (defun ffip--forward-line (lnum)
   "Forward LNUM lines."
@@ -1178,7 +1200,7 @@ If NUM is not nil, the corresponding backend is executed directly."
 (defun ffip-diff-apply-hunk (&optional reverse)
   "Apply current hunk in `diff-mode'.  Try to locate the file to patch.
 Similar to `diff-apply-hunk' but smarter.
-Please read documenation of `diff-apply-hunk' to get more details.
+Please read documentation of `diff-apply-hunk' to get more details.
 If REVERSE is t, applied patch is reverted."
   (interactive "P")
   (cond
@@ -1194,6 +1216,7 @@ If REVERSE is t, applied patch is reverted."
   (put 'ffip-diff-backends 'safe-local-variable 'listp)
   (put 'ffip-patterns 'safe-local-variable 'listp)
   (put 'ffip-prune-patterns 'safe-local-variable 'listp)
+  (put 'ffip-ignore-filenames 'safe-local-variable 'listp)
   (put 'ffip-match-path-instead-of-filename 'safe-local-variable 'booleanp)
   (put 'ffip-project-file 'safe-local-variable 'stringp)
   (put 'ffip-strip-file-name-regex 'safe-local-variable 'stringp)
