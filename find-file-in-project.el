@@ -1,6 +1,6 @@
 ;;; find-file-in-project.el --- Find file/directory and review Diff/Patch/Commit efficiently everywhere
 
-;; Copyright (C) 2006-2009, 2011-2012, 2015, 2016, 2017
+;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
 ;; Version: 5.7.0
@@ -31,25 +31,24 @@
 
 ;;; Commentary:
 
-;; This program provides a couple methods for quickly finding any file
-;; in a given project.
-;; - Only dependency is GNU/BSD find
+;; This program provides methods to find file in project.
+;; - Only dependency is BSD/GNU find
 ;; - Works on Windows with minimum setup
-;; - Works flawlessly on Tramp Mode (https://www.emacswiki.org/emacs/TrampMode)
+;; - Works on Tramp Mode (https://www.emacswiki.org/emacs/TrampMode)
 ;; - fd (faster alternative of find, see https://github.com/sharkdp/fd) is supported
 ;;
 ;; Usage,
-;;   - You can insert `(setq ffip-use-rust-fd t)' into ".emacs" to use fd (alternative of find)
-;;   - `M-x find-file-in-project-at-point' guess the file name at point and
+;;   - You can insert "(setq ffip-use-rust-fd t)" into ".emacs" to use fd (alternative of find)
+;;   - `find-file-in-project-at-point' guess the file path at point and
 ;;      find file
-;;   - `M-x find-file-in-project-by-selected' use the selected region
-;;      as the keyword to search file.  Or you need provide the keyword
-;;      if no region selected.
-;;   - `M-x find-directory-in-project-by-selected' use the select region
-;;      to find directory.  Or you need provide the keyword if no region
-;;      selected.
-;;   - `M-x find-file-in-project' will start search file immediately
-;;   - `M-x ffip-create-project-file' create .dir-locals.el
+;;   - `find-file-in-project-by-selected' uses the selected region
+;;      as the keyword to search file.  You can provide the keyword
+;;      if no region is selected.
+;;   - `find-directory-in-project-by-selected' uses the select region
+;;      to find directory.  You can provide the keyword if no region
+;;      is selected.
+;;   - `find-file-in-project' will start search file immediately
+;;   - `ffip-create-project-file' creates ".dir-locals.el"
 ;;
 ;; A project is found by searching up the directory tree until a file
 ;; is found that matches `ffip-project-file'.
@@ -71,10 +70,10 @@
 ;; also used by `find-file-with-similar-name'.
 ;;
 ;; all these variables may be overridden on a per-directory basis in
-;; your .dir-locals.el.  See (info "(Emacs) Directory Variables") for
+;; your ".dir-locals.el".  See (info "(Emacs) Directory Variables") for
 ;; details.
 ;;
-;; Sample .dir-locals.el,
+;; Sample ".dir-locals.el",
 ;;
 ;; ((nil . ((ffip-project-root . "~/projs/PROJECT_DIR")
 ;;          ;; ignore files bigger than 64k and directory "dist/" when searching
@@ -91,7 +90,7 @@
 ;;                    (setq ffip-prune-patterns `(delete "*/bin" ,@ffip-prune-patterns))))
 ;;          )))
 ;;
-;; To find in *current directory*, use `find-file-in-current-directory'
+;; To find in current directory, use `find-file-in-current-directory'
 ;; and `find-file-in-current-directory-by-selected'.
 ;;
 ;; `ffip-split-window-horizontally' and `ffip-split-window-vertically' find&open file
@@ -138,21 +137,16 @@
 ;;
 ;; You can switch to `ido-mode' by `(setq ffip-prefer-ido-mode t)'
 
-;; BSD/GNU Find can be installed through `Cygwin' or `MYSYS2' on Windows.
+;; BSD/GNU Find can be installed through Cygwin or MYSYS2 on Windows.
 ;; Executable is automatically detected. But you can manually specify
-;; the executable location by insert below code into ~/.emacs,
+;; the executable location by insert below code into ".emacs",
 ;;
 ;;   (if (eq system-type 'windows-nt)
 ;;      (setq ffip-find-executable "c:\\\\cygwin64\\\\bin\\\\find"))
 ;;
-;; This program works on Windows/Cygwin/Linux/Mac.
-;;
-;; Windows setup is as easy as installing Cygwin into default directory on
-;; ANY driver.
+;; This program works on Windows/Cygwin/Linux/macOS
 ;;
 ;; See https://github.com/technomancy/find-file-in-project for advanced tips.
-
-;; Recommended binding: (global-set-key (kbd "C-x f") 'find-file-in-project)
 
 ;;; Code:
 
@@ -350,7 +344,7 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
 
 Use this to exclude portions of your project: \"-not -regex \\\".*svn.*\\\"\".")
 
-(defcustom ffip-find-pre-path-options ""
+(defvar ffip-find-pre-path-options ""
   "Extra options to pass to `find' before path name options when using `find-file-in-project'.
 
 As required by `find', `-H', `-L', `-P', `-D' and `-O' must appear before the first path name, `.'.
@@ -875,7 +869,7 @@ IF OPEN-ANOTHER-WINDOW is t, results are displayed in new window."
 
 ;;;###autoload
 (defun find-file-in-project-by-selected (&optional open-another-window)
-  "Same as `find-file-in-project' but more poweful and efficient.
+  "Same as `find-file-in-project' but more powerful and faster.
 It use string from selected region to search files in the project.
 If no region is selected, you could provide a keyword.
 
@@ -966,7 +960,7 @@ You can set `ffip-find-relative-path-callback' to format the string before copyi
 Use string from selected region to find directory in the project.
 If no region is selected, you need provide keyword.
 
-Keyword could be directory's base-name only or parent-directoy+base-name
+Keyword could be directory's base-name only or parent-directory+base-name
 For example, to find /home/john/proj1/test, below keywords are valid:
 - test
 - roj1/test
@@ -1111,7 +1105,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
        ;; command
        ((functionp backend)
         (ffip-show-content-in-diff-mode (funcall backend)))
-       ;; lisp exipression
+       ;; lisp expression
        ((consp backend)
         (ffip-show-content-in-diff-mode (funcall `(lambda () ,backend)))))))
 
@@ -1125,7 +1119,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
      ;; command
      ((functionp backend)
       (setq rlt (symbol-name backend)))
-     ;; lisp exipression
+     ;; lisp expression
      ((consp backend)
       ;; (cons "description" actual-backend)
       (if (stringp (car backend))
@@ -1135,7 +1129,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
 
 ;;;###autoload
 (defun ffip-show-diff-internal (&optional num)
-  "Show the diff output by excuting selected `ffip-diff-backends'.
+  "Show the diff output by executing selected `ffip-diff-backends'.
 NUM is the index selected backend from `ffip-diff-backends'.
 NUM is zero based whose default value is zero."
   (interactive "P")
@@ -1153,7 +1147,7 @@ NUM is zero based whose default value is zero."
 
 ;;;###autoload
 (defun ffip-show-diff-by-description (&optional num)
-  "Show the diff output by excuting selected `ffip-diff-backends.
+  "Show the diff output by executing selected `ffip-diff-backends'.
 NUM is the backend index of `ffip-diff-backends'.
 If NUM is not nil, the corresponding backend is executed directly."
   (interactive "P")
