@@ -1,4 +1,4 @@
-* find-file-in-project v5.7.0
+* find-file-in-project v5.7.1
 
 [[http://stable.melpa.org/#/find-file-in-project][file:http://stable.melpa.org/packages/find-file-in-project]]
 
