@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.7.1
+;; Version: 5.7.2
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -244,7 +244,7 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
   "List of glob patterns to look for with `find-file-in-project'.")
 
 (defvar ffip-match-path-instead-of-filename nil
-  "Match full path instead of file name when calling `find-file-in-project-by-selected'.")
+  "Match full path instead of file name.")
 
 ;; For "GNU/BSD Find", "*/test/*" matches "./test/" and "./dir/test/"
 ;;
@@ -629,8 +629,10 @@ BSD/GNU Find use glob pattern."
       ;; `-c` => color
       ;; `-i` => case insensitive
       ;; `-t` => directory (d) or file (f)
+      ;; `-p' => match full path
       (setq fmt (concat "%s %s -c never -i -t %s %s %s %s"
                         (if ffip-rust-fd-respect-ignore-files "" " -I")
+                        (if ffip-match-path-instead-of-filename " -p" "")
                         " "
                         ffip-rust-fd-extra-opts
                         " %s"))
