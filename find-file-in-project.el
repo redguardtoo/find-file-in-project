@@ -860,13 +860,21 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
      (t
       (message "No file name is provided.")))))
 
+(defun ffip-parent-directory (level directory)
+  "Return LEVEL up parent directory of DIRECTORY."
+  (let* ((rlt directory))
+    (while (and (> level 0) (not (string= "" rlt)))
+      (setq rlt (file-name-directory (directory-file-name rlt)))
+      (setq level (1- level)))
+    (if (string= "" rlt) (setq rlt nil))
+    rlt))
+
 ;;;###autoload
-(defun find-file-in-current-directory (&optional open-another-window)
-  "Like `find-file-in-project'.  But search only in current directory.
-IF OPEN-ANOTHER-WINDOW is t, results are displayed in new window."
+(defun find-file-in-current-directory (&optional level)
+  "Search fil in current directory or LEVEL up parent directory."
   (interactive "P")
-  (let* ((ffip-project-root default-directory))
-    (find-file-in-project open-another-window)))
+  (let* ((ffip-project-root (ffip-parent-directory level default-directory)))
+    (find-file-in-project nil)))
 
 ;;;###autoload
 (defun find-file-in-project-by-selected (&optional open-another-window)

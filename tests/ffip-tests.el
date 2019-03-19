@@ -62,7 +62,7 @@
       (should (= (length files) 1))
       (should (not (active-minibuffer-window))))))
 
-(ert-deftest ffip-ffip-show-diff ()
+(ert-deftest ffip-test-ffip-show-diff ()
   (let* (files
          (ffip-diff-backends '((with-temp-buffer
                                  (insert-file-contents (get-full-path "git-diff.diff"))
@@ -87,6 +87,15 @@
     (should (string= (file-name-nondirectory (buffer-file-name)) "git-diff.diff"))
     ;; cleanup
     (kill-buffer "*ffip-diff*")))
+
+(ert-deftest ffip-test-ffip-parent-directory ()
+  (let* ((dir "/home/cb/projs/find-file-in-project/"))
+    (should (string= (ffip-parent-directory 0 dir) dir))
+    (should (string= (ffip-parent-directory 1 dir) "/home/cb/projs/"))
+    (should (string= (ffip-parent-directory 2 dir) "/home/cb/"))
+    (should (string= (ffip-parent-directory 3 dir) "/home/"))
+    (should (string= (ffip-parent-directory 4 dir) "/"))
+    (should (string= (ffip-parent-directory 999 dir) "/"))))
 
 (ert-deftest ffip-test-windows ()
   (let (rlt)
