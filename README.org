@@ -1,6 +1,6 @@
 * find-file-in-project v5.7.3
 
-[[https://travis-ci.org/redguardtoo/find-file-in-project][https://travis-ci.org/redguardtoo/find-file-in-project.svg?branch=master]]
+[[https://travis-ci.org/technomancy/find-file-in-project][https://travis-ci.org/technomancy/find-file-in-project.svg?branch=master]]
 [[http://melpa.org/#/find-file-in-project][file:http://melpa.org/packages/find-file-in-project-badge.svg]] [[http://stable.melpa.org/#/find-file-in-project][file:http://stable.melpa.org/packages/find-file-in-project-badge.svg]]
 
 Find file/directory and review Diff/Patch/Commit quickly everywhere.
