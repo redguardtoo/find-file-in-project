@@ -12,4 +12,4 @@ clean:
 
 # Run tests.
 test: clean
-	$(EMACS) -batch -l cl-lib -l ert -l find-file-in-project.el -l tests/ffip-tests.el
+	$(EMACS) -batch -l ert -l find-file-in-project.el -l tests/ffip-tests.el

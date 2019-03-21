@@ -385,18 +385,29 @@ This overrides variable `ffip-project-root' when set.")
 (defvar ffip-find-relative-path-callback 'ffip-copy-without-change
   "The callback after calling `find-relative-path'.")
 
+(defun ffip--some (predicate seq)
+  "Return if PREDICATE is of true of any element of SEQ"
+  (let* (elem rlt)
+    (while (and (setq elem (car seq))
+                (not rlt))
+      (setq seq (cdr seq))
+      (setq rlt (funcall predicate elem)))
+    rlt))
+
 ;;;###autoload
 (defun ffip-project-root ()
   "Return the root of the project."
-  (let ((project-root (or ffip-project-root
-                          (if (functionp ffip-project-root-function)
-                              (funcall ffip-project-root-function)
-                            (if (listp ffip-project-file)
-                                (cl-some (apply-partially 'locate-dominating-file
-                                                       default-directory)
-                                      ffip-project-file)
-                              (locate-dominating-file default-directory
-                                                      ffip-project-file))))))
+  (let* ((project-root (or ffip-project-root
+                           (cond
+                            ((functionp ffip-project-root-function)
+                             (funcall ffip-project-root-function))
+                            ((listp ffip-project-file)
+                             (ffip--some (apply-partially 'locate-dominating-file
+                                                          default-directory)
+                                         ffip-project-file))
+                            (t
+                             (locate-dominating-file default-directory
+                                                     ffip-project-file))))))
     (or (and project-root (file-name-as-directory project-root))
         (progn
           (message "Since NO project was found, use `default-directory' instead.")
@@ -707,11 +718,7 @@ DIRECTORY-TO-SEARCH specify the root directory to search."
 If OPEN-ANOTHER-WINDOW is t, the results are displayed in a new window.
 If FIND-DIRECTORY is t, only search directories.  FN is callback.
 This function is the API to find files."
-  (let* (cands
-         lnum
-         file
-         root)
-
+  (let* (cands lnum file root)
     ;; extract line num if exists
     (when (and keyword (stringp keyword)
                (string-match "^\\(.*\\):\\([0-9]+\\):?$" keyword))
@@ -1049,14 +1056,17 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
         (setq alnum (string-to-number (match-string 1)))
         (setq blnum (string-to-number (match-string 3)))))
 
-    (if (and (> (length files) 1)
-             (string= (nth 0 files) (nth 1 files)))
-        (ffip-find-files (nth 0 files)
-                         open-another-window
-                         nil
-                         (lambda (opened-file)
-                           ;; use line number in new file since there is only one file name candidate
-                           (ffip--forward-line blnum)))
+    (cond
+     ((and (> (length files) 1)
+           (string= (nth 0 files) (nth 1 files)))
+      (ffip-find-files (nth 0 files)
+                       open-another-window
+                       nil
+                       `(lambda (opened-file)
+                          ;; use line number in new file since there
+                          ;; is only one file name candidate
+                          (ffip--forward-line ,blnum))))
+     (t
       (run-hook-with-args 'ffip-diff-find-file-before-hook)
       (ffip-find-files files
                        open-another-window
@@ -1066,7 +1076,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
                           ((string= (file-name-nondirectory opened-file) (nth 0 files))
                            (ffip--forward-line alnum))
                           (t
-                           (ffip--forward-line blnum))))))))
+                           (ffip--forward-line blnum)))))))))
 
 (defvar ffip-diff-mode-map
   (let ((map (make-sparse-keymap)))
