@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.7.3
+;; Version: 5.7.4
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -880,6 +880,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
 (defun find-file-in-current-directory (&optional level)
   "Search fil in current directory or LEVEL up parent directory."
   (interactive "P")
+  (unless level (setq level 0))
   (let* ((ffip-project-root (ffip-parent-directory level default-directory)))
     (find-file-in-project nil)))
 
