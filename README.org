@@ -35,7 +35,7 @@ Users of Debian ≥10 and derivatives can install find-file-in-project with the 
 ** Windows
 Windows setup is as easy as *installing [[http://cygwin.com][Cygwin]] or [[https://msys2.github.io/][MYSYS2]] at default directory of any driver*. =GNU Find= executable is detected automatically.
 
-You can also manually specify the executable's path,
+You can also manually specify the executable path,
 #+begin_src elisp
 (when (eq system-type 'windows-nt) (setq ffip-find-executable "c:\\\\cygwin64\\\\bin\\\\find"))
 #+end_src
