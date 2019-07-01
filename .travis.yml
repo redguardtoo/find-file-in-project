@@ -1,31 +1,19 @@
-language: generic
+language: emacs-lisp
 
 env:
-  global:
-    - CURL="curl -fsSkL --retry 9 --retry-delay 9"
-  matrix:
-  - EMACS_VERSION=24.3
-  - EMACS_VERSION=24.4
-  - EMACS_VERSION=24.5
-  - EMACS_VERSION=25.3
-  - EMACS_VERSION=26.1
-  - EMACS_VERSION=master
+  - EVM_EMACS=emacs-24.3-travis
+  - EVM_EMACS=emacs-24.4-travis
+  - EVM_EMACS=emacs-24.5-travis
+  - EVM_EMACS=emacs-25.3-travis
+  - EVM_EMACS=emacs-26.2-travis
+  - EVM_EMACS=emacs-git-snapshot-travis
 
-matrix:
-  allow_failures:
-    - env: EMACS_VERSION=master
+before_install:
+  - git clone https://github.com/rejeep/evm.git $HOME/.evm
+  - export PATH=$HOME/.evm/bin:$PATH
 
-install:
-  - $CURL -O https://github.com/npostavs/emacs-travis/releases/download/bins/emacs-bin-${EMACS_VERSION}.tar.gz
-  - tar -xaf emacs-bin-${EMACS_VERSION}.tar.gz -C /
-  - export EMACS=/tmp/emacs/bin/emacs
+  - evm config path /tmp
+  - evm install $EVM_EMACS --use --skip
 
 script:
-  - $EMACS --version
-  - emacs=$EMACS make test
-
-notifications:
-  email:
-    # Default is change, but that includes a new branch's 1st success.
-    on_success: never
-    on_failure: always
+  - make test
