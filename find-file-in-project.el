@@ -3,11 +3,11 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.7.4
+;; Version: 5.7.5
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
-;; Package-Requires: ((ivy "0.10.0") (emacs "24.3"))
+;; Package-Requires: ((ivy "0.10.0") (emacs "24.4"))
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
 ;; EmacsWiki: FindFileInProject
@@ -152,6 +152,7 @@
 
 (require 'diff-mode)
 (require 'windmove)
+(require 'subr-x)
 
 (defvar ffip-use-rust-fd nil "Use use fd instead of find.")
 
@@ -764,14 +765,16 @@ This function is the API to find files."
 (defun ffip-read-keyword ()
   "Read keyword from selected text or user input."
   (let* ((hint (if ffip-use-rust-fd "Enter regex (or press ENTER):"
-                 "Enter keyword (or press ENTER):")))
+                 "Enter keyword (or press ENTER):"))
+         rlt)
     (cond
      ((region-active-p)
       (setq ffip-filename-history (add-to-list 'ffip-filename-history
                                                (ffip--read-selected)))
-      (ffip--read-selected))
+      (setq rlt (ffip--read-selected)))
      (t
-      (read-from-minibuffer hint nil nil nil 'ffip-filename-history)))))
+      (setq rlt (read-from-minibuffer hint nil nil nil 'ffip-filename-history))))
+    (if rlt (string-trim rlt) rlt)))
 
 ;;;###autoload
 (defun ffip-create-project-file ()
