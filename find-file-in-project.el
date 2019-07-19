@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.7.5
+;; Version: 5.7.6
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -201,11 +201,18 @@ The file path is passed to the hook as the first argument.")
         standard-output
       (shell-command command t))))
 
+(defun ffip-diff-git-versions ()
+  "List all versions of code under Git."
+  (let* ((git-cmd (concat "git --no-pager log --date=short --pretty=format:'%h|%ad|%s|%an' "
+                          buffer-file-name)))
+    (nconc (nonempty-lines (shell-command-to-string "git branch --no-color --all"))
+           (nonempty-lines (shell-command-to-string git-cmd)))))
+
 ;;;###autoload
 (defun ffip-git-diff-current-file ()
   "Run 'git diff version:current-file current-file'."
   (let* ((default-directory (locate-dominating-file default-directory ".git"))
-         (line (ivy-read "diff current file:" (my-git-versions))))
+         (line (ivy-read "diff current file:" (ffip-diff-git-versions))))
     (ffip-shell-command-to-string (format "git --no-pager diff %s:%s %s"
                                      (replace-regexp-in-string "^ *\\*? *" "" (car (split-string line "|" t)))
                                      (file-relative-name buffer-file-name default-directory)
@@ -214,7 +221,7 @@ The file path is passed to the hook as the first argument.")
 (defun ffip-git-diff-project()
   "Run 'git diff version' in project."
   (let* ((default-directory (locate-dominating-file default-directory ".git"))
-         (line (ivy-read "diff current file:" (my-git-versions)))
+         (line (ivy-read "diff current file:" (ffip-diff-git-versions)))
          (version (replace-regexp-in-string "^ *\\*? *" "" (car (split-string line "|" t)))))
     (ffip-shell-command-to-string (format "git --no-pager diff %s" version))))
 
