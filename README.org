@@ -1,4 +1,4 @@
-* find-file-in-project v5.7.6
+* find-file-in-project v5.7.7
 
 [[https://travis-ci.org/technomancy/find-file-in-project][https://travis-ci.org/technomancy/find-file-in-project.svg?branch=master]]
 [[http://melpa.org/#/find-file-in-project][file:http://melpa.org/packages/find-file-in-project-badge.svg]] [[http://stable.melpa.org/#/find-file-in-project][file:http://stable.melpa.org/packages/find-file-in-project-badge.svg]]

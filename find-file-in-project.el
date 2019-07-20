@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.7.6
+;; Version: 5.7.7
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -201,12 +201,16 @@ The file path is passed to the hook as the first argument.")
         standard-output
       (shell-command command t))))
 
+(defun ffip-nonempty-lines (s)
+  "Return non empty lines."
+  (split-string s "[\r\n]+" t))
+
 (defun ffip-diff-git-versions ()
   "List all versions of code under Git."
   (let* ((git-cmd (concat "git --no-pager log --date=short --pretty=format:'%h|%ad|%s|%an' "
                           buffer-file-name)))
-    (nconc (nonempty-lines (shell-command-to-string "git branch --no-color --all"))
-           (nonempty-lines (shell-command-to-string git-cmd)))))
+    (nconc (ffip-nonempty-lines (shell-command-to-string "git branch --no-color --all"))
+           (ffip-nonempty-lines (shell-command-to-string git-cmd)))))
 
 ;;;###autoload
 (defun ffip-git-diff-current-file ()
