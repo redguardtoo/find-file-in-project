@@ -998,6 +998,30 @@ Set `ffip-find-relative-path-callback' to format the result,
      (t
       (message "Nothing found!")))))
 
+
+;;;###autoload
+(defun ffip-fix-relative-path-at-point(&optional find-directory)
+  "Fix relative path at point.
+If FIND-DIRECTORY is t, fix the directory path only."
+  (interactive "P")
+  (let* ((fn (ffip-guess-file-name-at-point))
+         (cands (ffip-project-search (ffip-read-keyword) find-directory))
+         root)
+    (cond
+     ((> (length cands) 0)
+      (setq root (file-name-nondirectory (directory-file-name (ffip-get-project-root-directory))))
+      (ffip-completing-read
+       (format "Find in %s/: " root)
+       cands
+       `(lambda (p)
+          ;; only one item in project files
+          (if (listp p) (setq p (cdr p)))
+          (if ,find-directory
+              (setq p (file-name-as-directory p)))
+          (file-relative-name p (file-name-directory buffer-file-name)))))
+     (t
+      (message "Nothing found!")))))
+
 ;;;###autoload
 (defun find-directory-in-project-by-selected (&optional open-another-window)
   "Similar to `find-file-in-project-by-selected'.
