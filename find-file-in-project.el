@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.7.7
+;; Version: 5.7.8
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -1087,8 +1087,11 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
         (setq blnum (string-to-number (match-string 3)))))
 
     (cond
-     ((and (> (length files) 1)
-           (string= (nth 0 files) (nth 1 files)))
+     ((or (null files) (eq (length files) 0))
+      (message "No file is found!"))
+     ((or (and (> (length files) 1)
+               (string= (nth 0 files) (nth 1 files)))
+          (eq (length files) 1))
       (ffip-find-files (nth 0 files)
                        open-another-window
                        nil
@@ -1097,8 +1100,13 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
                           ;; is only one file name candidate
                           (ffip--forward-line ,blnum))))
      (t
+      ;; need pick a file
       (run-hook-with-args 'ffip-diff-find-file-before-hook)
-      (ffip-find-files files
+      (ffip-find-files (cond
+                        ((string= (nth 0 files) "null")
+                         (nth 1 files))
+                        (t
+                         (nth 0 files)))
                        open-another-window
                        nil
                        (lambda (opened-file)
