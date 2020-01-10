@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.7.8
+;; Version: 5.7.9
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -47,8 +47,10 @@
 ;;   - `find-directory-in-project-by-selected' uses the select region
 ;;      to find directory.  You can provide the keyword if no region
 ;;      is selected.
-;;   - `find-file-in-project' will start search file immediately
+;;   - `find-file-in-project' starts search file immediately
 ;;   - `ffip-create-project-file' creates ".dir-locals.el"
+;;   - `ffip-lisp-find-file-in-project' finds file in project.
+;;     If its parameter is not nil, it find directory.
 ;;
 ;; A project is found by searching up the directory tree until a file
 ;; is found that matches `ffip-project-file'.
@@ -150,6 +152,7 @@
 
 ;;; Code:
 
+(require 'find-lisp)
 (require 'diff-mode)
 (require 'windmove)
 (require 'subr-x)
@@ -774,8 +777,8 @@ This function is the API to find files."
 
 (defun ffip-read-keyword ()
   "Read keyword from selected text or user input."
-  (let* ((hint (if ffip-use-rust-fd "Enter regex (or press ENTER):"
-                 "Enter keyword (or press ENTER):"))
+  (let* ((hint (if ffip-use-rust-fd "Enter regex (or press ENTER): "
+                 "Enter keyword (or press ENTER): "))
          rlt)
     (cond
      ((region-active-p)
@@ -1013,6 +1016,47 @@ For example, to find /home/john/proj1/test, below keywords are valid:
 If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   (interactive "P")
   (ffip-find-files (ffip-read-keyword) open-another-window t))
+
+(defun ffip--prune-patterns-regex ()
+  "Convert `ffip--prune-patterns-regex to regex."
+  (let* ((rlt (mapconcat 'identity ffip-prune-patterns "\\|")))
+    (setq rlt (replace-regexp-in-string "\\." "\\\\." rlt))
+    (setq rlt (replace-regexp-in-string "\\*" ".*" rlt))
+    rlt))
+
+;;;###autoload
+(defun ffip-lisp-find-file-in-project (&optional directory-p)
+  "If DIRECTORY-P is nil, find file in project, or else find directory.
+It's is written in pure Lisp, so it works in all environments."
+  (interactive "P")
+  (let* ((root (ffip-get-project-root-directory))
+         (input-regex (read-string "Input regex (or press ENTER): "))
+         (find-lisp-regexp (if (string= input-regex "") ".*" input-regex))
+         cands
+         (ignored-regex (ffip--prune-patterns-regex)))
+    (cond
+     (directory-p
+      (setq cands (find-lisp-find-files-internal
+                  root
+                  'find-lisp-file-predicate-is-directory
+                  'find-lisp-default-directory-predicate)))
+     (t
+      (setq cands (find-lisp-find-files-internal
+                   root
+                   'find-lisp-default-file-predicate
+                   'find-lisp-default-directory-predicate))))
+    (setq cands
+          (delq nil
+                (mapcar `(lambda (c)
+                           (unless (string-match-p ,ignored-regex c) c))
+                        cands)))
+    (ffip-completing-read
+     (format "%s %s: " (if directory-p "directories" "files") root)
+     cands
+     `(lambda (item)
+        (if ,directory-p
+            (switch-to-buffer (dired item))
+          (find-file item))))))
 
 ;;;###autoload
 (defalias 'ffip 'find-file-in-project)
