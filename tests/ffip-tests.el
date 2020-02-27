@@ -110,15 +110,19 @@
 
       ;; detect "test.js"
       (write-region "" nil "test.js")
+      (sit-for 1)
       (should (string= (ffip--guess-physical-path fn) (file-truename "./test.js")))
       (delete-file (file-truename "./test.js"))
+      (sit-for 1)
       (should (not (file-exists-p (file-truename "./test.js"))))
       (should (not (ffip--guess-physical-path fn)))
 
       ;; detect "test.ts"
       (write-region "" nil "test.ts")
+      (sit-for 1)
       (should (string= (ffip--guess-physical-path fn) (file-truename "./test.ts")))
       (delete-file (file-truename "./test.ts"))
+      (sit-for 1)
       (should (not (file-exists-p (file-truename "./test.ts"))))
       (should (not (ffip--guess-physical-path fn))))))
 
