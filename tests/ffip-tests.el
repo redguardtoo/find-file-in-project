@@ -101,30 +101,24 @@
   (let* (fn
          (default-directory (file-name-directory (or load-file-name buffer-file-name))))
     (with-temp-buffer
-      (insert "import './test';")
-      (goto-char (point-min))
-      (search-forward "test")
+      (insert "import './test1';\n")
+      (insert "import './test2';\n")
       (js-mode) ; javascript
+
+      ;; detect "test1.ts"
+      (goto-char (point-min))
+      (search-forward "test1")
       (setq fn (ffip-guess-file-name-at-point))
-      (should (string= fn "./test"))
+      (should (string= fn "./test1"))
+      (should (string= (ffip--guess-physical-path fn) (file-truename "./test1.ts")))
 
-      ;; detect "test.js"
-      (write-region "" nil "test.js")
-      (sit-for 1)
-      (should (string= (ffip--guess-physical-path fn) (file-truename "./test.js")))
-      (delete-file (file-truename "./test.js"))
-      (sit-for 1)
-      (should (not (file-exists-p (file-truename "./test.js"))))
-      (should (not (ffip--guess-physical-path fn)))
-
-      ;; detect "test.ts"
-      (write-region "" nil "test.ts")
-      (sit-for 1)
-      (should (string= (ffip--guess-physical-path fn) (file-truename "./test.ts")))
-      (delete-file (file-truename "./test.ts"))
-      (sit-for 1)
-      (should (not (file-exists-p (file-truename "./test.ts"))))
-      (should (not (ffip--guess-physical-path fn))))))
+      ;; detect "test2.js"
+      (goto-char (point-min))
+      (search-forward "test2")
+      (setq fn (ffip-guess-file-name-at-point))
+      (should (string= fn "./test2"))
+      (should (string= (ffip--guess-physical-path fn) (file-truename "./test2.js"))))
+    ))
 
 (ert-deftest ffip-test-windows ()
   (if (eq system-type 'windows-nt)
