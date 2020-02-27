@@ -97,11 +97,35 @@
     (should (string= (ffip-parent-directory 4 dir) "/"))
     (should (string= (ffip-parent-directory 999 dir) "/"))))
 
+(ert-deftest ffip-test-guess-physical-path ()
+  (let* (fn
+         (default-directory (file-name-directory (or load-file-name buffer-file-name))))
+    (with-temp-buffer
+      (insert "import './test';")
+      (goto-char (point-min))
+      (search-forward "test")
+      (js-mode) ; javascript
+      (setq fn (ffip-guess-file-name-at-point))
+      (should (string= fn "./test"))
+
+      ;; detect "test.js"
+      (write-region "" nil "test.js")
+      (should (string= (ffip--guess-physical-path fn) (file-truename "./test.js")))
+      (delete-file (file-truename "./test.js"))
+      (should (not (file-exists-p (file-truename "./test.js"))))
+      (should (not (ffip--guess-physical-path fn)))
+
+      ;; detect "test.ts"
+      (write-region "" nil "test.ts")
+      (should (string= (ffip--guess-physical-path fn) (file-truename "./test.ts")))
+      (delete-file (file-truename "./test.ts"))
+      (should (not (file-exists-p (file-truename "./test.ts"))))
+      (should (not (ffip--guess-physical-path fn))))))
+
 (ert-deftest ffip-test-windows ()
-  (let (rlt)
-    (if (eq system-type 'windows-nt)
-        (should (executable-find (ffip--guess-gnu-find)))
-      (message "NOT windows native Emacs, nothing to test.")
-      (should t))))
+  (if (eq system-type 'windows-nt)
+      (should (executable-find (ffip--guess-gnu-find)))
+    (message "NOT windows native Emacs, nothing to test.")
+    (should t)))
 
 (ert-run-tests-batch-and-exit)
