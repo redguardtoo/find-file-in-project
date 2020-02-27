@@ -157,7 +157,7 @@
 (require 'windmove)
 (require 'subr-x)
 
-(defvar ffip-use-rust-fd nil "Use use fd instead of find.")
+(defvar ffip-use-rust-fd nil "Use rust fd instead of find.")
 
 (defvar ffip-rust-fd-respect-ignore-files t
   "Don 't show search results from '.*ignore' files.")
@@ -362,7 +362,7 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
 Use this to exclude portions of your project: \"-not -regex \\\".*svn.*\\\"\".")
 
 (defvar ffip-find-pre-path-options ""
-  "Options for find porgram.
+  "Options for find program.
 
 GNU Find requires '-H', '-L', '-P', '-D' and `-O' appear before first path '.'.
 For example, use '-L' to follow symbolic links.")
@@ -933,7 +933,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
 
 ;;;###autoload
 (defun find-file-in-current-directory (&optional level)
-  "Search fil in current directory or LEVEL up parent directory."
+  "Search file in current directory or LEVEL up parent directory."
   (interactive "P")
   (unless level (setq level 0))
   (let* ((ffip-project-root (ffip-parent-directory level default-directory)))
