@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.7.9
+;; Version: 5.7.10
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -861,6 +861,37 @@ You can override this by setting the variable `ffip-project-root'."
       (thing-at-point 'symbol)
       (read-string "No file name at point. Please provide one:")))
 
+(defun ffip--guess-physical-path (file)
+  "Return physical full path of FILE which does exist."
+  (let* (rlt tmp)
+    ;; only deal with file path
+    (when (or (file-name-absolute-p file)
+              (ffip-file-name-relative-p file))
+      (cond
+       ;; file already exists
+       ((and (file-exists-p file)
+             ;; not directory
+             (not (car (file-attributes file))))
+        (setq rlt (file-truename file)))
+
+       ;; extra effort for javascript like language
+       ;; "./lib/A" could mean "./lib/A.js" or "./lib/A/index.js"
+       ((and (or (derived-mode-p 'js-mode)
+                 (memq major-mode '(typescript-mode)))
+             (string-match-p "^[^.]*$"(file-name-nondirectory file)))
+        (dolist (ext '(".ts" ".js"))
+          ;; guess physical path
+          (cond
+           ;; "./lib/A.js" or "./lib/A.ts"
+           ((file-exists-p (setq tmp (concat file ext)))
+            (setq rlt (file-truename tmp)))
+
+           ;; "./lib/A/index.js" or "./lib/A/index.ts"
+           ((file-exists-p (setq tmp (concat (file-name-as-directory file) "index" ext)))
+            (setq rlt (file-truename tmp))))))))
+
+    rlt))
+
 ;;;###autoload
 (defun find-file-in-project-at-point (&optional open-another-window)
   "Find file whose name is guessed around point.
@@ -869,30 +900,25 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   (let* ((fn (ffip-guess-file-name-at-point))
          ;; could be a path
          (ffip-match-path-instead-of-filename t)
-         tfn)
+         full-path)
     (cond
      (fn
       (cond
+       ;; is relative/full path and path is real
+       ((setq full-path (ffip--guess-physical-path fn))
+        (if open-another-window (find-file-other-window full-path)
+          (find-file full-path)))
+
+       ;; absolute path which does not exist
        ((file-name-absolute-p fn)
-        ;; absolute path
-        (cond
-         ((file-exists-p fn)
-          ;; if file has absolute path and file exists, open it directly
-          (if open-another-window (find-file-other-window fn)
-            (find-file fn)))
-         (t
-          ;; well, search by file name
-          (let* ((ffip-match-path-instead-of-filename nil))
-            (ffip-find-files (file-name-nondirectory fn) open-another-window)))))
-       ((and (ffip-file-name-relative-p fn)
-             (file-exists-p (setq tfn (file-truename fn))))
-        ;; file has relative path and file exist
-        (if open-another-window (find-file-other-window tfn)
-          (find-file tfn)))
+        ;; search file name only
+        (let* ((ffip-match-path-instead-of-filename nil))
+          (ffip-find-files (file-name-nondirectory fn) open-another-window)))
+
        (t
         ;; strip prefix "../../" or "././" from file name
-        (setq tfn (replace-regexp-in-string ffip-relative-path-pattern "" fn))
-        (ffip-find-files tfn open-another-window))))
+        (ffip-find-files (replace-regexp-in-string ffip-relative-path-pattern "" fn)
+                         open-another-window))))
      (t
       (message "No file name is provided.")))))
 
