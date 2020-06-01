@@ -31,7 +31,7 @@ Since =v3.7=, =Emacs 24.3= is required.
 
 Since =v5.7.5=, =Emacs 24.4= is required.
 
-Users of Debian ≥10 and derivatives can install find-file-in-project with the following command:
+Users of Debian ≥10 and derivatives can install this program with the following command:
 =sudo apt install elpa-find-file-in-project=
 * Setup
 ** Windows
@@ -260,6 +260,6 @@ Run =tests/test.sh= before =git commit=.
 * Bug Report
 Check [[https://github.com/technomancy/find-file-in-project]].
 * License
-find-file-in-project is free software: you can redistribute it and/or modify it under the terms of the [[https://raw.githubusercontent.com/technomancy/find-file-in-project/master/LICENSE][GNU General Public License]] as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under the terms of the [[https://raw.githubusercontent.com/technomancy/find-file-in-project/master/LICENSE][GNU General Public License]] as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-find-file-in-project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [[https://raw.githubusercontent.com/technomancy/find-file-in-project/master/LICENSE][GNU General Public License]] for more details.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [[https://raw.githubusercontent.com/technomancy/find-file-in-project/master/LICENSE][GNU General Public License]] for more details.
