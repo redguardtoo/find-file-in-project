@@ -1145,10 +1145,11 @@ Keyword to search new file is selected text or user input."
   "File file(s) in current hunk.
 If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   (interactive "P")
-  (let* ((files (mapcar 'file-name-nondirectory (diff-hunk-file-names)))
+  (let* ((files (mapcar (lambda (f) (replace-regexp-in-string "^[^/]*/" "" f)) (diff-hunk-file-names)))
          (alnum 0)
          (blnum 0)
-         (regex "\\(?:\\*\\{15\\}.*\n\\)?[-@* ]*\\([0-9,]+\\)\\([ acd+]+\\([0-9,]+\\)\\)?"))
+         (regex "\\(?:\\*\\{15\\}.*\n\\)?[-@* ]*\\([0-9,]+\\)\\([ acd+]+\\([0-9,]+\\)\\)?")
+         (ffip-match-path-instead-of-filename t))
 
     (save-excursion
       (diff-beginning-of-hunk t)
