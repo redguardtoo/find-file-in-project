@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.7.10
+;; Version: 5.7.11
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -51,6 +51,8 @@
 ;;   - `ffip-create-project-file' creates ".dir-locals.el"
 ;;   - `ffip-lisp-find-file-in-project' finds file in project.
 ;;     If its parameter is not nil, it find directory.
+;;     This command is written in pure Lisp and does not use any third party
+;;     command line program.  So it works in all environments.
 ;;
 ;; A project is found by searching up the directory tree until a file
 ;; is found that matches `ffip-project-file'.
