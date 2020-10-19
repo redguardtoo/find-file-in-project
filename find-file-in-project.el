@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.7.11
+;; Version: 5.7.12
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -96,6 +96,8 @@
 ;;
 ;; To find in current directory, use `find-file-in-current-directory'
 ;; and `find-file-in-current-directory-by-selected'.
+;;
+;; `ffip-fix-file-path-at-point' replaces path at point with correct relative/absolute path.
 ;;
 ;; `ffip-split-window-horizontally' and `ffip-split-window-vertically' find&open file
 ;; in split window.
@@ -1335,6 +1337,43 @@ If REVERSE is t, applied patch is reverted."
     (setq ffip-read-file-name-hijacked-p nil))
    (t
     (message "This command only run in `diff-mode' and `ffip-diff-mode'."))))
+
+;;;###autoload
+(defun ffip-fix-file-path-at-point (&optional absolute-path-p)
+  "Fix file path at point.
+If ABSOLUTE-PATH-P is t, old path is replaced by correct absolute path.
+Or else it's replaced by relative path."
+  (interactive "P")
+  (let* ((fn (thing-at-point 'filename))
+         full-path
+         cands)
+    (cond
+     ((not fn)
+      (message "There is no file path at point."))
+
+     ;; path at point is a path of physical file
+     ((setq full-path (ffip--guess-physical-path fn))
+      nil)
+
+     ;; find a file
+     ((setq cands (ffip-project-search (replace-regexp-in-string ffip-relative-path-pattern "" fn)
+                                       nil))
+      (cond
+       ((eq (length cands) 1)
+        (setq full-path (car cands)))
+       (t
+        (ffip-completing-read "Find file: "
+                              cands
+                              (lambda (cand)
+                                (setq full-path (cdr cand))))))))
+
+    (when full-path
+      (let* ((bounds (bounds-of-thing-at-point 'filename))
+             (path (if absolute-path-p full-path
+                     (file-relative-name full-path))))
+        (goto-char (car bounds))
+        (delete-region (car bounds) (cdr bounds))
+        (insert (replace-regexp-in-string "/index\\.[jt]s" "" path))))))
 
 ;; safe locals
 (progn

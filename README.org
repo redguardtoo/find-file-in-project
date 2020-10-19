@@ -73,6 +73,8 @@ The regular expression =ffip-strip-file-name-regex= is also used by =find-file-w
 Use the selected region as keyword to find directory. If no region is active, you could provide the keyword. Keyword could contain wildcard character which passed to Find as value of =-iwholename= option
 
 If parameter is passed , directory will be opened in new window.
+** =ffip-fix-file-path-at-point=
+It replaces path at point with correct relative/absolute path.
 ** =find-file-in-project=
 Starts search immediately. This command is slow if there 10K+ files because it use ONLY Emacs Lisp to filter candidates. You should always use =find-file-in-project-by-selected= in big project..
 ** =ffip-lisp-find-file-in-project=
