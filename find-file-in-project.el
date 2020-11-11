@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.7.12
+;; Version: 5.7.13
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -1360,7 +1360,7 @@ Or else it's replaced by relative path."
                                        nil))
       (cond
        ((eq (length cands) 1)
-        (setq full-path (car cands)))
+        (setq full-path (nth 0 cands)))
        (t
         (ffip-completing-read "Find file: "
                               cands
@@ -1368,6 +1368,7 @@ Or else it's replaced by relative path."
                                 (setq full-path (cdr cand))))))))
 
     (when full-path
+      (if (consp full-path) (setq full-path (cdr full-path)))
       (let* ((bounds (bounds-of-thing-at-point 'filename))
              (path (if absolute-path-p full-path
                      (file-relative-name full-path))))
