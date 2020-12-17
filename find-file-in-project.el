@@ -1057,7 +1057,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
 ;;;###autoload
 (defun ffip-lisp-find-file-in-project (&optional directory-p)
   "If DIRECTORY-P is nil, find file in project, or else find directory.
-It's is written in pure Lisp, so it works in all environments."
+This command works in any environment (Windows, etc) out of box."
   (interactive "P")
   (let* ((root (ffip-get-project-root-directory))
          (input-regex (read-string "Input regex (or press ENTER): "))
