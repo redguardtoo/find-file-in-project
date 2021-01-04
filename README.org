@@ -30,6 +30,8 @@ Since =v3.7=, =Emacs 24.3= is required.
 
 Since =v5.7.5=, =Emacs 24.4= is required.
 
+Since =v6.0.0=, =Emacs 25.1= is required.
+
 Users of Debian ≥10 and derivatives can install this program with the following command:
 =sudo apt install elpa-find-file-in-project=
 * Setup

@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 5.7.13
+;; Version: 6.0.0
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -634,7 +634,7 @@ BSD/GNU Find use glob pattern."
   "Push FILE into RESULT."
   ;; @see https://www.murilopereira.com/how-to-open-a-file-in-emacs/
   ;; also @see #15 improving handling of directories containing space
-  `(push (cons (replace-regexp-in-string "^\./" "" ,file) (expand-file-name ,file)) ,result))
+  `(push (cons (replace-regexp-in-string "^\./" "" ,file) ,file) ,result))
 
 ;;;###autoload
 (defun ffip-project-search (keyword &optional find-directory-p)
