@@ -41,7 +41,7 @@
 (ert-deftest ffip-test-find-by-selected ()
   (let (files)
     (setq ffip-project-root default-directory)
-    (setq files (mapcar 'car (ffip-project-search "git-diff" nil)))
+    (setq files (mapcar 'car (ffip-project-search "git-diff")))
     ;; (message "files=%s" files)
     (should (string-match-p "git-diff.diff" (car files)))))
 
@@ -49,7 +49,7 @@
 (ert-deftest ffip-test-ffip ()
   (let (files)
     (setq ffip-project-root default-directory)
-    (setq files (mapcar 'car (ffip-project-search nil nil)))
+    (setq files (mapcar 'car (ffip-project-search nil)))
     (should (> (length files) 1))
     (should (not (active-minibuffer-window)))))
 
@@ -58,7 +58,7 @@
         (prefix-args '(4 (4))))
     (dolist (open-another-arg prefix-args)
       (setq ffip-project-root default-directory)
-      (setq files (mapcar 'car (ffip-project-search "git-diff" nil)))
+      (setq files (mapcar 'car (ffip-project-search "git-diff")))
       (should (= (length files) 1))
       (should (not (active-minibuffer-window))))))
 

@@ -649,9 +649,9 @@ This function returns the selected candidate or nil."
     (ivy-read prompt collection
               :action action))))
 
-(defun ffip-create-shell-command (keyword is-finding-directory)
+(defun ffip-create-shell-command (keyword find-directory-p)
   "Produce command to search KEYWORD.
-If IS-FINDING-DIRECTORY is t, we look up directory instead of file.
+If FIND-DIRECTORY-P is t, we look up directory instead of file.
 Rust fd use regular expression.
 BSD/GNU Find use glob pattern."
   (let* (cmd fmt tgt)
@@ -673,7 +673,7 @@ BSD/GNU Find use glob pattern."
       (setq tgt (if keyword (format "\".*%s\"" keyword) "")))
      (t
       (setq tgt
-            (if is-finding-directory (format "-iwholename \"*%s\"" keyword)
+            (if find-directory-p (format "-iwholename \"*%s\"" keyword)
               (ffip--create-filename-pattern-for-gnufind keyword)))
       (setq fmt (concat "%s "
                         ffip-find-pre-path-options
@@ -682,7 +682,7 @@ BSD/GNU Find use glob pattern."
     (setq cmd (format fmt
                       (ffip--executable-find)
                       (ffip--prune-patterns)
-                      (if is-finding-directory "d" "f")
+                      (if find-directory-p "d" "f")
                       (ffip--ignore-file-names)
                       ffip-find-options
                       (ffip--join-patterns ffip-patterns)
@@ -695,8 +695,14 @@ BSD/GNU Find use glob pattern."
   (setq s (replace-regexp-in-string "\*" ".*" s))
   s)
 
+(defmacro ffip-push-one-candidate (file result)
+  "Push FILE into RESULT."
+  ;; @see https://www.murilopereira.com/how-to-open-a-file-in-emacs/
+  ;; also @see #15 improving handling of directories containing space
+  `(push (cons (replace-regexp-in-string "^\./" "" ,file) (expand-file-name ,file)) ,result))
+
 ;;;###autoload
-(defun ffip-project-search (keyword is-finding-directory &optional directory-to-search)
+(defun ffip-project-search (keyword &optional find-directory-p)
   "Return an alist of all filenames in the project and their path.
 
 Files with duplicate filenames are suffixed with the name of the
@@ -704,27 +710,30 @@ directory they are found in so that they are unique.
 
 If KEYWORD is string, it's the file name or file path to find file.
 If KEYWORD is list, it's the list of file names.
-IF IS-FINDING-DIRECTORY is t, we are searching directories, else files.
-DIRECTORY-TO-SEARCH specify the root directory to search."
-  (let* ((root (or directory-to-search
-                   (ffip-get-project-root-directory)))
-         (default-directory (file-name-as-directory root))
-         (cmd (ffip-create-shell-command keyword is-finding-directory))
-         (collection (split-string (ffip-shell-command-to-string cmd) "[\r\n]+" t)))
+IF FIND-DIRECTORY-P is t, we are searching directories, else files."
+  (let* ((default-directory (ffip-get-project-root-directory))
+         (cmd (ffip-create-shell-command keyword find-directory-p))
+         (fd-file-pattern (concat "^" (mapconcat 'ffip-glob-to-regex ffip-patterns "\\|") "$"))
+         (collection (split-string (ffip-shell-command-to-string cmd) "[\r\n]+" t))
+         rlt)
 
     (if ffip-debug (message "run command at %s: %s" default-directory cmd))
 
-    (when (and ffip-use-rust-fd ffip-patterns)
-      ;; filter result with Lisp because fd does NOT support multiple patterns
-      (let* ((r (concat "^" (mapconcat 'ffip-glob-to-regex ffip-patterns "\\|") "$")))
-        (setq collection (delq nil (mapcar (lambda (s)
-                                             (if (string-match-p r s) s))
-                                           collection)))))
-    (mapcar (lambda (file)
-              (cons (replace-regexp-in-string "^\./" "" file)
-                    (expand-file-name file)))
-            ;; #15 improving handling of directories containing space
-            collection)))
+    ;; use simple loop statement for clean code
+    (cond
+     ((and ffip-use-rust-fd ffip-patterns)
+      (let* ((fd-file-pattern (concat "^"
+                                      (mapconcat 'ffip-glob-to-regex ffip-patterns "\\|")
+                                      "$")))
+        (dolist (file collection)
+          ;; filter result with Lisp because fd does NOT support multiple patterns
+          (if (string-match fd-file-pattern file) (ffip-push-one-candidate file rlt)))))
+
+     (t
+      (dolist (file collection)
+        (ffip-push-one-candidate file rlt))))
+
+    (nreverse rlt)))
 
 (defun ffip--forward-line (lnum)
   "Forward LNUM lines."
@@ -734,10 +743,10 @@ DIRECTORY-TO-SEARCH specify the root directory to search."
     (forward-line (1- lnum))))
 
 ;;;###autoload
-(defun ffip-find-files (keyword open-another-window &optional find-directory fn)
+(defun ffip-find-files (keyword open-another-window &optional find-directory-p fn)
   "Use KEYWORD to find files.
 If OPEN-ANOTHER-WINDOW is t, the results are displayed in a new window.
-If FIND-DIRECTORY is t, only search directories.  FN is callback.
+If FIND-DIRECTORY-P is t, only search directories.  FN is callback.
 This function is the API to find files."
   (let* (cands lnum file root)
     ;; extract line num if exists
@@ -746,7 +755,7 @@ This function is the API to find files."
       (setq lnum (string-to-number (match-string 2 keyword)))
       (setq keyword (match-string 1 keyword)))
 
-    (setq cands (ffip-project-search keyword find-directory))
+    (setq cands (ffip-project-search keyword find-directory-p))
     (cond
      ((> (length cands) 0)
       (setq root (file-name-nondirectory (directory-file-name (ffip-get-project-root-directory))))
@@ -756,7 +765,7 @@ This function is the API to find files."
        `(lambda (file)
           ;; only one item in project files
           (if (listp file) (setq file (cdr file)))
-          (if ,find-directory
+          (if ,find-directory-p
               (if (quote ,open-another-window)
                   (dired-other-window file)
                 (switch-to-buffer (dired file)))
@@ -969,7 +978,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   "Insert contents of file in current buffer.
 The file name is selected interactively from candidates in project."
   (interactive)
-  (let* ((cands (ffip-project-search (ffip-read-keyword) nil))
+  (let* ((cands (ffip-project-search (ffip-read-keyword)))
          root)
     (when (> (length cands) 0)
       (setq root (file-name-nondirectory (directory-file-name (ffip-get-project-root-directory))))
@@ -1004,15 +1013,15 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
     (find-file-in-project-by-selected open-another-window)))
 
 ;;;###autoload
-(defun ffip-find-relative-path(&optional find-directory)
+(defun ffip-find-relative-path(&optional find-directory-p)
   "Find file/directory and copy its relative path into `kill-ring'.
-If FIND-DIRECTORY is t, copy the directory path.
+If FIND-DIRECTORY-P is t, copy the directory path.
 
 Set `ffip-find-relative-path-callback' to format the result,
   (setq ffip-find-relative-path-callback 'ffip-copy-reactjs-import)
   (setq ffip-find-relative-path-callback 'ffip-copy-org-file-link)"
   (interactive "P")
-  (let* ((cands (ffip-project-search (ffip-read-keyword) find-directory))
+  (let* ((cands (ffip-project-search (ffip-read-keyword) find-directory-p))
          root)
     (cond
      ((> (length cands) 0)
@@ -1023,7 +1032,7 @@ Set `ffip-find-relative-path-callback' to format the result,
        `(lambda (p)
           ;; only one item in project files
           (if (listp p) (setq p (cdr p)))
-          (if ,find-directory
+          (if ,find-directory-p
               (setq p (file-name-as-directory p)))
           (setq p (file-relative-name p (file-name-directory buffer-file-name)))
           (funcall ffip-find-relative-path-callback p))))
@@ -1104,7 +1113,7 @@ Window split in RATIO."
   (let* (ratio-val
          (keyword (if ffip-split-window-without-asking-for-keyword ""
                     (ffip-read-keyword)))
-         (cands (ffip-project-search keyword nil))
+         (cands (ffip-project-search keyword))
          (file (if (= 1 (length cands)) (ffip-path (car cands))
                  (ffip-path (ffip-completing-read "Find file: " cands))))
          (buf (if (and file (file-exists-p file)) (find-file-noselect file)
@@ -1314,7 +1323,7 @@ If NUM is not nil, the corresponding backend is executed directly."
     (let* ((args (ad-get-args 0))
            (file-name (file-name-nondirectory (nth 2 args)))
            (default-directory (ffip-project-root))
-           (cands (ffip-project-search file-name nil default-directory))
+           (cands (ffip-project-search file-name))
            (rlt (if cands (ffip-completing-read "Files: " cands))))
       (when rlt
         (setq rlt (file-truename rlt))
@@ -1356,8 +1365,7 @@ Or else it's replaced by relative path."
       nil)
 
      ;; find a file
-     ((setq cands (ffip-project-search (replace-regexp-in-string ffip-relative-path-pattern "" fn)
-                                       nil))
+     ((setq cands (ffip-project-search (replace-regexp-in-string ffip-relative-path-pattern "" fn)))
       (cond
        ((eq (length cands) 1)
         (setq full-path (nth 0 cands)))
