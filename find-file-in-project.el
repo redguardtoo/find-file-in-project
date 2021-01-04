@@ -7,7 +7,7 @@
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
-;; Package-Requires: ((ivy "0.10.0") (emacs "24.4"))
+;; Package-Requires: ((emacs "25.1"))
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
 ;; EmacsWiki: FindFileInProject
@@ -36,6 +36,7 @@
 ;; - Works on Windows with minimum setup
 ;; - Works on Tramp Mode (https://www.emacswiki.org/emacs/TrampMode)
 ;; - fd (faster alternative of find, see https://github.com/sharkdp/fd) is supported
+;; - Uses only native API `completing-read' and supports ido/ivy/helm out of box
 ;;
 ;; Usage,
 ;;   - You can insert "(setq ffip-use-rust-fd t)" into ".emacs" to use fd (alternative of find)
@@ -127,19 +128,7 @@
 ;; to format the relative path,
 ;;   (setq ffip-find-relative-path-callback 'ffip-copy-reactjs-import)
 ;;   (setq ffip-find-relative-path-callback 'ffip-copy-org-file-link)
-
-;; `ivy-mode' is used for filter/search UI
-;; In `ivy-mode', SPACE is translated to regex ".*".
-;; For example, the search string "dec fun pro" is transformed into
-;; regular expression "\\(dec\\).*\\(fun\\).*\\(pro\\)"
-;; `C-h i g (ivy)' for more key-binding tips.
 ;;
-;; `ffip-save-ivy-last' saves the most recent search result.
-;; `ffip-ivy-resume' re-use the save result. Both requires `ivy-mode'
-;; installed.
-;;
-;; You can switch to `ido-mode' by `(setq ffip-prefer-ido-mode t)'
-
 ;; BSD/GNU Find can be installed through Cygwin or MYSYS2 on Windows.
 ;; Executable is automatically detected. But you can manually specify
 ;; the executable location by insert below code into ".emacs",
@@ -208,7 +197,7 @@ The file path is passed to the hook as the first argument.")
 (defun ffip-git-diff-current-file ()
   "Run 'git diff version:current-file current-file'."
   (let* ((default-directory (locate-dominating-file default-directory ".git"))
-         (line (ivy-read "diff current file:" (ffip-diff-git-versions))))
+         (line (completing-read "diff current file:" (ffip-diff-git-versions))))
     (ffip-shell-command-to-string (format "git --no-pager diff %s:%s %s"
                                      (replace-regexp-in-string "^ *\\*? *" "" (car (split-string line "|" t)))
                                      (file-relative-name buffer-file-name default-directory)
@@ -217,7 +206,7 @@ The file path is passed to the hook as the first argument.")
 (defun ffip-git-diff-project()
   "Run 'git diff version' in project."
   (let* ((default-directory (locate-dominating-file default-directory ".git"))
-         (line (ivy-read "diff current file:" (ffip-diff-git-versions)))
+         (line (completing-read "diff current file:" (ffip-diff-git-versions)))
          (version (replace-regexp-in-string "^ *\\*? *" "" (car (split-string line "|" t)))))
     (ffip-shell-command-to-string (format "git --no-pager diff %s" version))))
 
@@ -245,9 +234,6 @@ The output is inserted into *ffip-diff* buffer.")
 (defvar ffip-project-file '(".svn" ".hg" ".git")
   "The file/directory used to locate project root.
 May be set using .dir-locals.el.  Checks each entry if set to a list.")
-
-(defvar ffip-prefer-ido-mode (not (require 'ivy nil t))
-  "Use ido instead of ivy to display candidates.")
 
 (defvar ffip-patterns nil
   "List of glob patterns to look for with `find-file-in-project'.")
@@ -361,11 +347,7 @@ For example, use '-L' to follow symbolic links.")
 
 (defvar ffip-project-root-function nil
   "If non-nil, this function is called to determine the project root.
-
 This overrides variable `ffip-project-root' when set.")
-
-(defvar ffip-ivy-last-saved nil
-  "Backup of `ivy-last'.  Requires ivy.")
 
 (defvar ffip-debug nil "Print debug information.")
 
@@ -429,28 +411,10 @@ This overrides variable `ffip-project-root' when set.")
            (buffer-substring-no-properties (point-min) (point-max))) 'utf-8)))
 
 ;;;###autoload
-(defun ffip-save-ivy-last ()
-  "Save `ivy-last' into `ffip-ivy-last-saved'.  Requires ivy."
-  (interactive)
-  (if (boundp 'ivy-last)
-      (setq ffip-ivy-last-saved ivy-last)
-    (message "Sorry. You need install `ivy-mode' first.")))
-
-;;;###autoload
 (defun ffip-get-project-root-directory ()
   "Get the full path of project root directory."
   (if ffip-project-root (file-name-as-directory ffip-project-root)
     (ffip-project-root)))
-
-;;;###autoload
-(defun ffip-ivy-resume ()
-  "Wrapper of `ivy-resume'.  Resume the search saved at `ffip-ivy-last-saved'."
-  (interactive)
-  (let* ((ivy-last (if ffip-ivy-last-saved ffip-ivy-last-saved ivy-last))
-         (default-directory (ffip-get-project-root-directory)))
-    (if (fboundp 'ivy-resume)
-        (ivy-resume)
-      (message "Sorry. You need install `ivy-mode' first."))))
 
 ;;;###autoload
 (defun ffip-filename-identity (keyword)
@@ -599,40 +563,25 @@ If CHECK-ONLY is true, only do the check."
 (defun ffip-completing-read (prompt collection &optional action)
   "Read a string in minibuffer, with completion.
 
-PROMPT is a string with same format parameters in `ido-completing-read'.
+PROMPT is a string with same format parameters in `completing-read'.
 COLLECTION is a list of strings.
 
 ACTION is a lambda function to call after selecting a result.
 
 This function returns the selected candidate or nil."
-  (cond
-   ((and action (= 1 (length collection)))
-    ;; open file directly
-    (funcall action (car collection))
-    (car collection))
-   ;; If user prefer `ido-mode' or there is no ivy,
-   ;; use `ido-completing-read'.
-   ((or ffip-prefer-ido-mode (not (fboundp 'ivy-read)))
-    ;; friendly UI for ido
-    (let* ((list-of-pair (consp (car collection)))
-           (ido-collection (if list-of-pair
-                               (mapcar 'car collection)
-                             collection))
-           (ido-selected (ido-completing-read prompt ido-collection)))
-      (if (and ido-selected action)
-          (funcall action
-                   (if list-of-pair
-                       (cdar (delq nil
-                                   (mapcar (lambda (x)
-                                             (and (string= (car x)
-                                                           ido-selected)
-                                                  x))
-                                           collection)))
-                     ido-selected)))
-      ido-selected))
-   (t
-    (ivy-read prompt collection
-              :action action))))
+  (let* (selected)
+    (cond
+     ((and action (= 1 (length collection)))
+      ;; select the only candidate immediately
+      (setq selected (car collection)))
+
+     (t
+      (setq selected (completing-read prompt collection))
+      (setq selected (or (assoc selected collection) selected))))
+
+    (when selected
+      ;; make sure only the string/file is passed to action
+      (funcall action (if (consp selected) (cdr selected) selected)))))
 
 (defun ffip-create-shell-command (keyword find-directory-p)
   "Produce command to search KEYWORD.
@@ -749,7 +698,6 @@ This function is the API to find files."
        cands
        `(lambda (file)
           ;; only one item in project files
-          (if (listp file) (setq file (cdr file)))
           (if ,find-directory-p
               (if (quote ,open-another-window)
                   (dired-other-window file)
@@ -970,10 +918,7 @@ The file name is selected interactively from candidates in project."
       (ffip-completing-read
        (format "Read file in %s/: " root)
        cands
-       `(lambda (file)
-          ;; only one item in project files
-          (if (listp file) (setq file (cdr file)))
-          (insert-file file))))))
+       'insert-file))))
 
 ;;;###autoload
 (defun find-file-with-similar-name (&optional open-another-window)
@@ -1014,13 +959,12 @@ Set `ffip-find-relative-path-callback' to format the result,
       (ffip-completing-read
        (format "Find in %s/: " root)
        cands
-       `(lambda (p)
+       `(lambda (file)
           ;; only one item in project files
-          (if (listp p) (setq p (cdr p)))
           (if ,find-directory-p
-              (setq p (file-name-as-directory p)))
-          (setq p (file-relative-name p (file-name-directory buffer-file-name)))
-          (funcall ffip-find-relative-path-callback p))))
+              (setq file (file-name-as-directory file)))
+          (setq file (file-relative-name file (file-name-directory buffer-file-name)))
+          (funcall ffip-find-relative-path-callback file))))
      (t
       (message "Nothing found!")))))
 
@@ -1077,20 +1021,19 @@ This command works in any environment (Windows, etc) out of box."
     (ffip-completing-read
      (format "%s %s: " (if directory-p "directories" "files") root)
      cands
-     `(lambda (item)
+     `(lambda (file)
         (if ,directory-p
-            (switch-to-buffer (dired item))
-          (find-file item))))))
+            (switch-to-buffer (dired file))
+          (find-file file))))))
 
 ;;;###autoload
 (defalias 'ffip 'find-file-in-project)
 (defalias 'find-relative-path 'ffip-find-relative-path)
 
 (defun ffip-path (candidate)
-  "Get path from ivy CANDIDATE."
+  "Get path from CANDIDATE."
   (let* ((default-directory (ffip-project-root)))
-    (file-truename (if (consp candidate) (cdr candidate)
-                     candidate))))
+    (file-truename (if (consp candidate) (cdr candidate) candidate))))
 
 ;;;###autoload
 (defun ffip-diff-quit ()
@@ -1254,9 +1197,9 @@ If NUM is not nil, the corresponding backend is executed directly."
       (ffip-completing-read
        "Run diff backend:"
        descriptions
-       `(lambda (d)
-          (if (string-match "^\\([0-9]+\\): " d)
-              (ffip-show-diff-internal (string-to-number (match-string 1 d))))))))))
+       (lambda (file)
+         (if (string-match "^\\([0-9]+\\): " file)
+             (ffip-show-diff-internal (string-to-number (match-string 1 file))))))))))
 
 (defalias 'ffip-show-diff 'ffip-show-diff-by-description)
 
@@ -1318,8 +1261,8 @@ Or else it's replaced by relative path."
        (t
         (ffip-completing-read "Find file: "
                               cands
-                              (lambda (cand)
-                                (setq full-path (cdr cand))))))))
+                              `(lambda (file)
+                                 (setq ,full-path file)))))))
 
     (when full-path
       (if (consp full-path) (setq full-path (cdr full-path)))

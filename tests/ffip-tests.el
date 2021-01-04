@@ -24,15 +24,6 @@
 (require 'ert)
 (require 'find-file-in-project)
 
-(defvar ivy-read-called nil)
-
-(cl-defun ivy-read (prompt collection
-                           &key predicate require-match initial-input
-                           history preselect keymap update-fn sort
-                           action unwind re-builder matcher dynamic-collection caller)
-  (setq ivy-read-called t)
-  (message "`ivy-read' mockup is called"))
-
 (defun get-full-path (filename)
   (concat
    (if load-file-name (file-name-directory load-file-name) default-directory)
@@ -71,19 +62,15 @@
     (switch-to-buffer "*ffip-diff*")
     (goto-char (point-min))
     (diff-file-next)
-    (setq ivy-read-called nil)
     ;; find now
     (ffip-diff-find-file)
-    (should (not ivy-read-called)) ; only one candidate
     (should (string= (file-name-nondirectory (buffer-file-name)) "ffip-tests.el"))
 
     ;; move to the second file hunk
     (switch-to-buffer "*ffip-diff*")
     (diff-file-next)
-    (setq ivy-read-called nil)
     ;; find file in the first diff hunk now
     (ffip-diff-find-file)
-    (should (not ivy-read-called)) ; only one candidate
     (should (string= (file-name-nondirectory (buffer-file-name)) "git-diff.diff"))
     ;; cleanup
     (kill-buffer "*ffip-diff*")))
