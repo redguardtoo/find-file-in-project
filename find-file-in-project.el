@@ -581,7 +581,8 @@ This function returns the selected candidate or nil."
 
     (when selected
       ;; make sure only the string/file is passed to action
-      (funcall action (if (consp selected) (cdr selected) selected)))))
+      (let* ((default-directory (ffip-get-project-root-directory)))
+        (funcall action (if (consp selected) (cdr selected) selected))))))
 
 (defun ffip-create-shell-command (keyword find-directory-p)
   "Produce command to search KEYWORD.
@@ -676,13 +677,19 @@ IF FIND-DIRECTORY-P is t, we are searching directories, else files."
     (goto-char (point-min))
     (forward-line (1- lnum))))
 
+(defun ffip-hint ()
+  "Hint."
+  (let ((root (ffip-get-project-root-directory)))
+    (format "Find in %s/: "
+            (file-name-nondirectory (directory-file-name root)))))
+
 ;;;###autoload
 (defun ffip-find-files (keyword open-another-window &optional find-directory-p fn)
   "Use KEYWORD to find files.
 If OPEN-ANOTHER-WINDOW is t, the results are displayed in a new window.
 If FIND-DIRECTORY-P is t, only search directories.  FN is callback.
 This function is the API to find files."
-  (let* (cands lnum file root)
+  (let* (cands lnum file)
     ;; extract line num if exists
     (when (and keyword (stringp keyword)
                (string-match "^\\(.*\\):\\([0-9]+\\):?$" keyword))
@@ -692,9 +699,8 @@ This function is the API to find files."
     (setq cands (ffip-project-search keyword find-directory-p))
     (cond
      ((> (length cands) 0)
-      (setq root (file-name-nondirectory (directory-file-name (ffip-get-project-root-directory))))
       (ffip-completing-read
-       (format "Find in %s/: " root)
+       (ffip-hint)
        cands
        `(lambda (file)
           ;; only one item in project files
@@ -914,11 +920,9 @@ The file name is selected interactively from candidates in project."
   (let* ((cands (ffip-project-search (ffip-read-keyword)))
          root)
     (when (> (length cands) 0)
-      (setq root (file-name-nondirectory (directory-file-name (ffip-get-project-root-directory))))
-      (ffip-completing-read
-       (format "Read file in %s/: " root)
-       cands
-       'insert-file))))
+      (ffip-completing-read (ffip-hint)
+                            cands
+                            'insert-file))))
 
 ;;;###autoload
 (defun find-file-with-similar-name (&optional open-another-window)
@@ -951,13 +955,11 @@ Set `ffip-find-relative-path-callback' to format the result,
   (setq ffip-find-relative-path-callback 'ffip-copy-reactjs-import)
   (setq ffip-find-relative-path-callback 'ffip-copy-org-file-link)"
   (interactive "P")
-  (let* ((cands (ffip-project-search (ffip-read-keyword) find-directory-p))
-         root)
+  (let* ((cands (ffip-project-search (ffip-read-keyword) find-directory-p)))
     (cond
      ((> (length cands) 0)
-      (setq root (file-name-nondirectory (directory-file-name (ffip-get-project-root-directory))))
       (ffip-completing-read
-       (format "Find in %s/: " root)
+       (ffip-hint)
        cands
        `(lambda (file)
           ;; only one item in project files
