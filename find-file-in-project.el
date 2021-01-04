@@ -99,9 +99,6 @@
 ;;
 ;; `ffip-fix-file-path-at-point' replaces path at point with correct relative/absolute path.
 ;;
-;; `ffip-split-window-horizontally' and `ffip-split-window-vertically' find&open file
-;; in split window.
-
 ;; `ffip-show-diff' execute the backend from `ffip-diff-backends'.
 ;; The output is in Unified Diff Format and inserted into *ffip-diff* buffer.
 ;; Press "o" or "C-c C-c" or "ENTER" or `M-x ffip-diff-find-file' in the
@@ -169,24 +166,12 @@
 (defvar ffip-rust-fd-extra-opts ""
   "Rust fd extra options passed to cli.")
 
-(defvar ffip-window-ratio-alist
-  '((1 . 1.61803398875)
-    (2 . 2)
-    (3 . 3)
-    (4 . 4)
-    (5 . 0.61803398875))
-  "Dictionary to look up windows split ratio.
-Used by `ffip-split-window-horizontally' and `ffip-split-window-vertically'.")
-
 (defvar ffip-filename-history nil)
 
 (defvar ffip-strip-file-name-regex
   "\\(\\.mock\\|\\.test\\|\\.mockup\\)"
   "Strip file name to get minimum keyword with this regex.
 It's used by `find-file-with-similar-name'.")
-
-(defvar ffip-split-window-without-asking-for-keyword nil
-  "`ffip-split-window-horizontally' or `ffip-split-window-vertically' don't ask keyword.")
 
 (defvar ffip-diff-find-file-before-hook nil
   "Hook before `ffip-diff-find-file' move focus out of *ffip-diff* buffer.")
@@ -1106,45 +1091,6 @@ This command works in any environment (Windows, etc) out of box."
   (let* ((default-directory (ffip-project-root)))
     (file-truename (if (consp candidate) (cdr candidate)
                      candidate))))
-
-(defun ffip-split-window-api (split-fn mv-fn ratio)
-  "Use SPLIT-FN to split window and focus on new window by MV-FN.
-Window split in RATIO."
-  (let* (ratio-val
-         (keyword (if ffip-split-window-without-asking-for-keyword ""
-                    (ffip-read-keyword)))
-         (cands (ffip-project-search keyword))
-         (file (if (= 1 (length cands)) (ffip-path (car cands))
-                 (ffip-path (ffip-completing-read "Find file: " cands))))
-         (buf (if (and file (file-exists-p file)) (find-file-noselect file)
-                (other-buffer))))
-    (cond
-     (ratio
-      (setq ratio-val (cdr (assoc ratio ffip-window-ratio-alist)))
-      (funcall split-fn (floor (/ (window-body-width)
-                                  (1+ ratio-val)))))
-     (t
-      (funcall split-fn)))
-    (set-window-buffer (next-window) buf)
-    (if (or (not ratio-val)
-            (>= ratio-val 1))
-        (funcall mv-fn))))
-
-;;;###autoload
-(defun ffip-split-window-horizontally (&optional ratio)
-  "Find&Open file in horizontal split window.
-New window size is looked up in `ffip-window-ratio-alist' by RATIO.
-Keyword to search new file is selected text or user input."
-  (interactive "P")
-  (ffip-split-window-api 'split-window-horizontally 'windmove-right ratio))
-
-;;;###autoload
-(defun ffip-split-window-vertically (&optional ratio)
-  "Find&Open file in vertical split window.
-New window size is looked up in `ffip-window-ratio-alist' by RATIO.
-Keyword to search new file is selected text or user input."
-  (interactive "P")
-  (ffip-split-window-api 'split-window-vertically 'windmove-down ratio))
 
 ;;;###autoload
 (defun ffip-diff-quit ()
