@@ -32,12 +32,22 @@
 ;;; Commentary:
 
 ;; This program provides methods to find file in project.
+;;
+;; Features,
 ;; - Only dependency is BSD/GNU find
 ;; - Works on Windows with minimum setup
 ;; - Works on Tramp Mode (https://www.emacswiki.org/emacs/TrampMode)
 ;; - fd (faster alternative of find, see https://github.com/sharkdp/fd) is supported
 ;; - Uses native API `completing-read' and supports ido/helm/ivy/consult/selectrum out of box.
-;;   You can insert "(ivy-mode 1)" into "~/.emacs" enable ivy completion.
+;;
+;;   Ido setup,
+;;     (ido-mode 1)
+;;
+;;   Helm setup,
+;;     (helm-mode 1)
+;;
+;;   Ivy setup,
+;;     (ivy-mode 1)
 ;;
 ;; Usage,
 ;;   - You can insert "(setq ffip-use-rust-fd t)" into ".emacs" to use fd (alternative of find)

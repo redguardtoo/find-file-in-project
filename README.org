@@ -15,7 +15,7 @@ Diff/patch files. Target files could be under any Version Control Software (VCS)
 - Works on Windows64/Linux/macOS with minimum setup. Only dependency is =BSD/GNU Find=
 - Fast. Tested with 50,000+ files
 - Works flawlessly with [[https://www.emacswiki.org/emacs/TrampMode][Tramp Mode]]
-- Uses native API =completing-read= and supports [[https://www.gnu.org/software/emacs/manual/html_mono/ido.html][ido]]/[[https://github.com/emacs-helm/helm][helm]]/[[https://github.com/abo-abo/swiper][ivy]]/[[https://github.com/minad/consult][consult/]]/[[https://github.com/raxod502/selectrum][selectrum]] out of box.  You can insert =(ivy-mode 1)= into =~/.emacs= to enable ivy completion.
+- Uses native API =completing-read= and supports [[https://www.gnu.org/software/emacs/manual/html_mono/ido.html][ido]]/[[https://github.com/emacs-helm/helm][helm]]/[[https://github.com/abo-abo/swiper][ivy]]/[[https://github.com/minad/consult][consult/]]/[[https://github.com/raxod502/selectrum][selectrum]] out of box
 
 *Screenshot:*
 
@@ -35,6 +35,22 @@ Since =v6.0.0=, =Emacs 25.1= is required.
 Users of Debian ≥10 and derivatives can install this program with the following command:
 =sudo apt install elpa-find-file-in-project=
 * Setup
+Since v6.0.0, ffip gives you freedom to choose your favorite completion frameworks if it uses api =completing-read=.
+
+Ido setup,
+#+begin_src elisp
+(ido-mode 1)
+#+end_src
+
+Helm setup,
+#+begin_src elisp
+(helm-mode 1)
+#+end_src
+
+Ivy setup,
+#+begin_src elisp
+(ivy-mode 1)
+#+end_src
 ** Windows
 Windows setup is as easy as *installing [[http://cygwin.com][Cygwin]] or [[https://msys2.github.io/][MYSYS2]] at default directory of any driver*. =GNU Find= executable is detected automatically.
 
