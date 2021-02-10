@@ -757,7 +757,7 @@ This function is the API to find files."
 You can move .dir-locals.el to root directory.
 See (info \"(Emacs) Directory Variables\") for details."
   (interactive)
-  (let* ((root (read-directory-name "Project root directory?" default-directory))
+  (let* ((root (read-directory-name "Project root directory: " default-directory))
          (file (if (and root (file-exists-p root))
                    (concat (file-name-as-directory root) ".dir-locals.el"))))
     (when file
