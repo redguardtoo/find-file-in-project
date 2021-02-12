@@ -208,7 +208,7 @@ The file path is passed to the hook as the first argument.")
 (defun ffip-git-diff-current-file ()
   "Run 'git diff version:current-file current-file'."
   (let* ((default-directory (locate-dominating-file default-directory ".git"))
-         (line (completing-read "diff current file:" (ffip-diff-git-versions))))
+         (line (completing-read "diff current file: " (ffip-diff-git-versions))))
     (ffip-shell-command-to-string (format "git --no-pager diff %s:%s %s"
                                      (replace-regexp-in-string "^ *\\*? *" "" (car (split-string line "|" t)))
                                      (file-relative-name buffer-file-name default-directory)
@@ -217,7 +217,7 @@ The file path is passed to the hook as the first argument.")
 (defun ffip-git-diff-project()
   "Run 'git diff version' in project."
   (let* ((default-directory (locate-dominating-file default-directory ".git"))
-         (line (completing-read "diff current file:" (ffip-diff-git-versions)))
+         (line (completing-read "diff current file: " (ffip-diff-git-versions)))
          (version (replace-regexp-in-string "^ *\\*? *" "" (car (split-string line "|" t)))))
     (ffip-shell-command-to-string (format "git --no-pager diff %s" version))))
 
@@ -232,7 +232,7 @@ The file path is passed to the hook as the first argument.")
     ("`git log -p` current file" . (ffip-shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git --no-pager log --date=short -p '%s'"
                                                      (buffer-file-name))))
     ("`git log -S keyword -p` in project" . (ffip-shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git --no-pager log --date=short -S'%s' -p"
-                                                              (read-string "Git search string:"))))
+                                                              (read-string "Git search string: "))))
     ("Diff from `kill-ring'" . (car kill-ring)))
   "The list of back-ends.
 If back-end is string, it's run in `shell-command-to-string'.
@@ -822,7 +822,7 @@ You can override this by setting the variable `ffip-project-root'."
   (or (and (region-active-p) (ffip--read-selected))
       (thing-at-point 'filename)
       (thing-at-point 'symbol)
-      (read-string "No file name at point. Please provide one:")))
+      (read-string "No file name at point. Please provide one: ")))
 
 (defun ffip--guess-physical-path (file)
   "Return physical full path of FILE which does exist."
@@ -1208,7 +1208,7 @@ If NUM is not nil, the corresponding backend is executed directly."
                              (ffip-backend-description b)) t)
         (setq i (+ 1 i)))
       (ffip-completing-read
-       "Run diff backend:"
+       "Run diff backend: "
        descriptions
        (lambda (file)
          (if (string-match "^\\([0-9]+\\): " file)

@@ -134,8 +134,8 @@ Other key bindings defined in =*ffip-diff*= buffer,
 Insert below code into =.emacs= if you use =evil-mode=,
 #+begin_src elisp
 (defun ffip-diff-mode-hook-setup ()
-    (evil-local-set-key 'normal "p" 'diff-hunk-prev)
-    (evil-local-set-key 'normal "n" 'diff-hunk-next)
+    (evil-local-set-key 'normal "K" 'diff-hunk-prev)
+    (evil-local-set-key 'normal "J" 'diff-hunk-next)
     (evil-local-set-key 'normal "P" 'diff-file-prev)
     (evil-local-set-key 'normal "N" 'diff-file-next)
     (evil-local-set-key 'normal (kbd "RET") 'ffip-diff-find-file)
