@@ -582,7 +582,7 @@ ACTION is a lambda function to call after selecting a result.
 This function returns the selected candidate or nil."
   (let* (selected)
     (cond
-     ((and action (= 1 (length collection)))
+     ((= 1 (length collection))
       ;; select the only candidate immediately
       (setq selected (car collection)))
 
@@ -592,8 +592,9 @@ This function returns the selected candidate or nil."
 
     (when selected
       ;; make sure only the string/file is passed to action
-      (let* ((default-directory (ffip-get-project-root-directory)))
-        (funcall action (if (consp selected) (cdr selected) selected))))))
+      (let* ((default-directory (ffip-get-project-root-directory))
+             (result (if (consp selected) (cdr selected) selected)))
+        (if action (funcall action result) result)))))
 
 (defun ffip-create-shell-command (keyword find-directory-p)
   "Produce command to search KEYWORD.

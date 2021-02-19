@@ -107,6 +107,13 @@
       (should (string= (ffip--guess-physical-path fn) (file-truename "./test2.js"))))
     ))
 
+(ert-deftest ffip-test-completing-read ()
+  (should (eq (ffip-completing-read "hint:" '(a)) 'a))
+  (should (eq (ffip-completing-read "hint:" '((a . b))) 'b))
+  (ffip-completing-read "hint:"
+                        '("a")
+                        (lambda (selected) (should (string= selected "a")))))
+
 (ert-deftest ffip-test-windows ()
   (if (eq system-type 'windows-nt)
       (should (executable-find (ffip--guess-gnu-find)))
