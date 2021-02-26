@@ -158,20 +158,39 @@
 (require 'windmove)
 (require 'subr-x)
 
-(defvar ffip-use-rust-fd nil "Use rust fd instead of find.")
+(defgroup ffip nil
+  "Find File in Project."
+  :group 'convenience)
 
-(defvar ffip-rust-fd-respect-ignore-files t
-  "Don 't show search results from '.*ignore' files.")
+(defcustom ffip-use-rust-fd nil
+  "Use rust fd instead of find."
+  :link '(url-link :tag "fd @ GitHub"
+                   "https://github.com/sharkdp/fd")
+  :group 'ffip
+  :type 'boolean
+  :safe #'booleanp)
 
-(defvar ffip-rust-fd-extra-opts ""
-  "Rust fd extra options passed to cli.")
+
+(defcustom ffip-rust-fd-respect-ignore-files t
+  "Don't show search results from '.*ignore' files."
+  :group 'ffip
+  :type 'boolean
+  :safe #'booleanp)
+
+
+(defcustom ffip-rust-fd-extra-opts ""
+  "Rust fd extra options passed to cli."
+  :group 'ffip
+  :type 'string)
 
 (defvar ffip-filename-history nil)
 
-(defvar ffip-strip-file-name-regex
+(defcustom ffip-strip-file-name-regex
   "\\(\\.mock\\|\\.test\\|\\.mockup\\)"
   "Strip file name to get minimum keyword with this regex.
-It's used by `find-file-with-similar-name'.")
+It's used by `find-file-with-similar-name'."
+  :group 'ffip
+  :type 'regexp)
 
 (defvar ffip-diff-find-file-before-hook nil
   "Hook before `ffip-diff-find-file' move focus out of *ffip-diff* buffer.")
@@ -240,14 +259,21 @@ If it's a function or expression, it'll be executed and return a string.
 
 The output is inserted into *ffip-diff* buffer.")
 
-(defvar ffip-find-executable nil "Path of GNU find.  If nil we will guess.")
+(defcustom ffip-find-executable nil
+  "Path of GNU find.  If nil we will guess."
+  :group 'ffip
+  :type 'string)
 
-(defvar ffip-project-file '(".svn" ".hg" ".git")
+(defcustom ffip-project-file '(".svn" ".hg" ".git")
   "The file/directory used to locate project root.
-May be set using .dir-locals.el.  Checks each entry if set to a list.")
+May be set using .dir-locals.el.  Checks each entry if set to a list."
+  :group 'ffip
+  :type '(repeat string))
 
-(defvar ffip-patterns nil
-  "List of glob patterns to look for with `find-file-in-project'.")
+(defcustom ffip-patterns nil
+  "List of glob patterns to look for with `find-file-in-project'."
+  :group 'ffip
+  :type '(repeat string))
 
 (defvar ffip-match-path-instead-of-filename nil
   "Match full path instead of file name.")
@@ -256,8 +282,8 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
 ;;
 ;; But for "rust fd", only "test/*" matches "./test/" and "./dir/test/";
 ;; "*/test/*" won't match "./test/" but matches "./dir/test/"
-;; Maybe it's bug of fd.
-(defvar ffip-prune-patterns
+;; Maybe it's a fd bug.
+(defcustom ffip-prune-patterns
   '(;; VCS
     "*/.git"
     "*/.svn"
@@ -274,9 +300,11 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
     "*/bower_components"
     "*/.gradle"
     "*/.cask")
-  "Ignored directories(prune patterns).")
+  "Ignored directories(prune patterns)."
+  :group 'ffip
+  :type '(repeat string))
 
-(defvar ffip-ignore-filenames
+(defcustom ffip-ignore-filenames
   '(;; VCS
     ;; project misc
     "*.log"
@@ -340,25 +368,35 @@ May be set using .dir-locals.el.  Checks each entry if set to a list.")
     "*.elc"
     ;; Python
     "*.pyc")
-  "Ignore file names.  Wildcast is supported.")
+  "Ignored file names.  Wildcast is supported."
+  :group 'ffip
+  :type '(repeat string))
 
-(defvar ffip-find-options ""
+(defcustom ffip-find-options ""
   "Extra options to pass to `find' when using `find-file-in-project'.
 
-Use this to exclude portions of your project: \"-not -regex \\\".*svn.*\\\"\".")
+Use this to exclude portions of your project: \"-not -regex \\\".*svn.*\\\"\"."
+  :group 'ffip
+  :type 'string)
 
-(defvar ffip-find-pre-path-options ""
+(defcustom ffip-find-pre-path-options ""
   "Options for find program.
 
 GNU Find requires '-H', '-L', '-P', '-D' and `-O' appear before first path '.'.
-For example, use '-L' to follow symbolic links.")
+For example, use '-L' to follow symbolic links."
+  :group 'ffip
+  :type 'string)
 
-(defvar ffip-project-root nil
-  "If non-nil, overrides the project root directory location.")
+(defcustom ffip-project-root nil
+  "If non-nil, overrides the project root directory location."
+  :group 'ffip
+  :type 'string)
 
-(defvar ffip-project-root-function nil
+(defcustom ffip-project-root-function nil
   "If non-nil, this function is called to determine the project root.
-This overrides variable `ffip-project-root' when set.")
+This overrides variable `ffip-project-root' when set."
+  :group 'ffip
+  :type 'function)
 
 (defvar ffip-debug nil "Print debug information.")
 
@@ -383,8 +421,10 @@ This overrides variable `ffip-project-root' when set.")
   (message "%s => kill-ring" p))
 
 ;;;###autoload
-(defvar ffip-find-relative-path-callback 'ffip-copy-without-change
-  "The callback after calling `find-relative-path'.")
+(defcustom ffip-find-relative-path-callback 'ffip-copy-without-change
+  "The callback after calling `find-relative-path'."
+  :group 'ffip
+  :type 'function)
 
 (defun ffip--some (predicate seq)
   "Return if PREDICATE is t for any element of SEQ."
