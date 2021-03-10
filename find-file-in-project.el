@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.0.1
+;; Version: 6.0.2
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -1296,33 +1296,32 @@ If REVERSE is t, applied patch is reverted."
 If ABSOLUTE-PATH-P is t, old path is replaced by correct absolute path.
 Or else it's replaced by relative path."
   (interactive "P")
-  (let* ((fn (thing-at-point 'filename))
+  (let* ((filename (ffip-guess-file-name-at-point))
          full-path
          cands)
     (cond
-     ((not fn)
+     ((not filename)
       (message "There is no file path at point."))
 
      ;; path at point is a path of physical file
-     ((setq full-path (ffip--guess-physical-path fn))
+     ((setq full-path (ffip--guess-physical-path filename))
       nil)
 
      ;; find a file
-     ((setq cands (ffip-project-search (replace-regexp-in-string ffip-relative-path-pattern "" fn)))
+     ((setq cands (ffip-project-search (replace-regexp-in-string ffip-relative-path-pattern "" filename)))
       (cond
        ((eq (length cands) 1)
         (setq full-path (nth 0 cands)))
        (t
-        (ffip-completing-read "Find file: "
-                              cands
-                              `(lambda (file)
-                                 (setq ,full-path file)))))))
+        (setq full-path (completing-read "Find file: " cands))))))
 
     (when full-path
       (if (consp full-path) (setq full-path (cdr full-path)))
       (let* ((bounds (bounds-of-thing-at-point 'filename))
              (path (if absolute-path-p full-path
-                     (file-relative-name full-path))))
+                     (file-relative-name full-path
+                                         ;; compare with current file's directory if possible
+                                         (and buffer-file-name (file-name-directory buffer-file-name))))))
         (goto-char (car bounds))
         (delete-region (car bounds) (cdr bounds))
         (insert (replace-regexp-in-string "/index\\.[jt]s" "" path))))))
