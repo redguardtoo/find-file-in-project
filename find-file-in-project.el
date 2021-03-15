@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.0.2
+;; Version: 6.0.3
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -1317,6 +1317,11 @@ Or else it's replaced by relative path."
 
     (when full-path
       (if (consp full-path) (setq full-path (cdr full-path)))
+
+      ;; convert to actual full path
+      (let* ((default-directory (ffip-get-project-root-directory)))
+        (setq full-path (file-truename full-path)))
+
       (let* ((bounds (bounds-of-thing-at-point 'filename))
              (path (if absolute-path-p full-path
                      (file-relative-name full-path
