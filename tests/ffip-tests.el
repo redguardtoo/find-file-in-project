@@ -21,10 +21,14 @@
 ;; Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 ;;; Commentary:
+
+;;; Code:
+
 (require 'ert)
 (require 'find-file-in-project)
 
 (defun get-full-path (filename)
+  "Get full path of FILENAME in current directory."
   (concat
    (if load-file-name (file-name-directory load-file-name) default-directory)
    filename))
@@ -119,5 +123,17 @@
       (should (executable-find (ffip--guess-gnu-find)))
     (message "NOT windows native Emacs, nothing to test.")
     (should t)))
+
+(ert-deftest ffip-test-relative-path-commands ()
+  (with-temp-buffer
+    (let* (orig-pos)
+      (insert (get-full-path "git-diff.diff"))
+      (goto-char 5)
+      (should (file-exists-p (buffer-string)))
+      ;; absolute path
+      (should (not (string= "tests/git-diff.diff" (buffer-string))))
+      (ffip-fix-file-path-at-point)
+      ;; relative path
+      (should (string= "tests/git-diff.diff" (buffer-string))))))
 
 (ert-run-tests-batch-and-exit)
