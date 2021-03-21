@@ -1017,8 +1017,11 @@ Set `ffip-find-relative-path-callback' to format the result,
           ;; only one item in project files
           (if ,find-directory-p
               (setq file (file-name-as-directory file)))
-          (setq file (file-relative-name file (file-name-directory buffer-file-name)))
-          (funcall ffip-find-relative-path-callback file))))
+              (setq file (file-relative-name file
+                                             (if buffer-file-name
+                                                 (file-name-directory buffer-file-name)
+                                               (expand-file-name default-directory))))
+              (funcall ffip-find-relative-path-callback file))))
      (t
       (message "Nothing found!")))))
 
