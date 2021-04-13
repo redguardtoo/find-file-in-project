@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.0.3
+;; Version: 6.0.4
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -525,21 +525,23 @@ If CHECK-ONLY is true, only do the check."
 (defun ffip--win-executable-find (exe)
   "Find EXE on windows."
   (let* ((drivers '("c" "d" "e" "g" "h" "i" "j" "k"))
-          (i 0)
-          j
-          (dirs '(":\\\\cygwin64\\\\bin\\\\"
+         (i 0)
+         j
+         (dirs '(":\\\\cygwin64\\\\bin\\\\"
                  ":\\\\msys64\\\\usr\\\\bin\\\\"))
-          rlt)
-     (while (and (not rlt)
-                 (< i (length dirs)))
-       (setq j 0)
-       (while (and (not rlt)
-                   (< j (length drivers)))
-         (setq rlt (executable-find (concat (nth j drivers) (nth i dirs) exe)))))
-     (unless rlt
-       ;; nothing found, fall back to exe
-       (setq rlt exe))
-     rlt))
+         rlt)
+    (while (and (not rlt)
+                (< i (length dirs)))
+      (setq j 0)
+      (while (and (not rlt)
+                  (< j (length drivers)))
+        (setq rlt (executable-find (concat (nth j drivers) (nth i dirs) exe)))
+        (setq j (1+ j)))
+      (setq i (1+ i)))
+    (unless rlt
+      ;; nothing found, fall back to exe
+      (setq rlt exe))
+    rlt))
 
 (defun ffip--executable-find ()
   "Find EXE on all environments."
