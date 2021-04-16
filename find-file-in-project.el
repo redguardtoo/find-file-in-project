@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.0.4
+;; Version: 6.0.5
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -38,16 +38,16 @@
 ;; - Works on Windows with minimum setup
 ;; - Works on Tramp Mode (https://www.emacswiki.org/emacs/TrampMode)
 ;; - fd (faster alternative of find, see https://github.com/sharkdp/fd) is supported
-;; - Uses native API `completing-read' and supports ido/helm/ivy/consult/selectrum out of box.
-;;
-;;   Ido setup,
-;;     (ido-mode 1)
+;; - Uses native API `completing-read' and supports helm/ivy/consult/selectrum out of box.
 ;;
 ;;   Helm setup,
 ;;     (helm-mode 1)
 ;;
 ;;   Ivy setup,
 ;;     (ivy-mode 1)
+;;
+;;   Ido setup,
+;;     (setq ffip-prefer-ido-mode t)
 ;;
 ;; Usage,
 ;;   - You can insert "(setq ffip-use-rust-fd t)" into ".emacs" to use fd (alternative of find)
@@ -157,6 +157,7 @@
 (require 'diff-mode)
 (require 'windmove)
 (require 'subr-x)
+(require 'ido)
 
 (defgroup ffip nil
   "Find File in Project."
@@ -627,6 +628,14 @@ This function returns the selected candidate or nil."
      ((= 1 (length collection))
       ;; select the only candidate immediately
       (setq selected (car collection)))
+
+     (ffip-prefer-ido-mode
+      ;; friendly UI for ido
+      (let* ((ido-collection (mapcar 'car collection))
+             (ido-selected (ido-completing-read prompt ido-collection)))
+        (when (and ido-selected action)
+            (funcall action ido-selected))
+        ido-selected))
 
      (t
       (setq selected (completing-read prompt collection))

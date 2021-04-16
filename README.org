@@ -15,7 +15,7 @@ Diff/patch files. Target files could be under any Version Control Software (VCS)
 - Works on Windows64/Linux/macOS with minimum setup. Only dependency is =BSD/GNU Find=
 - Fast. Tested with 50,000+ files
 - Works flawlessly with [[https://www.emacswiki.org/emacs/TrampMode][Tramp Mode]]
-- Uses native API =completing-read= and supports [[https://www.gnu.org/software/emacs/manual/html_mono/ido.html][ido]]/[[https://github.com/emacs-helm/helm][helm]]/[[https://github.com/abo-abo/swiper][ivy]]/[[https://github.com/minad/consult][consult/]]/[[https://github.com/raxod502/selectrum][selectrum]] out of box
+- Uses native API =completing-read= and supports [[https://www.gnu.org/software/emacs/manual/html_mono/ido.html][ido]]/[[https://github.com/emacs-helm/helm][helm]]/[[https://github.com/abo-abo/swiper][ivy]]/[[https://github.com/minad/consult][consult]]/[[https://github.com/raxod502/selectrum][selectrum]] out of box
 
 *Screenshot:*
 
@@ -39,7 +39,7 @@ Since v6, ffip gives you freedom to choose your favorite completion frameworks i
 
 Ido setup,
 #+begin_src elisp
-(ido-mode 1)
+(setq ffip-prefer-ido-mode t)
 #+end_src
 
 Helm setup,
