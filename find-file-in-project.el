@@ -629,7 +629,7 @@ This function returns the selected candidate or nil."
       ;; select the only candidate immediately
       (setq selected (car collection)))
 
-     (ffip-prefer-ido-mode
+     ((bound-and-true-p ffip-prefer-ido-mode)
       ;; friendly UI for ido
       (let* ((ido-collection (mapcar 'car collection))
              (ido-selected (ido-completing-read prompt ido-collection)))
