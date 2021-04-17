@@ -118,6 +118,10 @@
                         '("a")
                         (lambda (selected) (should (string= selected "a")))))
 
+(ert-deftest ffip-test-ido ()
+  (should (boundp 'ffip-prefer-ido-mode))
+  (should (not ffip-prefer-ido-mode)))
+
 (ert-deftest ffip-test-windows ()
   (if (eq system-type 'windows-nt)
       (should (executable-find (ffip--guess-gnu-find)))
