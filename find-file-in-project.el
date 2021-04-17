@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.0.5
+;; Version: 6.0.6
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -178,6 +178,11 @@
   :type 'boolean
   :safe #'booleanp)
 
+(defcustom ffip-prefer-ido-mode nil
+  "Prefer `ido-completing-read' to filter file candidates."
+  :group 'ffip
+  :type 'boolean
+  :safe #'booleanp)
 
 (defcustom ffip-rust-fd-extra-opts ""
   "Rust fd extra options passed to cli."
