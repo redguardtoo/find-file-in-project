@@ -35,7 +35,9 @@ Since =v6=, =Emacs 25.1= is required.
 Users of Debian ≥10 and derivatives can install this program with the following command:
 =sudo apt install elpa-find-file-in-project=
 * Setup
-Since v6, ffip gives you freedom to choose your favorite completion frameworks if it uses api =completing-read=.
+Since v6, ffip gives you freedom to choose your favorite completion framework. 
+
+It only uses builtin api =completing-read=.
 
 Ido setup,
 #+begin_src elisp
