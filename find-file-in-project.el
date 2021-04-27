@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.0.6
+;; Version: 6.0.7
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/technomancy/find-file-in-project
@@ -635,12 +635,8 @@ This function returns the selected candidate or nil."
       (setq selected (car collection)))
 
      (ffip-prefer-ido-mode
-      ;; friendly UI for ido
-      (let* ((ido-collection (mapcar 'car collection))
-             (ido-selected (ido-completing-read prompt ido-collection)))
-        (when (and ido-selected action)
-            (funcall action ido-selected))
-        ido-selected))
+      ;; ido can only handle list of strings
+      (setq selected (ido-completing-read prompt (mapcar 'car collection))))
 
      (t
       (setq selected (completing-read prompt collection))
