@@ -258,6 +258,6 @@ Use =counsel-git= to find file and =counsel-git-grep= to grep.
 * Bug Report
 Check [[https://github.com/technomancy/find-file-in-project]].
 * License
-This program is free software: you can redistribute it and/or modify it under the terms of the [[https://raw.githubusercontent.com/technomancy/find-file-in-project/master/LICENSE][GNU General Public License]] as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under the terms of the [[file:LICENSE][GNU General Public License]] as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [[https://raw.githubusercontent.com/technomancy/find-file-in-project/master/LICENSE][GNU General Public License]] for more details.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [[file:LICENSE][GNU General Public License]] for more details.
