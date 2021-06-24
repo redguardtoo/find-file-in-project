@@ -1,6 +1,6 @@
 * find-file-in-project
 
-[[https://travis-ci.org/redguardtoo/find-file-in-project][https://travis-ci.org/redguardtoo/find-file-in-project.svg?branch=master]]
+[[https://github.com/redguardtoo/find-file-in-project/actions/workflows/test.yml][https://github.com/redguardtoo/find-file-in-project/actions/workflows/test.yml/badge.svg]]
 [[http://melpa.org/#/find-file-in-project][file:http://melpa.org/packages/find-file-in-project-badge.svg]] [[http://stable.melpa.org/#/find-file-in-project][file:http://stable.melpa.org/packages/find-file-in-project-badge.svg]]
 
 Find file/directory and review Diff/Patch/Commit quickly everywhere.
