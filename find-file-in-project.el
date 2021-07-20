@@ -1170,6 +1170,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
     map)
   "Mode map based on `diff-mode-map'.")
 
+;;;###autoload
 (define-derived-mode ffip-diff-mode diff-mode "ffip"
   "Show diff/patch."
   (setq buffer-read-only t)
