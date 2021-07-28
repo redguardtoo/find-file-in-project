@@ -1093,6 +1093,7 @@ This command works in any environment (Windows, etc) out of box."
 
 ;;;###autoload
 (defalias 'ffip 'find-file-in-project)
+;;;###autoload
 (defalias 'find-relative-path 'ffip-find-relative-path)
 
 (defun ffip-path (candidate)
@@ -1267,6 +1268,7 @@ If NUM is not nil, the corresponding backend is executed directly."
          (if (string-match "^\\([0-9]+\\): " file)
              (ffip-show-diff-internal (string-to-number (match-string 1 file))))))))))
 
+;;;###autoload
 (defalias 'ffip-show-diff 'ffip-show-diff-by-description)
 
 (defadvice read-file-name (around ffip-read-file-name-hack activate)
