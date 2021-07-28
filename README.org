@@ -156,6 +156,8 @@ You can customize the =ffip-diff-backends=,
         "cd $(hg root) && hg diff"
         "svn diff"))
 #+end_src
+
+Please note some backends assume that the git cli program is added into environment variable PATH.
 ** =find-relative-path=
 Find file/directory and copy its relative path into `kill-ring'.
 

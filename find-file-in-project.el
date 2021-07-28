@@ -114,7 +114,8 @@
 ;; `ffip-show-diff' execute the backend from `ffip-diff-backends'.
 ;; The output is in Unified Diff Format and inserted into *ffip-diff* buffer.
 ;; Press "o" or "C-c C-c" or "ENTER" or `M-x ffip-diff-find-file' in the
-;; buffer to open corresponding file.
+;; buffer to open corresponding file.  Please note some backends assume that the git cli program
+;; is added into environment variable PATH.
 ;;
 ;; `ffip-diff-find-file-before-hook' is called before `ffip-diff-find-file'.
 ;;
@@ -198,11 +199,6 @@ It's used by `find-file-with-similar-name'."
   :group 'ffip
   :type 'regexp)
 
-(defcustom ffip-git-command "git"
-  "The command to use to run diff."
-  :group 'ffip
-  :type 'string)
-
 (defvar ffip-diff-find-file-before-hook nil
   "Hook before `ffip-diff-find-file' move focus out of *ffip-diff* buffer.")
 
@@ -222,10 +218,8 @@ The file path is passed to the hook as the first argument.")
 
 (defun ffip-diff-git-versions ()
   "List all versions of code under Git."
-  (let* ((cmd1 (format "%s branch --no-color --all" ffip-git-command))
-         (cmd2 (format "%s --no-pager log --date=short --pretty=format:'%h|%ad|%s|%an' \"%s\""
-                      ffip-git-command
-                      buffer-file-name)))
+  (let* ((cmd1 "git branch --no-color --all")
+         (cmd2 (concat "git --no-pager log --date=short --pretty=format:'%h|%ad|%s|%an'" buffer-file-name)))
     (nconc (ffip-nonempty-lines (shell-command-to-string cmd1))
            (ffip-nonempty-lines (shell-command-to-string cmd2)))))
 
@@ -234,8 +228,7 @@ The file path is passed to the hook as the first argument.")
   "Run 'git diff version:current-file current-file'."
   (let* ((default-directory (locate-dominating-file default-directory ".git"))
          (line (completing-read "diff current file: " (ffip-diff-git-versions))))
-    (shell-command-to-string (format "%s --no-pager diff %s:%s %s"
-                                     ffip-git-command
+    (shell-command-to-string (format "git --no-pager diff %s:%s %s"
                                      (replace-regexp-in-string "^ *\\*? *" "" (car (split-string line "|" t)))
                                      (file-relative-name buffer-file-name default-directory)
                                      buffer-file-name))))
@@ -247,9 +240,7 @@ The file path is passed to the hook as the first argument.")
          (version (replace-regexp-in-string "^ *\\*? *"
                                             ""
                                             (car (split-string line "|" t)))))
-    (shell-command-to-string (format "%s --no-pager diff %s"
-                                     ffip-git-command
-                                     version))))
+    (shell-command-to-string (format "git --no-pager diff %s" version))))
 
 (defvar ffip-diff-backends
   '(ffip-git-diff-current-file
