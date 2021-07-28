@@ -6,7 +6,7 @@
 ;; Version: 6.0.7
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
-;; URL: https://github.com/technomancy/find-file-in-project
+;; URL: https://github.com/redguardtoo/find-file-in-project
 ;; Package-Requires: ((emacs "25.1"))
 ;; Created: 2008-03-18
 ;; Keywords: project, convenience
@@ -149,7 +149,7 @@
 ;;
 ;; This program works on Windows/Cygwin/Linux/macOS
 ;;
-;; See https://github.com/technomancy/find-file-in-project for advanced tips.
+;; See https://github.com/redguardtoo/find-file-in-project for advanced tips.
 
 ;;; Code:
 
@@ -198,6 +198,11 @@ It's used by `find-file-with-similar-name'."
   :group 'ffip
   :type 'regexp)
 
+(defcustom ffip-git-command "git"
+  "The command to use to run diff."
+  :group 'ffip
+  :type 'string)
+
 (defvar ffip-diff-find-file-before-hook nil
   "Hook before `ffip-diff-find-file' move focus out of *ffip-diff* buffer.")
 
@@ -211,30 +216,26 @@ The file path is passed to the hook as the first argument.")
 (defvar ffip-relative-path-pattern "^\\(\\.\\.*/\\)+"
   "Pattern of relative path.")
 
-(defun ffip-shell-command-to-string (command)
-  "Execute shell COMMAND and return its output as a string."
-  (with-output-to-string
-    (with-current-buffer
-        standard-output
-      (shell-command command t))))
-
 (defun ffip-nonempty-lines (str)
   "Return non empty lines from STR."
   (split-string str "[\r\n]+" t))
 
 (defun ffip-diff-git-versions ()
   "List all versions of code under Git."
-  (let* ((git-cmd (concat "git --no-pager log --date=short --pretty=format:'%h|%ad|%s|%an' "
-                          buffer-file-name)))
-    (nconc (ffip-nonempty-lines (shell-command-to-string "git branch --no-color --all"))
-           (ffip-nonempty-lines (shell-command-to-string git-cmd)))))
+  (let* ((cmd1 (format "%s branch --no-color --all" ffip-git-command))
+         (cmd2 (format "%s --no-pager log --date=short --pretty=format:'%h|%ad|%s|%an' \"%s\""
+                      ffip-git-command
+                      buffer-file-name)))
+    (nconc (ffip-nonempty-lines (shell-command-to-string cmd1))
+           (ffip-nonempty-lines (shell-command-to-string cmd2)))))
 
 ;;;###autoload
 (defun ffip-git-diff-current-file ()
   "Run 'git diff version:current-file current-file'."
   (let* ((default-directory (locate-dominating-file default-directory ".git"))
          (line (completing-read "diff current file: " (ffip-diff-git-versions))))
-    (ffip-shell-command-to-string (format "git --no-pager diff %s:%s %s"
+    (shell-command-to-string (format "%s --no-pager diff %s:%s %s"
+                                     ffip-git-command
                                      (replace-regexp-in-string "^ *\\*? *" "" (car (split-string line "|" t)))
                                      (file-relative-name buffer-file-name default-directory)
                                      buffer-file-name))))
@@ -243,8 +244,12 @@ The file path is passed to the hook as the first argument.")
   "Run 'git diff version' in project."
   (let* ((default-directory (locate-dominating-file default-directory ".git"))
          (line (completing-read "diff current file: " (ffip-diff-git-versions)))
-         (version (replace-regexp-in-string "^ *\\*? *" "" (car (split-string line "|" t)))))
-    (ffip-shell-command-to-string (format "git --no-pager diff %s" version))))
+         (version (replace-regexp-in-string "^ *\\*? *"
+                                            ""
+                                            (car (split-string line "|" t)))))
+    (shell-command-to-string (format "%s --no-pager diff %s"
+                                     ffip-git-command
+                                     version))))
 
 (defvar ffip-diff-backends
   '(ffip-git-diff-current-file
@@ -252,11 +257,11 @@ The file path is passed to the hook as the first argument.")
     ("`git diff HEAD^` in project" . "cd $(git rev-parse --show-toplevel) && git diff HEAD^")
     ("`git diff --cached` in project" . "cd $(git rev-parse --show-toplevel) && git diff --cached")
     ("`git diff` in project" . "cd $(git rev-parse --show-toplevel) && git diff")
-    ("`git diff` current file" . (ffip-shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git diff '%s'"
+    ("`git diff` current file" . (shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git diff '%s'"
                                                                     (buffer-file-name))))
-    ("`git log -p` current file" . (ffip-shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git --no-pager log --date=short -p '%s'"
+    ("`git log -p` current file" . (shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git --no-pager log --date=short -p '%s'"
                                                      (buffer-file-name))))
-    ("`git log -S keyword -p` in project" . (ffip-shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git --no-pager log --date=short -S'%s' -p"
+    ("`git log -S keyword -p` in project" . (shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git --no-pager log --date=short -S'%s' -p"
                                                               (read-string "Git search string: "))))
     ("Diff from `kill-ring'" . (car kill-ring)))
   "The list of back-ends.
@@ -713,7 +718,7 @@ IF FIND-DIRECTORY-P is t, we are searching directories, else files."
   (let* ((default-directory (ffip-get-project-root-directory))
          (cmd (ffip-create-shell-command keyword find-directory-p))
          (fd-file-pattern (concat "^" (mapconcat 'ffip-glob-to-regex ffip-patterns "\\|") "$"))
-         (collection (split-string (ffip-shell-command-to-string cmd) "[\r\n]+" t))
+         (collection (split-string (shell-command-to-string cmd) "[\r\n]+" t))
          rlt)
 
     (if ffip-debug (message "run command at %s: %s" default-directory cmd))
@@ -1201,7 +1206,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
       (cond
        ;; shell command
        ((stringp backend)
-        (ffip-show-content-in-diff-mode (ffip-shell-command-to-string backend)))
+        (ffip-show-content-in-diff-mode (shell-command-to-string backend)))
        ;; command
        ((functionp backend)
         (ffip-show-content-in-diff-mode (funcall backend)))
