@@ -248,11 +248,12 @@ The file path is passed to the hook as the first argument.")
     ("`git diff HEAD^` in project" . "cd $(git rev-parse --show-toplevel) && git diff HEAD^")
     ("`git diff --cached` in project" . "cd $(git rev-parse --show-toplevel) && git diff --cached")
     ("`git diff` in project" . "cd $(git rev-parse --show-toplevel) && git diff")
-    ("`git diff` current file" . (shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git diff '%s'"
+    ("`git diff` current file" . (shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git diff \"%s\""
                                                                     (buffer-file-name))))
-    ("`git log -p` current file" . (shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git --no-pager log --date=short -p '%s'"
+    ;; git option "--cc" shows changes in merge commits
+    ("`git log -p` current file" . (shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git --no-pager log --date=short -p --cc \"%s\""
                                                      (buffer-file-name))))
-    ("`git log -S keyword -p` in project" . (shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git --no-pager log --date=short -S'%s' -p"
+    ("`git log -S keyword -p` in project" . (shell-command-to-string (format "cd $(git rev-parse --show-toplevel) && git --no-pager log --date=short -S\"%s\" -p --cc"
                                                               (read-string "Git search string: "))))
     ("Diff from `kill-ring'" . (car kill-ring)))
   "The list of back-ends.
