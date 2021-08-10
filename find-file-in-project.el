@@ -227,7 +227,7 @@ The file path is passed to the hook as the first argument.")
 (defun ffip-git-diff-current-file ()
   "Run 'git diff version:current-file current-file'."
   (let* ((default-directory (locate-dominating-file default-directory ".git"))
-         (line (completing-read "diff current file: " (ffip-diff-git-versions))))
+         (line (completing-read "diff current file with version: " (ffip-diff-git-versions))))
     (shell-command-to-string (format "git --no-pager diff %s:%s %s"
                                      (replace-regexp-in-string "^ *\\*? *" "" (car (split-string line "|" t)))
                                      (file-relative-name buffer-file-name default-directory)
@@ -236,7 +236,7 @@ The file path is passed to the hook as the first argument.")
 (defun ffip-git-diff-project()
   "Run 'git diff version' in project."
   (let* ((default-directory (locate-dominating-file default-directory ".git"))
-         (line (completing-read "diff current file: " (ffip-diff-git-versions)))
+         (line (completing-read "diff with commit: " (ffip-diff-git-versions)))
          (version (replace-regexp-in-string "^ *\\*? *"
                                             ""
                                             (car (split-string line "|" t)))))
