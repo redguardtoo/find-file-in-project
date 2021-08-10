@@ -190,6 +190,12 @@ For example, for files under [[https://www.perforce.com/][Perforce]] control,
       (p4-edit-file-and-make-buffer-writable file)))
 (add-hook 'ffip-diff-apply-hunk-hook 'ffip-diff-apply-hunk-hook-setup)
 #+end_src
+** =ffip-diff-filter-hunks-by-file-name=
+It can filter hunks by their file names.
+
+For example, user input pattern "regex !exclude1 exclude1" means the hunk's file name does match "regex", but does not match "exclude1" or "exclude2".
+
+Please note in "regex", space represents any string.
 ** =ffip-insert-file=
 Insert file content into current buffer.
 * Tips

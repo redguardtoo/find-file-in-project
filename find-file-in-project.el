@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.0.8
+;; Version: 6.1.0
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/redguardtoo/find-file-in-project
@@ -124,7 +124,12 @@
 ;; file. The target file could be located by searching `recentf-list'.
 ;; Except this extra feature, `ffip-diff-apply-hunk' is same as `diff-apply-hunk'.
 ;; So `diff-apply-hunk' can be replaced by `ffip-diff-apply-hunk'.
-
+;;
+;; `ffip-diff-filter-hunks-by-file-name' can filter hunks by their file names.
+;; User input pattern "regex !exclude1 exclude1" means the hunk's file name does match "regex".
+;; But does not match "exclude1" or "exclude2".;
+;; Please note in "regex", space represents any string.
+;;
 ;; If you use `evil-mode', insert below code into ~/.emacs,
 ;;   (defun ffip-diff-mode-hook-setup ()
 ;;       (evil-local-set-key 'normal "K" 'diff-hunk-prev)
@@ -1189,11 +1194,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
 (defvar ffip-diff-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map diff-mode-map)
-    ;; EVIL friendly. ffip-diff-mode is read-only
-    (define-key map "K" 'diff-hunk-prev)
-    (define-key map "J" 'diff-hunk-next)
-    (define-key map "P" 'diff-file-prev)
-    (define-key map "N" 'diff-file-next)
+    (define-key map (kbd "C-c C-k") 'ffip-diff-filter-hunks-by-file-name)
     (define-key map [remap diff-goto-source] 'ffip-diff-find-file)
     map)
   "Mode map based on `diff-mode-map'.")
@@ -1332,6 +1333,62 @@ If REVERSE is t, applied patch is reverted."
     (setq ffip-read-file-name-hijacked-p t)
     (diff-apply-hunk reverse)
     (setq ffip-read-file-name-hijacked-p nil))
+   (t
+    (message "This command only run in `diff-mode' and `ffip-diff-mode'."))))
+
+(defun ffip-diff-hunk-file-name-match-p (keyword neg-keywords)
+  "Current hunk's file name does match KEYWORD and doesn't NEG-KEYWORDS."
+  (let* ((filenames (diff-hunk-file-names))
+         (f0 (nth 0 filenames))
+         (f1 (nth 1 filenames))
+         rlt)
+    (when (and filenames (> (length filenames) 1))
+      (setq rlt (or (string-match keyword f0) (string-match keyword f1)))
+
+      (let ((i 0) nk)
+        (while (and rlt (< i (length neg-keywords)))
+          (setq nk (nth i neg-keywords))
+          (setq rlt (not (or (string-match nk f0) (string-match nk f1))))
+          (setq i (1+ i)))))
+    rlt))
+
+;;;###autoload
+(defun ffip-diff-filter-hunks-by-file-name ()
+  "Filter hunks by file names which are generated from user input patterns.
+E.g., \"regex !exclude1 exclude1\" means the hunk's file name should
+match \"regex\", but should not match \"exclude1\" or \"exclude2\".
+Please note in \"regex\", space represents any string."
+  (interactive)
+  (cond
+   ((derived-mode-p 'diff-mode)
+    (let* ((pattern (read-string "File pattern (e.g., \"regex !exclude1 exclude2\"): "))
+           arr
+           keyword
+           neg-keywords
+           (first-hunk-position (save-excursion
+                                  (goto-char (point-min))
+                                  (re-search-forward diff-hunk-header-re)
+                                  (line-end-position))))
+      (cond
+       ((and pattern (not (string= pattern "")))
+        (setq arr (split-string pattern "!"))
+        (setq keyword (string-trim (nth 0 arr)))
+        (when (> (length arr) 1)
+          (setq neg-keywords (split-string (string-trim (nth 1 arr)) " +")))
+
+        ;; kill from the bottom to the top
+        (goto-char (point-max))
+        (condition-case nil
+            (while (not (and (<= (point) first-hunk-position)
+                             (ffip-diff-hunk-file-name-match-p keyword neg-keywords)))
+              (cond
+               ((not (ffip-diff-hunk-file-name-match-p keyword neg-keywords))
+                (diff-file-kill))
+               (t
+                (diff-file-prev))))
+          (error nil)))
+       (t
+        (message "File kill pattern should not be empty")))))
    (t
     (message "This command only run in `diff-mode' and `ffip-diff-mode'."))))
 
