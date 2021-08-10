@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.0.7
+;; Version: 6.0.8
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/redguardtoo/find-file-in-project
@@ -223,28 +223,56 @@ The file path is passed to the hook as the first argument.")
     (nconc (ffip-nonempty-lines (shell-command-to-string cmd1))
            (ffip-nonempty-lines (shell-command-to-string cmd2)))))
 
+(defun ffip-diff-select-version ()
+  "Select a version from git history."
+  (let* ((line (completing-read "Select from git history: " (ffip-diff-git-versions)))
+         (version (replace-regexp-in-string "^ *\\*? *"
+                                            ""
+                                            (car (split-string line "|" t)))))
+    version))
+
 ;;;###autoload
 (defun ffip-git-diff-current-file ()
-  "Run 'git diff version:current-file current-file'."
-  (let* ((default-directory (locate-dominating-file default-directory ".git"))
-         (line (completing-read "diff current file with version: " (ffip-diff-git-versions))))
+  "Compare another version of current file."
+  (let* ((default-directory (locate-dominating-file default-directory ".git")))
     (shell-command-to-string (format "git --no-pager diff %s:%s %s"
-                                     (replace-regexp-in-string "^ *\\*? *" "" (car (split-string line "|" t)))
+                                     (ffip-diff-select-version)
                                      (file-relative-name buffer-file-name default-directory)
                                      buffer-file-name))))
 
 (defun ffip-git-diff-project()
-  "Run 'git diff version' in project."
-  (let* ((default-directory (locate-dominating-file default-directory ".git"))
-         (line (completing-read "diff with commit: " (ffip-diff-git-versions)))
-         (version (replace-regexp-in-string "^ *\\*? *"
-                                            ""
-                                            (car (split-string line "|" t)))))
-    (shell-command-to-string (format "git --no-pager diff %s" version))))
+  "Compare another version of project."
+  (let* ((default-directory (locate-dominating-file default-directory ".git")))
+    (shell-command-to-string (format "git --no-pager diff %s"
+                                     (ffip-diff-select-version)))))
+
+(defun ffip-git-diff-directory()
+  "Compare another version of current directory."
+  (when buffer-file-name
+    (let* ((dir (read-directory-name "Directory: " (file-name-directory buffer-file-name)))
+           (default-directory (locate-dominating-file default-directory ".git")))
+      (shell-command-to-string (format "git --no-pager diff %s -- \"%s\""
+                                       (ffip-diff-select-version)
+                                       dir)))))
+
+(defun ffip-git-diff-file-extension()
+  "Compare another version of files matching file extensions from user input.
+File extensions are separated by space character."
+  (let* ((patterns (read-string "File extensions (e.g., \"cpp py\" matches C++ and Python code files): "
+                                (and buffer-file-name (file-name-extension buffer-file-name)))))
+    (when patterns
+      (let* ((default-directory (locate-dominating-file default-directory ".git")))
+        (setq patterns
+              (mapconcat (lambda (s) (format "\"*.%s\"" s)) (split-string patterns " +") " "))
+        (shell-command-to-string (format "git --no-pager diff %s -- %s"
+                                         (ffip-diff-select-version)
+                                         patterns))))))
 
 (defvar ffip-diff-backends
   '(ffip-git-diff-current-file
     ffip-git-diff-project
+    ffip-git-diff-directory
+    ffip-git-diff-file-extension
     ("`git diff HEAD^` in project" . "cd $(git rev-parse --show-toplevel) && git diff HEAD^")
     ("`git diff --cached` in project" . "cd $(git rev-parse --show-toplevel) && git diff --cached")
     ("`git diff` in project" . "cd $(git rev-parse --show-toplevel) && git diff")
