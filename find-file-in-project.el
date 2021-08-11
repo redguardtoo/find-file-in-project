@@ -184,6 +184,12 @@
   :type 'boolean
   :safe #'booleanp)
 
+(defcustom ffip-project-search-function 'ffip-project-search-default-function
+  "Function to execute find program in shell."
+  :group 'ffip
+  :type 'function
+  :safe #'functionp)
+
 (defcustom ffip-prefer-ido-mode nil
   "Prefer `ido-completing-read' to filter file candidates."
   :group 'ffip
@@ -732,6 +738,11 @@ BSD/GNU Find use glob pattern."
   ;; also @see #15 improving handling of directories containing space
   `(push (cons (replace-regexp-in-string "^\./" "" ,file) ,file) ,result))
 
+(defun ffip-project-search-default-function (find-command)
+  "Execute FIND-COMMAND in shell and split its output into lines."
+  (if ffip-debug "ffip-project-search-default-function => find-command=%s" find-command)
+  (split-string (shell-command-to-string find-command) "[\r\n]+" t))
+
 ;;;###autoload
 (defun ffip-project-search (keyword &optional find-directory-p)
   "Return an alist of all filenames in the project and their path.
@@ -745,7 +756,7 @@ IF FIND-DIRECTORY-P is t, we are searching directories, else files."
   (let* ((default-directory (ffip-get-project-root-directory))
          (cmd (ffip-create-shell-command keyword find-directory-p))
          (fd-file-pattern (concat "^" (mapconcat 'ffip-glob-to-regex ffip-patterns "\\|") "$"))
-         (collection (split-string (shell-command-to-string cmd) "[\r\n]+" t))
+         (collection (funcall ffip-project-search-function cmd))
          rlt)
 
     (if ffip-debug (message "run command at %s: %s" default-directory cmd))
