@@ -123,7 +123,7 @@ Execute backend from =ffip-diff-backends=.
 
 The output of backend execution is in [[http://www.gnu.org/software/diffutils/manual/html_node/Unified-Format.html][Unified Diff Format]] and is inserted into  =*ffip-diff*= buffer where you can press =o=, =C-c C-c=, =ENTER= , =M-x ffip-diff-find-file=  to open the corresponding file.
 
-=ffip-diff-find-file-before-hook= is called before =M-x ffip-diff-find-file=.
+=ffip-diff-find-file-before-hook= is called in =ffip-diff-find-file=. Two file names are passed to it as parameters. One name is returned by the hook as the file searching keyword.
 
 For example, you can =M-x ffip-show-diff= to view the git commit and open file inside patch.
 

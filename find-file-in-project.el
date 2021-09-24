@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.1.1
+;; Version: 6.1.2
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/redguardtoo/find-file-in-project
@@ -121,7 +121,9 @@
 ;; buffer to open corresponding file.  Please note some backends assume that the git cli program
 ;; is added into environment variable PATH.
 ;;
-;; `ffip-diff-find-file-before-hook' is called before `ffip-diff-find-file'.
+;; `ffip-diff-find-file-before-hook' is called in `ffip-diff-find-file'.
+;; Two file names are passed to it as parameters.  One name is returned by the hook
+;; as the file searching keyword.
 ;;
 ;; `ffip-diff-apply-hunk' applies current hunk in `diff-mode' (please note
 ;; `ffip-diff-mode' inherits from `diff-mode') to the target.
@@ -1252,6 +1254,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
       (setq keyword (nth 0 files))
       (when ffip-diff-find-file-by-file-name-p
         (setq keyword (file-name-nondirectory keyword)))
+
       (ffip-find-files keyword
                        open-another-window
                        nil
@@ -1261,15 +1264,18 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
                           (ffip--forward-line ,blnum))))
 
      (t
-      (run-hook-with-args 'ffip-diff-find-file-before-hook)
-      ;; pick a file name from A and B
-      (setq keyword (cond
-                     ((string= (nth 0 files) "null")
-                      (nth 1 files))
-                     (t
-                      (nth 0 files))))
+      (unless (setq keyword (run-hook-with-args 'ffip-diff-find-file-before-hook
+                                                (nth 0 files)
+                                                (nth 1 files)))
+        ;; pick a file name from A and B
+        (setq keyword (cond
+                       ((string= (nth 0 files) "null")
+                        (nth 1 files))
+                       (t
+                        (nth 0 files)))))
       (when ffip-diff-find-file-by-file-name-p
         (setq keyword (file-name-nondirectory keyword)))
+
       (ffip-find-files keyword
                        open-another-window
                        nil
