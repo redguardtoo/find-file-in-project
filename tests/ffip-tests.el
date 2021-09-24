@@ -61,7 +61,12 @@
   (let* (files
          (ffip-diff-backends '((with-temp-buffer
                                  (insert-file-contents (get-full-path "git-diff.diff"))
-                                 (buffer-string)))))
+                                 (buffer-string))))
+         ;; see https://github.com/redguardtoo/find-file-in-project/issues/137
+         ;; debian package creates some extra diff in parent directory "tests/"
+         ;; So root directory should be set to "tests/"
+         (ffip-diff-find-file-by-file-name-p t)
+         (ffip-project-root (file-name-directory load-file-name)))
     (ffip-show-diff)
     (switch-to-buffer "*ffip-diff*")
     (goto-char (point-min))
