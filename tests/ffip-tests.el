@@ -145,7 +145,4 @@
       ;; relative path
       (should (string= "tests/git-diff.diff" (buffer-string))))))
 
-(ert-deftest ffip-test-git-commands ()
-  (should (string-match "master" (car (ffip-diff-git-versions)))))
-
 (ert-run-tests-batch-and-exit)
