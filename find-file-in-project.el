@@ -594,6 +594,7 @@ If CHECK-ONLY is true, only do the check."
          (i 0)
          j
          (dirs '(":\\\\cygwin64\\\\bin\\\\"
+                 ":\\\\cygwin-portable\\\\cygwin\\\\bin\\\\"
                  ":\\\\msys64\\\\usr\\\\bin\\\\"))
          rlt)
     (while (and (not rlt)
