@@ -73,7 +73,7 @@ You can override the default root directory by setting =ffip-project-root=,
 
 Per-project and per-directory setup is easy. Check "Tips" section for details.
 ** =find-file-in-project-at-point=
-Guess the file path at point and try to find file.
+Guess the file path at point and try to find file. The path could contain environment variables.
 ** =find-file-in-project-by-selected=
 Use the selected region as keyword to search file. If no region is active, you could provide the keyword which could contain wildcard.
 
@@ -93,7 +93,7 @@ Use the selected region as keyword to find directory. If no region is active, yo
 
 If parameter is passed , directory will be opened in new window.
 ** =ffip-fix-file-path-at-point=
-It replaces path at point with correct relative/absolute path.
+It replaces file path at point with correct relative/absolute path. File path could contain environment variables.
 ** =find-file-in-project=
 Starts search immediately. This command is slow if there 10K+ files because it use ONLY Emacs Lisp to filter candidates. You should always use =find-file-in-project-by-selected= in big project..
 ** =ffip-find-files-resume=

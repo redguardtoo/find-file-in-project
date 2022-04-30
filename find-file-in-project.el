@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.1.2
+;; Version: 6.2.0
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/redguardtoo/find-file-in-project
@@ -165,6 +165,7 @@
 
 ;;; Code:
 
+(require 'find-file)
 (require 'find-lisp)
 (require 'diff-mode)
 (require 'windmove)
@@ -985,11 +986,14 @@ You can override this by setting the variable `ffip-project-root'."
   (if (string-match-p ffip-relative-path-pattern filename) t))
 
 (defun ffip-guess-file-name-at-point ()
-  "Guess file name at point."
-  (or (and (region-active-p) (ffip--read-selected))
-      (thing-at-point 'filename)
-      (thing-at-point 'symbol)
-      (read-string "No file name at point. Please provide one: ")))
+  "Guess file name at point.  File name could contain environment variables."
+  (let* ((file (or (and (region-active-p) (ffip--read-selected))
+                   (thing-at-point 'filename)
+                   (thing-at-point 'symbol)
+                   (read-string "No file name at point. Please provide one: "))))
+    (when file
+      ;; replace environment variable in file name
+      (car (ff-list-replace-env-vars (list file))))))
 
 (defun ffip--guess-physical-path (file)
   "Return physical full path of FILE which does exist."
@@ -1024,7 +1028,7 @@ You can override this by setting the variable `ffip-project-root'."
 
 ;;;###autoload
 (defun find-file-in-project-at-point (&optional open-another-window)
-  "Find file whose name is guessed around point.
+  "Find file at point.  File path could contain environment variables.
 If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
   (interactive "P")
   (let* ((fn (ffip-guess-file-name-at-point))
@@ -1490,7 +1494,7 @@ Please note in \"regex\", space represents any string."
 
 ;;;###autoload
 (defun ffip-fix-file-path-at-point (&optional absolute-path-p)
-  "Fix file path at point.
+  "Fix file path at point.  File path could contain environment variables.
 If ABSOLUTE-PATH-P is t, old path is replaced by correct absolute path.
 Or else it's replaced by relative path."
   (interactive "P")
