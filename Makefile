@@ -1,16 +1,20 @@
 SHELL = /bin/sh
 EMACS ?= emacs
 PROFILER =
+EMACS_BATCH_OPTS=--batch -Q -l find-file-in-project.el
+RM = @rm -rf
 
-.PHONY: test
+.PHONY: test clean test compile
 
 # Delete byte-compiled files etc.
 clean:
-	rm -f *~
-	rm -f \#*\#
-	rm -f *.elc
+	$(RM) *~
+	$(RM) \#*\#
+	$(RM) *.elc
+
+compile: clean
+	@$(EMACS) $(EMACS_BATCH_OPTS) -l tests/my-byte-compile.el 2>&1 | grep -E "([Ee]rror|[Ww]arning):" && exit 1 || exit 0
 
 # Run tests.
-test: clean
-	! $(EMACS) -Q -batch -l find-file-in-project.el --eval "(byte-compile-file \"find-file-in-project.el\")" 2>&1 | grep "Warning: the function"
-	$(EMACS) -Q -batch -l ert -l find-file-in-project.el -l tests/ffip-tests.el
+test: compile
+	@$(EMACS) $(EMACS_BATCH_OPTS) -l tests/ffip-tests.el
