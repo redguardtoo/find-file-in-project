@@ -20,7 +20,8 @@ Diff/patch files. Target files could be under any Version Control Software (VCS)
 *Screenshot:*
 
 [[https://raw.githubusercontent.com/redguardtoo/find-file-in-project/master/ffip-screenshot-nq8.png]]
-
+* Try it
+Run =make runemacs= in this project's root directory. The demo works out of box.
 * Install
 Place [[https://raw.githubusercontent.com/redguardtoo/find-file-in-project/master/find-file-in-project.el][find-file-in-project.el]] under [[https://www.emacswiki.org/emacs/LoadPath][Load Path]]. Then add =(require 'find-file-in-project)= to your configuration.
 

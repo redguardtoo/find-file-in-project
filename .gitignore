@@ -45,5 +45,7 @@ Session.vim
 .netrwhist
 *~
 
+deps/
+
 TAGS
 tags

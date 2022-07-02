@@ -1,7 +1,8 @@
 SHELL = /bin/sh
 EMACS ?= emacs
 PROFILER =
-EMACS_BATCH_OPTS=--batch -Q -l find-file-in-project.el
+EMACS_GENERIC_OPTS=-Q -L . -L deps/ivy-0.13.4
+EMACS_BATCH_OPTS:=--batch $(EMACS_GENERIC_OPTS)
 RM = @rm -rf
 
 .PHONY: test clean test compile
@@ -18,3 +19,8 @@ compile: clean
 # Run tests.
 test: compile
 	@$(EMACS) $(EMACS_BATCH_OPTS) -l tests/ffip-tests.el
+
+runemacs:
+	@mkdir -p deps;
+	@if [ ! -f deps/ivy-0.13.4/ivy.el ]; then curl -L https://stable.melpa.org/packages/ivy-0.13.4.tar | tar x -C deps/; fi;
+	@$(EMACS) $(EMACS_GENERIC_OPTS) --load ./tests/emacs-init.el
