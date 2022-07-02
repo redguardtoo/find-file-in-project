@@ -23,4 +23,4 @@ test: compile
 runemacs:
 	@mkdir -p deps;
 	@if [ ! -f deps/ivy-0.13.4/ivy.el ]; then curl -L https://stable.melpa.org/packages/ivy-0.13.4.tar | tar x -C deps/; fi;
-	@$(EMACS) $(EMACS_GENERIC_OPTS) --load ./tests/emacs-init.el
+	@$(EMACS) $(EMACS_GENERIC_OPTS) -l ./tests/emacs-init.el

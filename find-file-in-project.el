@@ -1132,10 +1132,7 @@ If OPEN-ANOTHER-WINDOW is not nil, the file will be opened in new window."
 (defun ffip-find-relative-path(&optional find-directory-p)
   "Find file/directory and copy its relative path into `kill-ring'.
 If FIND-DIRECTORY-P is t, copy the directory path.
-
-Set `ffip-find-relative-path-callback' to format the result,
-  (setq ffip-find-relative-path-callback 'ffip-copy-reactjs-import)
-  (setq ffip-find-relative-path-callback 'ffip-copy-org-file-link)"
+Set `ffip-find-relative-path-callback' to format the result."
   (interactive "P")
   (let* ((cands (ffip-project-search (ffip-read-keyword) find-directory-p)))
     (cond
