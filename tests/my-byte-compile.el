@@ -1,4 +1,4 @@
-;;; my-elint.el --- syntax check the code  -*- lexical-binding: t -*-
+;;; my-byte-compile.el --- syntax check the code  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2022 Chen Bin
 ;;
@@ -39,5 +39,4 @@
   (dolist (file files)
     (byte-compile-file file)))
 
-(provide 'my-byte-compile)
-;;; my-elint.el ends here
+;;; my-byte-compile.el ends here
