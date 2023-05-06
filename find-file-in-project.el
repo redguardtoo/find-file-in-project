@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.2.0
+;; Version: 6.2.1
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/redguardtoo/find-file-in-project
@@ -407,7 +407,6 @@ May be set using .dir-locals.el.  Checks each entry if set to a list."
     "*.docx"
     "*.xls"
     "*.ppt"
-    "*.pdf"
     "*.odt"
     ;; C/C++
     "*.obj"
