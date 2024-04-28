@@ -679,6 +679,15 @@ If CHECK-ONLY is true, only do the check."
     (mapconcat (lambda (n) (format "-not -name \"%s\"" n))
                ffip-ignore-filenames " "))))
 
+(defun ffip--file-completion-table (all-files)
+  ;; direct copy of project--file-completion-table
+  (lambda (string pred action)
+    (cond
+     ((eq action 'metadata)
+      '(metadata . ((category . project-file))))
+     (t
+      (complete-with-action action all-files string pred)))))
+
 ;;;###autoload
 (defun ffip-completing-read (prompt collection &optional action)
   "Read a string in minibuffer, with completion.
@@ -700,7 +709,8 @@ This function returns the selected candidate or nil."
       (setq selected (ido-completing-read prompt (mapcar 'car collection))))
 
      (t
-      (setq selected (completing-read prompt collection))
+      (setq selected
+            (completing-read prompt (ffip--file-completion-table collection)))
       (setq selected (or (assoc selected collection) selected))))
 
     (when selected
