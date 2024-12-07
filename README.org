@@ -228,7 +228,7 @@ Here is complete setup you could insert into =.emacs==,
     ;; ignore files whose name match certain glob pattern
     (setq-local ffip-ignore-filenames '("*.bmp" "*.jpg"))
     ;; exclude `dist/' directory
-    (add-to-list 'ffip-prune-patterns "*/dist"))
+    (push "*/dist" ffip-prune-patterns))
   ;; insert more WHEN statements below this line for other projects
   )
 ;; most major modes inherit from prog-mode, so below line is enough
