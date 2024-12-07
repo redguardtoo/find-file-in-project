@@ -1535,7 +1535,7 @@ Or else it's replaced by relative path."
                                          (and buffer-file-name (file-name-directory buffer-file-name))))))
         (goto-char (car bounds))
         (delete-region (car bounds) (cdr bounds))
-        (insert (replace-regexp-in-string "/index\\.[jt]s" "" path))))))
+        (insert (replace-regexp-in-string "/index\\.[jt]s$" "" path))))))
 
 ;; safe locals
 (progn
