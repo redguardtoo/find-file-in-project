@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.2.1
+;; Version: 6.2.2
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/redguardtoo/find-file-in-project
@@ -1018,8 +1018,7 @@ You can override this by setting the variable `ffip-project-root'."
        ;; extra effort for javascript like language
        ;; "./lib/A" could mean "./lib/A.js" or "./lib/A/index.js"
        ((and (or (derived-mode-p 'js-mode)
-                 (memq major-mode '(typescript-mode)))
-             (string-match-p "^[^.]*$"(file-name-nondirectory file)))
+                 (memq major-mode '(typescript-mode))))
         (dolist (ext '(".ts" ".tsx" ".js" ".jsx"))
           ;; guess physical path
           (cond
