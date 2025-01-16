@@ -1020,7 +1020,7 @@ You can override this by setting the variable `ffip-project-root'."
        ((and (or (derived-mode-p 'js-mode)
                  (memq major-mode '(typescript-mode)))
              (string-match-p "^[^.]*$"(file-name-nondirectory file)))
-        (dolist (ext '(".ts" ".js"))
+        (dolist (ext '(".ts" ".tsx" ".js" ".jsx"))
           ;; guess physical path
           (cond
            ;; "./lib/A.js" or "./lib/A.ts"
