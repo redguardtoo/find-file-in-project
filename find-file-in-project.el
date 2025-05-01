@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.2.2
+;; Version: 6.2.3
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/redguardtoo/find-file-in-project
@@ -177,13 +177,22 @@
   :group 'convenience)
 
 (defcustom ffip-use-rust-fd nil
-  "Use rust fd instead of find."
+  "Use rust fd instead of GNU find."
   :link '(url-link :tag "fd @ GitHub"
                    "https://github.com/sharkdp/fd")
   :group 'ffip
   :type 'boolean
   :safe #'booleanp)
 
+(defcustom ffip-rust-fd-executable-name "fd"
+  "Rust fd executable name."
+  :group 'ffip
+  :type 'string)
+
+(defcustom ffip-gnu-find-executable-name "find"
+  "GNU find executable name."
+  :group 'ffip
+  :type 'string)
 
 (defcustom ffip-rust-fd-respect-ignore-files t
   "Don't show search results from '.*ignore' files."
@@ -612,7 +621,8 @@ If CHECK-ONLY is true, only do the check."
 
 (defun ffip--executable-find ()
   "Find EXE on all environments."
-  (let* ((exe (if ffip-use-rust-fd "fd" "find"))
+  (let* ((exe (if ffip-use-rust-fd ffip-rust-fd-executable-name
+                ffip-gnu-find-executable-name))
          rlt)
     (cond
      ((file-remote-p default-directory)
