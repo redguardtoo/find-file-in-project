@@ -94,7 +94,7 @@ Use the selected region as keyword to find directory. If no region is active, yo
 
 If parameter is passed , directory will be opened in new window.
 ** =ffip-fix-file-path-at-point=
-It replaces file path at point with correct relative/absolute path. File path could contain environment variables.
+It replaces file path at point with correct relative/absolute path. File path could contain environment variables. The path can be cleaned up by =ffip-fix-file-path-at-point-strip-regex=.
 ** =find-file-in-project=
 Starts search immediately. This command is slow if there 10K+ files because it use ONLY Emacs Lisp to filter candidates. You should always use =find-file-in-project-by-selected= in big project..
 ** =ffip-find-files-resume=

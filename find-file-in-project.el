@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.2.3
+;; Version: 6.2.4
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/redguardtoo/find-file-in-project
@@ -110,6 +110,7 @@
 ;; and `find-file-in-current-directory-by-selected'.
 ;;
 ;; `ffip-fix-file-path-at-point' replaces path at point with correct relative/absolute path.
+;; The path can be cleaned up by `ffip-fix-file-path-at-point-strip-regex'.
 ;;
 ;; File/directory searching actions are automatically stored into `ffip-find-files-history'.
 ;; Use `ffip-find-files-resume' to replay any previous action.
@@ -227,6 +228,12 @@
   "\\(\\.mock\\|\\.test\\|\\.mockup\\)"
   "Strip file name to get minimum keyword with this regex.
 It's used by `find-file-with-similar-name'."
+  :group 'ffip
+  :type 'regexp)
+
+(defcustom ffip-fix-file-path-at-point-strip-regex
+  "\\(/index\\.[jt]sx?\\|\\.[jt]sx?\\)$"
+  "Strip file path with this regex.  Used by `ffip-fix-file-path-at-point'."
   :group 'ffip
   :type 'regexp)
 
@@ -1544,7 +1551,8 @@ Or else it's replaced by relative path."
                                          (and buffer-file-name (file-name-directory buffer-file-name))))))
         (goto-char (car bounds))
         (delete-region (car bounds) (cdr bounds))
-        (insert (replace-regexp-in-string "/index\\.[jt]s$" "" path))))))
+        (message "path=%s" path)
+        (insert (replace-regexp-in-string ffip-fix-file-path-at-point-strip-regex "" path))))))
 
 ;; safe locals
 (progn
