@@ -3,7 +3,7 @@
 ;; Copyright (C) 2006-2009, 2011-2012, 2015-2018
 ;;   Phil Hagelberg, Doug Alcorn, Will Farrington, Chen Bin
 ;;
-;; Version: 6.2.4
+;; Version: 6.2.5
 ;; Author: Phil Hagelberg, Doug Alcorn, and Will Farrington
 ;; Maintainer: Chen Bin <chenbin.sh@gmail.com>
 ;; URL: https://github.com/redguardtoo/find-file-in-project
@@ -1551,7 +1551,6 @@ Or else it's replaced by relative path."
                                          (and buffer-file-name (file-name-directory buffer-file-name))))))
         (goto-char (car bounds))
         (delete-region (car bounds) (cdr bounds))
-        (message "path=%s" path)
         (insert (replace-regexp-in-string ffip-fix-file-path-at-point-strip-regex "" path))))))
 
 ;; safe locals
